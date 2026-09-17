@@ -317,25 +317,30 @@ window.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
                 if (data.success) {
                     const overallChip = document.querySelector('.task-info-grid .status-chip');
-                    if (overallChip) {
+                    if (overallChip && data.overallStatus) {
                         overallChip.textContent = data.overallStatus;
                         overallChip.className = 'status-chip ' + data.overallStatus.toLowerCase().replaceAll(' ', '-');
                     }
 
-                    let toast = document.querySelector('.success-toast');
-                    if (!toast) {
-                        toast = document.createElement('div');
-                        toast.className = 'success-toast';
-                        document.body.prepend(toast);
+                    const myUserId = '<%= user.id %>';
+                    const myAssigneeChip = document.querySelector(`.assignee-chip-user-${myUserId}`);
+                    if (myAssigneeChip && data.myStatus) {
+                        myAssigneeChip.textContent = data.myStatus;
+                        myAssigneeChip.className = `status-chip assignee-chip-user-${myUserId} ` + data.myStatus.toLowerCase().replaceAll(' ', '-');
                     }
-                    toast.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span><b>Update successful</b><small>Task status has been updated.</small></span>';
-                    toast.style.display = 'flex';
-                    setTimeout(() => { toast.style.display = 'none'; }, 3000);
+
+                    if (window.showToast) {
+                        window.showToast('Update successful', 'Task status has been updated.', 3500);
+                    }
                 } else {
+                    btn.disabled = false;
+                    btn.innerHTML = originalBtnHtml;
                     statusForm.submit();
                 }
             } catch (err) {
-                console.error(err);
+                console.error('Status update error:', err);
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
                 statusForm.submit();
             } finally {
                 btn.disabled = false;

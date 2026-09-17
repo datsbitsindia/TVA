@@ -1089,5 +1089,64 @@ document.addEventListener('click', function(e) {
         }
     }
 }, true);
+// Global Floating Toast System
+window.showToast = function(titleOrMessage, subtitleOrType, duration = 3500) {
+    let existing = document.querySelector('.success-toast, .app-toast');
+    if (existing) existing.remove();
 
+    const toast = document.createElement('div');
+    toast.className = 'success-toast';
 
+    let title = 'Update successful';
+    let subtitle = titleOrMessage || '';
+    let icon = 'fa-circle-check';
+
+    if (typeof subtitleOrType === 'string' && subtitleOrType !== 'info' && subtitleOrType !== 'success' && subtitleOrType !== 'error') {
+        subtitle = subtitleOrType;
+        title = titleOrMessage;
+    } else if (titleOrMessage) {
+        subtitle = titleOrMessage;
+    }
+
+    if (subtitleOrType === 'error') {
+        icon = 'fa-circle-xmark';
+        toast.style.borderColor = '#fca5a5';
+        toast.style.background = '#fef2f2';
+        toast.style.color = '#991b1b';
+    }
+
+    toast.innerHTML = `
+        <i class="fa-solid ${icon}"></i>
+        <span>
+            <b>${title}</b>
+            <small>${subtitle}</small>
+        </span>
+        <button type="button" class="toast-close-btn" onclick="this.parentElement.remove()">&times;</button>
+    `;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.add('hide');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+};
+
+// Auto-dismiss any server-rendered .success-toast after 3.5 seconds
+document.addEventListener('DOMContentLoaded', () => {
+    const serverToasts = document.querySelectorAll('.success-toast');
+    serverToasts.forEach(toast => {
+        if (!toast.querySelector('.toast-close-btn')) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'toast-close-btn';
+            btn.innerHTML = '&times;';
+            btn.onclick = () => toast.remove();
+            toast.appendChild(btn);
+        }
+        setTimeout(() => {
+            toast.classList.add('hide');
+            setTimeout(() => toast.remove(), 300);
+        }, 3500);
+    });
+});

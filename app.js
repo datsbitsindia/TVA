@@ -52,8 +52,12 @@ async function start() {
             }
         }
     }));
+    const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000; // 30 days (1 month) in milliseconds
     const sessionOptions = {
         ...config.mysql,
+        clearExpired: true,
+        checkExpirationInterval: 900000, // Clean expired sessions every 15 mins
+        expiration: ONE_MONTH_MS, // Keep sessions valid in DB for 30 days
         schema: {
             tableName: (config.tablePrefix || 'uno_') + 'sessions',
             columnNames: {
@@ -68,11 +72,12 @@ async function start() {
         secret: config.sessionSecret,
         resave: false,
         saveUninitialized: false,
+        rolling: true, // Renews cookie expiration on every user request
         cookie: {
             httpOnly: true,
             sameSite: 'lax',
             secure: config.cookieSecure,
-            maxAge: 28800000
+            maxAge: ONE_MONTH_MS // 30 days (1 month)
         }
     }));
     webApp.use(exposeUser);

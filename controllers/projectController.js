@@ -174,6 +174,13 @@ exports.detail = async (req, res) => {
         return res.status(403).render('error', { message: 'Access denied' });
     }
 
+    // Auto mark notifications for this project as read when user opens the project
+    try {
+        await db.prepare(
+            'UPDATE notifications SET is_read=1 WHERE user_id=? AND (link=? OR link LIKE ?) AND is_read=0'
+        ).run(u.id, `/projects/${req.params.id}`, `/projects/${req.params.id}%`);
+    } catch(e) {}
+
     const allManagers = await db.prepare("SELECT id, name FROM users WHERE (organization_id=? OR id IN (SELECT user_id FROM user_organizations WHERE organization_id=?))").all(orgId, orgId);
     const managerMap = new Map(allManagers.map(m => [m.id, m.name]));
     project.manager_name = managerIds.map(id => managerMap.get(id) || `Manager #${id}`).join(', ');

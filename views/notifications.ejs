@@ -18,7 +18,7 @@
     <% } %>
 
     <% notes.forEach(n => { %>
-        <a href="<%= n.link || '#' %>" style="
+        <a href="/notifications/<%= n.id %>/open" style="
             display:flex;
             align-items:center;
             gap:10px;

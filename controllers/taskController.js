@@ -215,8 +215,8 @@ exports.detail = async (req, res) => {
     // Auto mark notifications for this task as read when user opens the task
     try {
         await db.prepare(
-            'UPDATE notifications SET is_read=1 WHERE user_id=? AND (link=? OR link=?) AND is_read=0'
-        ).run(req.session.user.id, `/tasks/${req.params.id}`, `/tasks/${req.params.id}?success=status`);
+            'UPDATE notifications SET is_read=1 WHERE user_id=? AND (link=? OR link LIKE ?) AND is_read=0'
+        ).run(req.session.user.id, `/tasks/${req.params.id}`, `/tasks/${req.params.id}%`);
     } catch(e) {}
 
     res.render('task-detail', {
@@ -534,61 +534,69 @@ exports.deleteRoutine = async (req, res) => {
 };
 
 exports.status = async (req, res) => {
-    const task = await db.prepare('SELECT * FROM tasks WHERE id=?').get(req.params.id);
-    if (!task || !(await canView(req.session.user, task))) return res.status(403).render('error', {
-        message: 'Only assigned users or admin can update this task status'
-    });
-    if (!['Pending', 'In Progress', 'Completed', 'Cancelled'].includes(req.body.status)) return res.status(400).render('error', {
-        message: 'Invalid status'
-    });
-
-    const newStatusStr = req.body.status;
-    const myStatusRow = await db.prepare('SELECT id FROM statuses WHERE normalized_name=?').get(String(newStatusStr).toLowerCase());
-    const myStatusId = (myStatusRow && myStatusRow.id !== undefined) ? myStatusRow.id : 0;
-
-    // Update specific assignee status in junction table
-    await db.prepare('INSERT INTO task_assignees(task_id, user_id, status, status_id, completed_at) VALUES(?,?,?,?,CASE WHEN ?=2 THEN NOW() ELSE NULL END) ON DUPLICATE KEY UPDATE status=?, status_id=?, completed_at=CASE WHEN ?=2 THEN NOW() ELSE NULL END')
-        .run(task.id, req.session.user.id, myStatusId, myStatusId, myStatusId, myStatusId, myStatusId, myStatusId);
-
-    // Calculate overall task completion status for multi-assignees or single assignee
-    const assignedUserIds = String(task.assigned_to || '').split(',').map(x => Number(x.trim())).filter(Boolean);
-    let overallStatusId = myStatusId;
-
-    if (assignedUserIds.length > 1) {
-        const stats = await db.prepare("SELECT COUNT(*) total, SUM(CASE WHEN status=2 OR status_id=2 THEN 1 ELSE 0 END) completed FROM task_assignees WHERE task_id=?").get(task.id);
-        const total = stats ? Number(stats.total) : 0;
-        const completed = stats ? Number(stats.completed) : 0;
-        const isAllCompleted = total > 0 && total === completed;
-        overallStatusId = isAllCompleted ? 2 : 1;
-    }
-
-    await db.prepare("UPDATE tasks SET status=?, status_id=?, completed_at=CASE WHEN ?=2 THEN NOW() ELSE NULL END, updated_by=? WHERE id=?")
-        .run(overallStatusId, overallStatusId, overallStatusId, req.session.user.id, task.id);
-    const newStatus = newStatusStr;
-
-    // Resolve overall status name from id
-    const overallStatusRow = await db.prepare('SELECT name FROM statuses WHERE id=? LIMIT 1').get(overallStatusId);
-    const overallStatus = overallStatusRow ? overallStatusRow.name : newStatus;
-
-    if (task.is_routine) {
-        try { await routineService.updateRoutineLogStatus(task.id, overallStatus); } catch(e) {}
-    }
-
-    try { await activity.log(req.session.user.id, newStatus === 'Completed' ? 'Task Completed' : 'Task Updated', task.title); } catch(e) {}
-    // Notify creator (only if commenter is not the creator themselves)
-    if (Number(task.created_by) !== Number(req.session.user.id)) {
-        try { await notifications.notify(task.created_by, `${req.session.user.name} changed status of ${task.title} to ${newStatus}`, `/tasks/${task.id}`); } catch(e) {}
-    }
-
-    if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest' || (req.headers.accept && req.headers.accept.includes('application/json'))) {
-        return res.json({
-            success: true,
-            overallStatus: overallStatus,
-            myStatus: newStatus
+    try {
+        const task = await db.prepare('SELECT * FROM tasks WHERE id=?').get(req.params.id);
+        if (!task || !(await canView(req.session.user, task))) return res.status(403).render('error', {
+            message: 'Only assigned users or admin can update this task status'
         });
-    }
+        if (!['Pending', 'In Progress', 'Completed', 'Cancelled'].includes(req.body.status)) return res.status(400).render('error', {
+            message: 'Invalid status'
+        });
 
-    res.redirect(`/tasks/${task.id}?success=status`);
+        const newStatusStr = req.body.status;
+        const myStatusRow = await db.prepare('SELECT id, name FROM statuses WHERE normalized_name=?').get(String(newStatusStr).toLowerCase());
+        const myStatusId = (myStatusRow && myStatusRow.id !== undefined) ? Number(myStatusRow.id) : 0;
+        const myStatusName = myStatusRow ? myStatusRow.name : newStatusStr;
+
+        // Update specific assignee status in junction table
+        await db.prepare('INSERT INTO task_assignees(task_id, user_id, status, status_id, completed_at) VALUES(?,?,?,?,CASE WHEN ?=2 THEN NOW() ELSE NULL END) ON DUPLICATE KEY UPDATE status=?, status_id=?, completed_at=CASE WHEN ?=2 THEN NOW() ELSE NULL END')
+            .run(task.id, req.session.user.id, myStatusId, myStatusId, myStatusId, myStatusId, myStatusId, myStatusId);
+
+        // Calculate overall task completion status for multi-assignees or single assignee
+        const assignedUserIds = String(task.assigned_to || '').split(',').map(x => Number(x.trim())).filter(Boolean);
+        let overallStatusId = myStatusId;
+
+        if (assignedUserIds.length > 1) {
+            const stats = await db.prepare("SELECT COUNT(*) total, SUM(CASE WHEN status=2 OR status_id=2 THEN 1 ELSE 0 END) completed FROM task_assignees WHERE task_id=?").get(task.id);
+            const total = stats ? Number(stats.total) : 0;
+            const completed = stats ? Number(stats.completed) : 0;
+            const isAllCompleted = total > 0 && total === completed;
+            overallStatusId = isAllCompleted ? 2 : 1;
+        }
+
+        // Resolve overall status name from id
+        const overallStatusRow = await db.prepare('SELECT name FROM statuses WHERE id=? LIMIT 1').get(overallStatusId);
+        const overallStatusName = overallStatusRow ? overallStatusRow.name : (overallStatusId === 2 ? 'Completed' : (overallStatusId === 1 ? 'In Progress' : 'Pending'));
+
+        await db.prepare("UPDATE tasks SET status=?, status_id=?, completed_at=CASE WHEN ?=2 THEN NOW() ELSE NULL END, updated_by=? WHERE id=?")
+            .run(overallStatusName, overallStatusId, overallStatusId, req.session.user.id, task.id);
+
+        if (task.is_routine) {
+            try { await routineService.updateRoutineLogStatus(task.id, overallStatusName); } catch(e) {}
+        }
+
+        try { await activity.log(req.session.user.id, myStatusName === 'Completed' ? 'Task Completed' : 'Task Updated', task.title); } catch(e) {}
+        // Notify creator (only if commenter is not the creator themselves)
+        if (Number(task.created_by) !== Number(req.session.user.id)) {
+            try { await notifications.notify(task.created_by, `${req.session.user.name} changed status of ${task.title} to ${myStatusName}`, `/tasks/${task.id}`); } catch(e) {}
+        }
+
+        if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest' || (req.headers.accept && req.headers.accept.includes('application/json'))) {
+            return res.json({
+                success: true,
+                overallStatus: overallStatusName,
+                myStatus: myStatusName
+            });
+        }
+
+        res.redirect(`/tasks/${task.id}?success=status`);
+    } catch (err) {
+        console.error('Task status update error:', err);
+        if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest' || (req.headers.accept && req.headers.accept.includes('application/json'))) {
+            return res.status(500).json({ success: false, error: err.message });
+        }
+        res.status(500).render('error', { message: 'Failed to update task status: ' + err.message });
+    }
 };
 
 exports.comment = async (req, res) => {
