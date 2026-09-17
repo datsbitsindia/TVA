@@ -34,7 +34,7 @@ const baseQuery = `
             (SELECT GROUP_CONCAT(u.name ORDER BY u.id SEPARATOR ', ') FROM users u WHERE FIND_IN_SET(u.id, t.assigned_to) > 0),
             a.name
         ) AS assigned_name,
-        c.name creator_name, p.name project_name, COALESCE(t.project_id, p.id) AS project_id, p.manager_id,
+        c.name creator_name, p.name project_name, COALESCE(t.project_id, p.id) AS project_id, p.manager_id, v.name verifier_name,
         CASE WHEN t.due_date<CURDATE() AND COALESCE(
             (SELECT name FROM statuses WHERE id = ta_sub.status_id LIMIT 1),
             (SELECT name FROM statuses WHERE id = t.status_id LIMIT 1),
@@ -45,6 +45,7 @@ const baseQuery = `
     LEFT JOIN users a ON a.id=t.assigned_to
     JOIN users c ON c.id=t.created_by
     LEFT JOIN projects p ON p.id=t.project_id
+    LEFT JOIN users v ON v.id=t.verified_by
 `;
 
 
@@ -568,8 +569,8 @@ exports.status = async (req, res) => {
         const overallStatusRow = await db.prepare('SELECT name FROM statuses WHERE id=? LIMIT 1').get(overallStatusId);
         const overallStatusName = overallStatusRow ? overallStatusRow.name : (overallStatusId === 2 ? 'Completed' : (overallStatusId === 1 ? 'In Progress' : 'Pending'));
 
-        await db.prepare("UPDATE tasks SET status=?, status_id=?, completed_at=CASE WHEN ?=2 THEN NOW() ELSE NULL END, updated_by=? WHERE id=?")
-            .run(overallStatusName, overallStatusId, overallStatusId, req.session.user.id, task.id);
+        await db.prepare("UPDATE tasks SET status=?, status_id=?, completed_at=CASE WHEN ?=2 THEN NOW() ELSE NULL END, is_verified=CASE WHEN ?=2 THEN is_verified ELSE 0 END, verified_by=CASE WHEN ?=2 THEN verified_by ELSE NULL END, verified_at=CASE WHEN ?=2 THEN verified_at ELSE NULL END, updated_by=? WHERE id=?")
+            .run(overallStatusName, overallStatusId, overallStatusId, overallStatusId, overallStatusId, overallStatusId, req.session.user.id, task.id);
 
         if (task.is_routine) {
             try { await routineService.updateRoutineLogStatus(task.id, overallStatusName); } catch(e) {}
@@ -596,6 +597,67 @@ exports.status = async (req, res) => {
             return res.status(500).json({ success: false, error: err.message });
         }
         res.status(500).render('error', { message: 'Failed to update task status: ' + err.message });
+    }
+};
+
+exports.verify = async (req, res) => {
+    try {
+        const u = req.session.user;
+        const orgId = u.organization_id || 1;
+        const task = await db.prepare(baseQuery + ' WHERE t.id=? AND t.organization_id=?').get(u.id, req.params.id, orgId);
+
+        if (!task) return res.status(404).render('error', { message: 'Task not found' });
+
+        const isCreator = Number(task.created_by) === Number(u.id);
+        const assignedUserIds = String(task.assigned_to || '').split(',').map(x => Number(x.trim())).filter(Boolean);
+        const isAssignedToMe = assignedUserIds.includes(Number(u.id));
+        const isAdmin = u.role === 'admin';
+        const managerIds = String(task.manager_id || '').split(',').map(x => Number(x.trim()));
+        const isProjectManager = managerIds.includes(Number(u.id));
+        const isManagerReviewer = (u.role === 'manager' || isProjectManager) && !isAssignedToMe;
+        const canVerify = isAdmin || isCreator || isManagerReviewer;
+
+        if (!canVerify) {
+            return res.status(403).render('error', { message: 'Only creator, independent manager, or admin can verify this task. Assignees cannot verify their own task.' });
+        }
+
+        const action = req.body.action || 'verify';
+        if (action === 'unverify') {
+            await db.prepare('UPDATE tasks SET is_verified=0, verified_by=NULL, verified_at=NULL, updated_by=? WHERE id=?')
+                .run(u.id, task.id);
+            try { await activity.log(u.id, 'Task Unverified', task.title); } catch(e) {}
+        } else {
+            await db.prepare('UPDATE tasks SET is_verified=1, verified_by=?, verified_at=NOW(), updated_by=? WHERE id=?')
+                .run(u.id, u.id, task.id);
+            try { await activity.log(u.id, 'Task Verified', task.title); } catch(e) {}
+
+            // Notify assignees
+            const assignees = String(task.assigned_to || '').split(',').map(x => Number(x.trim())).filter(Boolean);
+            for (const uid of assignees) {
+                if (uid !== u.id) {
+                    try {
+                        await notifications.notify(uid, `Task Verified: ${u.name} verified '${task.title}'`, `/tasks/${task.id}`);
+                    } catch(e) {}
+                }
+            }
+        }
+
+        if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest' || (req.headers.accept && req.headers.accept.includes('application/json'))) {
+            return res.json({
+                success: true,
+                is_verified: action === 'verify' ? 1 : 0,
+                verifier_name: u.name,
+                verified_at: new Date().toISOString()
+            });
+        }
+
+        res.redirect(`/tasks/${task.id}?success=${action === 'verify' ? 'verified' : 'unverified'}`);
+    } catch (err) {
+        console.error('Task verify error:', err);
+        if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest' || (req.headers.accept && req.headers.accept.includes('application/json'))) {
+            return res.status(500).json({ success: false, error: err.message });
+        }
+        res.status(500).render('error', { message: 'Failed to verify task: ' + err.message });
     }
 };
 

@@ -422,7 +422,7 @@ async function addStandardAuditColumns() {
     definitions[`${prefix}users`] = [['created_by', 'INT NULL'], ['updated_by', 'INT NULL'], ['updated_at', 'DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP']];
     definitions[`${prefix}projects`] = [['updated_by', 'INT NULL'], ['updated_at', 'DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP']];
     definitions[`${prefix}project_updates`] = [['created_by', 'INT NULL'], ['updated_by', 'INT NULL'], ['updated_at', 'DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP']];
-    definitions[`${prefix}tasks`] = [['updated_by', 'INT NULL'], ['updated_at', 'DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP']];
+    definitions[`${prefix}tasks`] = [['updated_by', 'INT NULL'], ['updated_at', 'DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'], ['is_verified', 'TINYINT(1) DEFAULT 0'], ['verified_by', 'INT NULL'], ['verified_at', 'DATETIME NULL']];
     definitions[`${prefix}task_forward_logs`] = [['created_by', 'INT NULL'], ['updated_by', 'INT NULL'], ['updated_at', 'DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP']];
     definitions[`${prefix}daily_routines`] = [['created_by', 'INT NULL'], ['updated_by', 'INT NULL'], ['updated_at', 'DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP']];
     definitions[`${prefix}daily_routine_logs`] = [['created_by', 'INT NULL'], ['updated_by', 'INT NULL'], ['updated_at', 'DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP']];

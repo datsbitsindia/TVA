@@ -989,6 +989,17 @@ document.addEventListener('submit', async function(e) {
                                     <span class="status-chip task-status-pill ${t.is_overdue ? 'overdue' : String(t.status || 'Pending').toLowerCase().replaceAll(' ', '-')}" style="flex:0 0 auto; font-size:9px; padding:2px 6px; margin:0!important;">
                                         ${t.is_overdue ? 'Overdue' : t.status}
                                     </span>
+                                    ${(t.status === 'Completed' || t.status === '2') ? (
+                                        t.is_verified ? `
+                                            <span class="status-chip verified-chip" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; padding:2px 6px; font-size:9px; font-weight:700; flex:0 0 auto; margin:0!important;" title="Verified by ${t.verifier_name || 'Manager'}">
+                                                <i class="fa-solid fa-certificate"></i> Verified
+                                            </span>
+                                        ` : `
+                                            <span class="status-chip awaiting-chip" style="background:#fef9c3; color:#b45309; border:1px solid #fde68a; padding:2px 6px; font-size:9px; font-weight:700; flex:0 0 auto; margin:0!important;" title="Awaiting Manager Verification">
+                                                <i class="fa-solid fa-triangle-exclamation"></i> Awaiting Verification
+                                            </span>
+                                        `
+                                    ) : ''}
                                 </div>
                                 <small style="display: block; color: #3b68b7; font-weight: 600; margin-top: 2px; font-size: 11px;">
                                     <i class="fa-solid fa-folder-open" style="margin-right: 3px;"></i>${t.project_name || 'No project'}

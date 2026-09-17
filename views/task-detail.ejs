@@ -37,6 +37,45 @@
                     </button>
                 </form>
             <% } %>
+
+            <% 
+                const isCreator = Number(task.created_by) === Number(user.id);
+                const assignedUserIdsList = String(task.assigned_to || '').split(',').map(x => Number(x.trim())).filter(Boolean);
+                const isAssignedToMe = assignedUserIdsList.includes(Number(user.id));
+                const isAdmin = user.role === 'admin';
+                const projManagerIds = String(task.manager_id || '').split(',').map(x => Number(x.trim()));
+                const isProjManager = projManagerIds.includes(Number(user.id));
+                const isManagerReviewer = (user.role === 'manager' || isProjManager) && !isAssignedToMe;
+                const canVerify = isAdmin || isCreator || isManagerReviewer;
+            %>
+
+            <% if (task.status === 'Completed' || task.status === '2') { %>
+                <% if (task.is_verified) { %>
+                    <span class="task-action-pill" style="background:#dcfce7; color:#15803d; border-color:#bbf7d0; font-weight:700; cursor:default;" title="Verified by <%= task.verifier_name || 'Manager' %> <% if (task.verified_at) { %>on <%= formatDateTime(task.verified_at) %><% } %>">
+                        <i class="fa-solid fa-certificate"></i> Verified by <%= task.verifier_name || 'Manager' %>
+                    </span>
+                    <% if (canVerify) { %>
+                        <form action="/tasks/<%= task.id %>/verify" method="post" style="margin:0; display:inline-flex;">
+                            <input type="hidden" name="action" value="unverify">
+                            <button type="submit" class="task-action-pill" style="background:#f1f5f9; color:#475569; border-color:#cbd5e1; cursor:pointer;" title="Unverify task">
+                                <i class="fa-solid fa-rotate-left"></i> Unverify
+                            </button>
+                        </form>
+                    <% } %>
+                <% } else { %>
+                    <span class="task-action-pill" style="background:#fef9c3; color:#b45309; border-color:#fde68a; font-weight:700; cursor:default;" title="Waiting for <%= task.creator_name || 'Manager' %> verification">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Awaiting Verification
+                    </span>
+                    <% if (canVerify) { %>
+                        <form action="/tasks/<%= task.id %>/verify" method="post" style="margin:0; display:inline-flex;">
+                            <input type="hidden" name="action" value="verify">
+                            <button type="submit" class="task-action-pill" style="background:#16a34a; color:#ffffff; border-color:#15803d; font-weight:700; cursor:pointer;" title="Mark task as verified">
+                                <i class="fa-solid fa-user-check"></i> Mark as Verified
+                            </button>
+                        </form>
+                    <% } %>
+                <% } %>
+            <% } %>
         </div>
     </div>
 

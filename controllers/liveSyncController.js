@@ -49,6 +49,8 @@ exports.checkUpdates = async (req, res) => {
                 is_overdue: t.is_overdue,
                 is_routine: t.is_routine,
                 is_forwarded: t.is_forwarded,
+                is_verified: t.is_verified || 0,
+                verifier_name: t.verifier_name || '',
                 isPureSelf,
                 isAssignedByMe,
                 isAssignedToMe,
