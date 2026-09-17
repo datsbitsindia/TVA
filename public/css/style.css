@@ -198,7 +198,7 @@ body::after {
 .brand {
     color: #0f172a !important;
     font-weight: 800 !important;
-    padding: 10px 4px 14px 4px !important;
+    padding: 14px 10px 18px 10px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -208,15 +208,16 @@ body::after {
 }
 
 .brand-logo {
-    width: auto !important;
-    max-width: 200px !important;
-    height: 75px !important;
-    max-height: 85px !important;
+    width: 100% !important;
+    max-width: 220px !important;
+    height: auto !important;
+    max-height: 110px !important;
     object-fit: contain !important;
     display: block !important;
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.06)) !important;
 }
 
 .sidebar nav a {
