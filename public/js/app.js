@@ -927,13 +927,8 @@ document.addEventListener('submit', async function(e) {
 
             // ─── Removed old isInitialSync block from here (moved to top) ───
 
-            // 4. Process New Notifications (Show Toast Alert)
+            // 4. Process New Notifications (Update Badge Quietly without floating popups)
             if (data.newNotifications && data.newNotifications.length > 0) {
-                data.newNotifications.forEach(notif => {
-                    if (window.showToast) {
-                        window.showToast(`🔔 ${notif.message}`, 'info', 6000);
-                    }
-                });
                 lastNotifId = data.maxNotifId;
             }
 
@@ -1111,19 +1106,39 @@ window.showToast = function(titleOrMessage, subtitleOrType, duration = 3500) {
     let title = 'Update successful';
     let subtitle = titleOrMessage || '';
     let icon = 'fa-circle-check';
+    let type = 'success';
 
-    if (typeof subtitleOrType === 'string' && subtitleOrType !== 'info' && subtitleOrType !== 'success' && subtitleOrType !== 'error') {
-        subtitle = subtitleOrType;
-        title = titleOrMessage;
+    if (typeof subtitleOrType === 'string') {
+        if (['success', 'info', 'warning', 'error'].includes(subtitleOrType)) {
+            type = subtitleOrType;
+            subtitle = titleOrMessage || '';
+            if (type === 'info' || type === 'warning') {
+                title = 'Task Alert';
+                icon = 'fa-bell';
+            } else if (type === 'error') {
+                title = 'Error';
+                icon = 'fa-circle-xmark';
+            } else {
+                title = 'Update successful';
+                icon = 'fa-circle-check';
+            }
+        } else {
+            title = titleOrMessage;
+            subtitle = subtitleOrType;
+        }
     } else if (titleOrMessage) {
         subtitle = titleOrMessage;
     }
 
-    if (subtitleOrType === 'error') {
+    if (type === 'error') {
         icon = 'fa-circle-xmark';
         toast.style.borderColor = '#fca5a5';
         toast.style.background = '#fef2f2';
         toast.style.color = '#991b1b';
+    } else if (type === 'info' || type === 'warning') {
+        toast.style.borderColor = '#bae6fd';
+        toast.style.background = '#f0f9ff';
+        toast.style.color = '#0369a1';
     }
 
     toast.innerHTML = `

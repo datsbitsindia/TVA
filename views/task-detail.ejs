@@ -369,7 +369,8 @@ window.addEventListener('DOMContentLoaded', () => {
                     }
 
                     if (window.showToast) {
-                        window.showToast('Update successful', 'Task status has been updated.', 3500);
+                        const updatedStatusStr = data.myStatus || data.overallStatus || 'updated';
+                        window.showToast('Update successful', `Task status updated to "${updatedStatusStr}".`, 3500);
                     }
                 } else {
                     btn.disabled = false;
