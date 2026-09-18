@@ -47,7 +47,7 @@ exports.detail = async (req, res) => {
 exports.create = async (req, res) => {
     try {
         const userId = req.session.user.id;
-        const result = await db.prepare("INSERT INTO notes(user_id, title, details, created_at, updated_at) VALUES(?, 'Untitled Note', '', DATE_ADD(UTC_TIMESTAMP(), INTERVAL 330 MINUTE), DATE_ADD(UTC_TIMESTAMP(), INTERVAL 330 MINUTE))").run(userId);
+        const result = await db.prepare("INSERT INTO notes(user_id, title, details, created_at, updated_at) VALUES(?, '', '', DATE_ADD(UTC_TIMESTAMP(), INTERVAL 330 MINUTE), DATE_ADD(UTC_TIMESTAMP(), INTERVAL 330 MINUTE))").run(userId);
         res.redirect(`/notes/${result.lastInsertRowid}`);
     } catch (err) {
         console.error('Error creating note:', err);

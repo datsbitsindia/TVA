@@ -183,7 +183,7 @@ html body .note-title-field:focus,
             type="text" 
             id="note-title-input" 
             class="note-title-field" 
-            value="<%= note.title || '' %>" 
+            value="<%= (note.title && note.title !== 'Untitled Note') ? note.title : '' %>" 
             placeholder="Enter Note Title..."
             autocomplete="off"
         >
