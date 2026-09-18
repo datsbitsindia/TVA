@@ -183,7 +183,7 @@ html body .note-title-field:focus,
             type="text" 
             id="note-title-input" 
             class="note-title-field" 
-            value="<%= (note.title && note.title !== 'Untitled Note') ? note.title : '' %>" 
+            value="<%= (note.title && note.title.trim().toLowerCase() !== 'untitled note') ? note.title : '' %>" 
             placeholder="Enter Note Title..."
             autocomplete="off"
         >
@@ -199,6 +199,9 @@ html body .note-title-field:focus,
 (function() {
     const noteId = <%= note.id %>;
     const titleInput = document.getElementById('note-title-input');
+    if (titleInput && titleInput.value.trim().toLowerCase() === 'untitled note') {
+        titleInput.value = '';
+    }
     const detailsInput = document.getElementById('note-details-input');
     const statusIndicator = document.getElementById('save-status-indicator');
 

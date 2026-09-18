@@ -34,6 +34,10 @@ exports.detail = async (req, res) => {
             return res.redirect('/notes');
         }
 
+        if (note.title && note.title.trim().toLowerCase() === 'untitled note') {
+            note.title = '';
+        }
+
         res.render('note-detail', {
             note,
             page: 'notes'
