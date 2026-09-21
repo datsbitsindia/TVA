@@ -92,14 +92,22 @@ const getTasksWithPaginationAndCounts = async (req) => {
         baseParams.push(u.id, u.id, u.id, u.id, u.id);
     }
 
+    const taskStatusSql = `COALESCE(
+        (SELECT name FROM statuses WHERE id = ta_sub.status_id LIMIT 1),
+        (SELECT name FROM statuses WHERE normalized_name = LOWER(CAST(ta_sub.status AS CHAR)) COLLATE utf8mb4_unicode_ci LIMIT 1),
+        (SELECT name FROM statuses WHERE id = t.status_id LIMIT 1),
+        (SELECT name FROM statuses WHERE normalized_name = LOWER(CAST(t.status AS CHAR)) COLLATE utf8mb4_unicode_ci LIMIT 1),
+        CAST(t.status AS CHAR) COLLATE utf8mb4_unicode_ci, 'Pending'
+    )`;
+
     // 1. Calculate overall top KPI counts directly from database
     const kpiCountSql = `
         SELECT 
             COUNT(DISTINCT t.id) AS total,
-            SUM(CASE WHEN LOWER(COALESCE(ta_sub.status, t.status, '')) IN ('completed', '2') THEN 1 ELSE 0 END) AS completed,
-            SUM(CASE WHEN LOWER(COALESCE(ta_sub.status, t.status, '')) IN ('pending', 'planned', '0', '4') THEN 1 ELSE 0 END) AS pending,
-            SUM(CASE WHEN LOWER(COALESCE(ta_sub.status, t.status, '')) IN ('in progress', '1') THEN 1 ELSE 0 END) AS progress,
-            SUM(CASE WHEN t.due_date < CURDATE() AND LOWER(COALESCE(ta_sub.status, t.status, '')) NOT IN ('completed', 'cancelled', '2', '3') THEN 1 ELSE 0 END) AS overdueCount
+            COUNT(DISTINCT CASE WHEN LOWER(${taskStatusSql}) IN ('completed', '2') THEN t.id END) AS completed,
+            COUNT(DISTINCT CASE WHEN LOWER(${taskStatusSql}) IN ('pending', 'planned', '0', '4') THEN t.id END) AS pending,
+            COUNT(DISTINCT CASE WHEN LOWER(${taskStatusSql}) IN ('in progress', '1') THEN t.id END) AS progress,
+            COUNT(DISTINCT CASE WHEN t.due_date < CURDATE() AND LOWER(${taskStatusSql}) NOT IN ('completed', 'cancelled', '2', '3') THEN t.id END) AS overdueCount
         FROM tasks t
         LEFT JOIN task_assignees ta_sub ON ta_sub.task_id = t.id AND ta_sub.user_id = ?
         WHERE ${baseFilter}
@@ -125,15 +133,15 @@ const getTasksWithPaginationAndCounts = async (req) => {
     if (req.query.status) {
         const val = req.query.status.trim().toLowerCase();
         if (val === 'pending') {
-            filters.push("LOWER(COALESCE(ta_sub.status, t.status)) IN ('pending', 'planned', '0', '4')");
+            filters.push(`LOWER(${taskStatusSql}) IN ('pending', 'planned', '0', '4')`);
         } else if (val === 'in progress' || val === 'in-progress') {
-            filters.push("LOWER(COALESCE(ta_sub.status, t.status)) IN ('in progress', '1')");
+            filters.push(`LOWER(${taskStatusSql}) IN ('in progress', '1')`);
         } else if (val === 'completed') {
-            filters.push("LOWER(COALESCE(ta_sub.status, t.status)) IN ('completed', '2')");
+            filters.push(`LOWER(${taskStatusSql}) IN ('completed', '2')`);
         } else if (val === 'overdue') {
-            filters.push("t.due_date < CURDATE() AND LOWER(COALESCE(ta_sub.status, t.status)) NOT IN ('completed', 'cancelled', '2', '3')");
+            filters.push(`(t.due_date < CURDATE() AND LOWER(${taskStatusSql}) NOT IN ('completed', 'cancelled', '2', '3'))`);
         } else if (val !== 'all' && val !== '') {
-            filters.push("LOWER(t.status) = ?");
+            filters.push(`LOWER(${taskStatusSql}) = ?`);
             queryParams.push(val);
         }
     }

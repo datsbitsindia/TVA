@@ -488,10 +488,30 @@ window.filterTaskType = function(type, btn) {
     fetchNextTaskBatch(true);
 };
 
-// Override / hook filter functions
-const originalFilterByKpi = window.filterByKpi;
 window.filterByKpi = function(filterVal, event) {
-    if (originalFilterByKpi) originalFilterByKpi(filterVal, event);
+    const valStr = String(filterVal || '').toLowerCase().trim();
+    window.currentKpiFilter = valStr;
+
+    document.querySelectorAll('.metric-card').forEach(card => {
+        card.classList.remove('active-kpi-filter');
+    });
+
+    let targetCard = null;
+    if (event && event.currentTarget) {
+        targetCard = event.currentTarget.closest('.metric-card');
+    }
+    if (!targetCard) {
+        document.querySelectorAll('.metric-card').forEach(card => {
+            const onclickAttr = (card.getAttribute('onclick') || '').toLowerCase();
+            if (onclickAttr.includes(`'${valStr}'`) || onclickAttr.includes(`"${valStr}"`)) {
+                targetCard = card;
+            }
+        });
+    }
+    if (targetCard) {
+        targetCard.classList.add('active-kpi-filter');
+    }
+
     fetchNextTaskBatch(true);
 };
 
