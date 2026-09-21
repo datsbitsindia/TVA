@@ -4,9 +4,9 @@
         <h2 style="margin:0; font-size:16px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
             <i class="fa-solid fa-bell" style="color:#3b68b7;"></i> Notifications
         </h2>
-        <% const unreadCount = notes.filter(n => !n.is_read).length; %>
-        <% if (unreadCount > 0) { %>
-            <span style="background:#dc2626; color:#fff; font-size:11px; font-weight:800; padding:2px 8px; border-radius:99px;"><%= unreadCount %> unread</span>
+        <% const unread = typeof unreadCount !== 'undefined' ? unreadCount : notes.filter(n => !n.is_read).length; %>
+        <% if (unread > 0) { %>
+            <span style="background:#dc2626; color:#fff; font-size:11px; font-weight:800; padding:2px 8px; border-radius:99px;"><%= unread %> unread</span>
         <% } %>
     </div>
 
@@ -17,60 +17,149 @@
         </p>
     <% } %>
 
-    <% notes.forEach(n => { %>
-        <a href="/notifications/<%= n.id %>/open" style="
-            display:flex;
-            align-items:center;
-            gap:10px;
-            padding:12px 10px;
-            border-bottom:1px solid #f1f5f9;
-            text-decoration:none;
-            color:inherit;
-            background: <%= !n.is_read ? '#eff6ff' : '#ffffff' %>;
-            transition: background 0.15s ease;
-            position: relative;
-        ">
-            <!-- Unread Red Dot -->
-            <% if (!n.is_read) { %>
-                <span style="
-                    position:absolute;
-                    left:3px;
-                    top:50%;
-                    transform:translateY(-50%);
-                    width:6px;
-                    height:6px;
-                    background:#dc2626;
-                    border-radius:50%;
-                    flex-shrink:0;
-                "></span>
-            <% } %>
-
-            <!-- Bell Icon -->
-            <div style="
-                width:34px; height:34px; flex-shrink:0;
-                border-radius:50%;
-                background: <%= !n.is_read ? '#dbeafe' : '#f1f5f9' %>;
-                display:flex; align-items:center; justify-content:center;
-                margin-left: <%= !n.is_read ? '6px' : '0px' %>;
+    <div id="notif-items-container">
+        <% notes.forEach(n => { %>
+            <a href="/notifications/<%= n.id %>/open" style="
+                display:flex;
+                align-items:center;
+                gap:10px;
+                padding:12px 10px;
+                border-bottom:1px solid #f1f5f9;
+                text-decoration:none;
+                color:inherit;
+                background: <%= !n.is_read ? '#eff6ff' : '#ffffff' %>;
+                transition: background 0.15s ease;
+                position: relative;
             ">
-                <i class="fa-solid fa-bell" style="font-size:13px; color:<%= !n.is_read ? '#2563eb' : '#94a3b8' %>;"></i>
-            </div>
+                <!-- Unread Red Dot -->
+                <% if (!n.is_read) { %>
+                    <span style="
+                        position:absolute;
+                        left:3px;
+                        top:50%;
+                        transform:translateY(-50%);
+                        width:6px;
+                        height:6px;
+                        background:#dc2626;
+                        border-radius:50%;
+                        flex-shrink:0;
+                    "></span>
+                <% } %>
 
-            <!-- Message -->
-            <div style="flex:1; min-width:0;">
-                <b style="display:block; font-size:13px; font-weight:<%= !n.is_read ? '700' : '600' %>; color:<%= !n.is_read ? '#0f172a' : '#475569' %>; line-height:1.35;">
-                    <%= n.message %>
-                </b>
-                <small style="display:block; margin-top:2px; font-size:11px; color:#94a3b8;">
-                    <i class="fa-regular fa-clock"></i> <%= formatDateTime(n.created_at) %>
-                </small>
-            </div>
+                <!-- Bell Icon -->
+                <div style="
+                    width:34px; height:34px; flex-shrink:0;
+                    border-radius:50%;
+                    background: <%= !n.is_read ? '#dbeafe' : '#f1f5f9' %>;
+                    display:flex; align-items:center; justify-content:center;
+                    margin-left: <%= !n.is_read ? '6px' : '0px' %>;
+                ">
+                    <i class="fa-solid fa-bell" style="font-size:13px; color:<%= !n.is_read ? '#2563eb' : '#94a3b8' %>;"></i>
+                </div>
 
-            <!-- Unread label chip -->
-            <% if (!n.is_read) { %>
-                <span style="flex-shrink:0; font-size:9px; font-weight:800; background:#dbeafe; color:#1d4ed8; padding:2px 6px; border-radius:99px; border:1px solid #bfdbfe;">NEW</span>
-            <% } %>
-        </a>
-    <% }) %>
+                <!-- Message -->
+                <div style="flex:1; min-width:0;">
+                    <b style="display:block; font-size:13px; font-weight:<%= !n.is_read ? '700' : '600' %>; color:<%= !n.is_read ? '#0f172a' : '#475569' %>; line-height:1.35;">
+                        <%= n.message %>
+                    </b>
+                    <small style="display:block; margin-top:2px; font-size:11px; color:#94a3b8;">
+                        <i class="fa-regular fa-clock"></i> <%= formatDateTime(n.created_at) %>
+                    </small>
+                </div>
+
+                <!-- Unread label chip -->
+                <% if (!n.is_read) { %>
+                    <span style="flex-shrink:0; font-size:9px; font-weight:800; background:#dbeafe; color:#1d4ed8; padding:2px 6px; border-radius:99px; border:1px solid #bfdbfe;">NEW</span>
+                <% } %>
+            </a>
+        <% }) %>
+    </div>
+
+    <div id="notif-infinite-spinner" style="text-align:center; padding:16px 0; display:none; color:#3b68b7; font-weight:600; font-size:13px;">
+        <i class="fa-solid fa-spinner fa-spin" style="margin-right:6px;"></i> Loading more notifications...
+    </div>
 </section>
+
+<script>
+let notifPage = 1;
+let isLoadingNotif = false;
+let hasMoreNotif = <%= typeof hasMore !== 'undefined' && hasMore ? 'true' : 'false' %>;
+
+function formatDateTimeStr(dStr) {
+    if (!dStr) return '';
+    const d = new Date(dStr);
+    if (isNaN(d.getTime())) return dStr;
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function createNotificationNode(n) {
+    const a = document.createElement('a');
+    a.href = `/notifications/${n.id}/open`;
+    a.style.cssText = `
+        display:flex;
+        align-items:center;
+        gap:10px;
+        padding:12px 10px;
+        border-bottom:1px solid #f1f5f9;
+        text-decoration:none;
+        color:inherit;
+        background:${!n.is_read ? '#eff6ff' : '#ffffff'};
+        transition: background 0.15s ease;
+        position: relative;
+    `;
+
+    a.innerHTML = `
+        ${!n.is_read ? '<span style="position:absolute; left:3px; top:50%; transform:translateY(-50%); width:6px; height:6px; background:#dc2626; border-radius:50%; flex-shrink:0;"></span>' : ''}
+        <div style="width:34px; height:34px; flex-shrink:0; border-radius:50%; background:${!n.is_read ? '#dbeafe' : '#f1f5f9'}; display:flex; align-items:center; justify-content:center; margin-left:${!n.is_read ? '6px' : '0px'};">
+            <i class="fa-solid fa-bell" style="font-size:13px; color:${!n.is_read ? '#2563eb' : '#94a3b8'};"></i>
+        </div>
+        <div style="flex:1; min-width:0;">
+            <b style="display:block; font-size:13px; font-weight:${!n.is_read ? '700' : '600'}; color:${!n.is_read ? '#0f172a' : '#475569'}; line-height:1.35;">
+                ${n.message}
+            </b>
+            <small style="display:block; margin-top:2px; font-size:11px; color:#94a3b8;">
+                <i class="fa-regular fa-clock"></i> ${formatDateTimeStr(n.created_at)}
+            </small>
+        </div>
+        ${!n.is_read ? '<span style="flex-shrink:0; font-size:9px; font-weight:800; background:#dbeafe; color:#1d4ed8; padding:2px 6px; border-radius:99px; border:1px solid #bfdbfe;">NEW</span>' : ''}
+    `;
+    return a;
+}
+
+async function fetchNextNotifications() {
+    if (isLoadingNotif || !hasMoreNotif) return;
+    isLoadingNotif = true;
+    const spinner = document.getElementById('notif-infinite-spinner');
+    if (spinner) spinner.style.display = 'block';
+
+    notifPage++;
+    try {
+        const res = await fetch(`/api/notifications/list?page=${notifPage}&limit=50`);
+        const data = await res.json();
+        if (data.success) {
+            const container = document.getElementById('notif-items-container');
+            if (container && data.notes && data.notes.length > 0) {
+                data.notes.forEach(n => {
+                    container.appendChild(createNotificationNode(n));
+                });
+            }
+            hasMoreNotif = data.pagination ? data.pagination.hasMore : false;
+        }
+    } catch (err) {
+        console.error('Error fetching notifications batch:', err);
+    } finally {
+        isLoadingNotif = false;
+        if (spinner) spinner.style.display = 'none';
+    }
+}
+
+window.addEventListener('scroll', function() {
+    if (isLoadingNotif || !hasMoreNotif) return;
+    const scrollPos = window.innerHeight + window.scrollY;
+    const threshold = document.documentElement.scrollHeight - 300;
+    if (scrollPos >= threshold) {
+        fetchNextNotifications();
+    }
+});
+</script>
 <%- include('partials/foot') %>

@@ -61,51 +61,6 @@ const canView = async (u, t) => {
     return false;
 };
 
-exports.list = async (req, res) => {
-    const u = req.session.user;
-    const orgId = u.organization_id || 1;
-    
-    // Auto sync daily routine tasks for today
-    routineService.syncDailyRoutines().catch(e => console.error('syncDailyRoutines bg error:', e));
-
-    let baseFilter = 't.organization_id=?';
-    let params = [u.id, orgId];
-
-    if (u.role === 'employee' || u.role === 'manager') {
-        baseFilter += ' AND (t.created_by=? OR FIND_IN_SET(?, t.assigned_to) > 0 OR t.id IN (SELECT task_id FROM task_assignees WHERE user_id=?) OR t.id IN (SELECT task_id FROM task_forward_logs WHERE from_user_id=? OR to_user_id=?))';
-        params.push(u.id, u.id, u.id, u.id, u.id);
-    }
-
-    const filters = [baseFilter];
-
-    if (req.query.forwarded === '1') {
-        filters.push('t.is_forwarded=1');
-    }
-
-    for (const [field, key] of [
-        ['status', 'status'],
-        ['priority', 'priority'],
-        ['assigned_to', 'employee']
-    ]) {
-        if (req.query[key]) {
-            const val = req.query[key].trim();
-            if (field === 'status' && val.toLowerCase() === 'pending') {
-                filters.push("LOWER(COALESCE(ta_sub.status, t.status)) IN ('pending', 'planned')");
-            } else if (field === 'assigned_to') {
-                filters.push("FIND_IN_SET(?, t.assigned_to) > 0");
-                params.push(val.toLowerCase());
-            } else {
-                filters.push(`LOWER(t.${field})=?`);
-                params.push(val.toLowerCase());
-            }
-        }
-    }
-
-    if (req.query.q) {
-        filters.push('(t.title LIKE ? OR t.description LIKE ?)');
-        params.push(`%${req.query.q}%`, `%${req.query.q}%`);
-    }
-
 const statusRank = (statusStr) => {
     const s = String(statusStr || '').toLowerCase().trim();
     if (s === 'planned' || s === '4') return 1;
@@ -125,7 +80,116 @@ const priorityRank = (priorityStr) => {
     return 5;
 };
 
-    const tasks = await db.prepare(baseQuery + " WHERE " + filters.join(' AND ') + " ORDER BY t.created_at DESC").all(...params);
+const getTasksWithPaginationAndCounts = async (req) => {
+    const u = req.session.user;
+    const orgId = u.organization_id || 1;
+
+    let baseFilter = 't.organization_id=?';
+    let baseParams = [orgId];
+
+    if (u.role === 'employee' || u.role === 'manager') {
+        baseFilter += ' AND (t.created_by=? OR FIND_IN_SET(?, t.assigned_to) > 0 OR t.id IN (SELECT task_id FROM task_assignees WHERE user_id=?) OR t.id IN (SELECT task_id FROM task_forward_logs WHERE from_user_id=? OR to_user_id=?))';
+        baseParams.push(u.id, u.id, u.id, u.id, u.id);
+    }
+
+    // 1. Calculate overall top KPI counts directly from database
+    const kpiCountSql = `
+        SELECT 
+            COUNT(DISTINCT t.id) AS total,
+            SUM(CASE WHEN LOWER(COALESCE(ta_sub.status, t.status, '')) IN ('completed', '2') THEN 1 ELSE 0 END) AS completed,
+            SUM(CASE WHEN LOWER(COALESCE(ta_sub.status, t.status, '')) IN ('pending', 'planned', '0', '4') THEN 1 ELSE 0 END) AS pending,
+            SUM(CASE WHEN LOWER(COALESCE(ta_sub.status, t.status, '')) IN ('in progress', '1') THEN 1 ELSE 0 END) AS progress,
+            SUM(CASE WHEN t.due_date < CURDATE() AND LOWER(COALESCE(ta_sub.status, t.status, '')) NOT IN ('completed', 'cancelled', '2', '3') THEN 1 ELSE 0 END) AS overdueCount
+        FROM tasks t
+        LEFT JOIN task_assignees ta_sub ON ta_sub.task_id = t.id AND ta_sub.user_id = ?
+        WHERE ${baseFilter}
+    `;
+    const kpiRow = (await db.prepare(kpiCountSql).get(u.id, ...baseParams)) || {};
+    const kpiCounts = {
+        total: Number(kpiRow.total || 0),
+        completed: Number(kpiRow.completed || 0),
+        pending: Number(kpiRow.pending || 0),
+        progress: Number(kpiRow.progress || 0),
+        overdueCount: Number(kpiRow.overdueCount || 0)
+    };
+
+    // 2. Build task list filters
+    const filters = [baseFilter];
+    const queryParams = [u.id, ...baseParams];
+
+    if (req.query.forwarded === '1') {
+        filters.push('t.is_forwarded=1');
+    }
+
+    // Filter by KPI status
+    if (req.query.status) {
+        const val = req.query.status.trim().toLowerCase();
+        if (val === 'pending') {
+            filters.push("LOWER(COALESCE(ta_sub.status, t.status)) IN ('pending', 'planned', '0', '4')");
+        } else if (val === 'in progress' || val === 'in-progress') {
+            filters.push("LOWER(COALESCE(ta_sub.status, t.status)) IN ('in progress', '1')");
+        } else if (val === 'completed') {
+            filters.push("LOWER(COALESCE(ta_sub.status, t.status)) IN ('completed', '2')");
+        } else if (val === 'overdue') {
+            filters.push("t.due_date < CURDATE() AND LOWER(COALESCE(ta_sub.status, t.status)) NOT IN ('completed', 'cancelled', '2', '3')");
+        } else if (val !== 'all' && val !== '') {
+            filters.push("LOWER(t.status) = ?");
+            queryParams.push(val);
+        }
+    }
+
+    if (req.query.priority) {
+        filters.push("LOWER(t.priority) = ?");
+        queryParams.push(req.query.priority.trim().toLowerCase());
+    }
+
+    if (req.query.employee) {
+        filters.push("FIND_IN_SET(?, t.assigned_to) > 0");
+        queryParams.push(req.query.employee.trim().toLowerCase());
+    }
+
+    if (req.query.project && req.query.project.toLowerCase() !== 'all projects' && req.query.project.toLowerCase() !== 'all') {
+        filters.push("(LOWER(p.name) = ? OR CAST(t.project_id AS CHAR) = ?)");
+        const projVal = req.query.project.trim().toLowerCase();
+        queryParams.push(projVal, projVal);
+    }
+
+    if (req.query.task_tab) {
+        const tab = req.query.task_tab.trim().toLowerCase();
+        if (tab === 'assigned-to-me') {
+            filters.push("(FIND_IN_SET(?, t.assigned_to) > 0 OR t.id IN (SELECT task_id FROM task_assignees WHERE user_id=?))");
+            queryParams.push(u.id, u.id);
+        } else if (tab === 'assigned-by-me') {
+            filters.push("(t.created_by = ? AND (NOT FIND_IN_SET(?, t.assigned_to) > 0 OR (LENGTH(t.assigned_to) - LENGTH(REPLACE(t.assigned_to, ',', '')) + 1) > 1))");
+            queryParams.push(u.id, u.id);
+        }
+    }
+
+    if (req.query.q) {
+        filters.push('(t.title LIKE ? OR t.description LIKE ? OR CAST(t.id AS CHAR) LIKE ? OR CAST(t.task_number AS CHAR) LIKE ?)');
+        const qVal = `%${req.query.q.trim()}%`;
+        queryParams.push(qVal, qVal, qVal, qVal);
+    }
+
+    // Filtered Total Count for Pagination
+    const totalFilteredRow = (await db.prepare(`
+        SELECT COUNT(DISTINCT t.id) AS count
+        FROM tasks t
+        LEFT JOIN task_assignees ta_sub ON ta_sub.task_id = t.id AND ta_sub.user_id = ?
+        LEFT JOIN projects p ON p.id = t.project_id
+        WHERE ` + filters.join(' AND ')
+    ).get(...queryParams)) || {};
+
+    const totalFiltered = Number(totalFilteredRow.count || 0);
+
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.max(1, parseInt(req.query.limit) || 20);
+    const offset = (page - 1) * limit;
+
+    const sql = baseQuery + " WHERE " + filters.join(' AND ') + " ORDER BY t.created_at DESC LIMIT " + limit + " OFFSET " + offset;
+    const tasks = await db.prepare(sql).all(...queryParams);
+
+    // Apply exact ordering logic expected
     tasks.sort((a, b) => {
         const sA = String(a.status || a.user_status || '').toLowerCase().trim();
         const sB = String(b.status || b.user_status || '').toLowerCase().trim();
@@ -145,6 +209,45 @@ const priorityRank = (priorityStr) => {
 
         return new Date(b.created_at || 0) - new Date(a.created_at || 0);
     });
+
+    const hasMore = (page * limit) < totalFiltered;
+
+    return {
+        tasks,
+        kpiCounts,
+        pagination: {
+            page,
+            limit,
+            totalFiltered,
+            hasMore
+        }
+    };
+};
+
+exports.listApi = async (req, res) => {
+    try {
+        const data = await getTasksWithPaginationAndCounts(req);
+        res.json({
+            success: true,
+            tasks: data.tasks,
+            kpiCounts: data.kpiCounts,
+            pagination: data.pagination
+        });
+    } catch (err) {
+        console.error('listApi error:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+};
+
+exports.list = async (req, res) => {
+    const u = req.session.user;
+    const orgId = u.organization_id || 1;
+    
+    // Auto sync daily routine tasks for today
+    routineService.syncDailyRoutines().catch(e => console.error('syncDailyRoutines bg error:', e));
+
+    const { tasks, kpiCounts, pagination } = await getTasksWithPaginationAndCounts(req);
+
     const employees = await db.prepare("SELECT id,name,designation FROM users WHERE role='employee' AND active=1 AND (organization_id=? OR id IN (SELECT user_id FROM user_organizations WHERE organization_id=?)) ORDER BY name").all(orgId, orgId);
     const managers = await db.prepare("SELECT id,name,designation FROM users WHERE role='manager' AND active=1 AND (organization_id=? OR id IN (SELECT user_id FROM user_organizations WHERE organization_id=?)) ORDER BY name").all(orgId, orgId);
 
@@ -165,6 +268,8 @@ const priorityRank = (priorityStr) => {
 
     res.render('tasks', {
         tasks,
+        kpiCounts,
+        pagination,
         employees,
         managers,
         reportingUsers,
