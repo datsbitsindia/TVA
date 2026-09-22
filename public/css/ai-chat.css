@@ -261,9 +261,9 @@
 
 /* AI Chat Drawer Dark Mode */
 html.dark-theme .ai-chat-drawer {
-    background: linear-gradient(160deg, rgba(12, 18, 36, 0.96) 0%, rgba(8, 12, 26, 0.98) 100%) !important;
-    border: 1px solid rgba(82, 120, 220, 0.25) !important;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(59, 104, 183, 0.2) !important;
+    background: #0D0D0D !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8) !important;
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;
 }
@@ -275,51 +275,51 @@ html.dark-theme .ai-chat-body {
 html.dark-theme .ai-msg.bot,
 html.dark-theme .ai-msg.assistant,
 html.dark-theme .ai-msg:not(.user) {
-    background: linear-gradient(135deg, rgba(26, 38, 66, 0.95) 0%, rgba(18, 26, 48, 0.90) 100%) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
     color: #ffffff !important;
-    border: 1px solid rgba(82, 120, 220, 0.28) !important;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
 }
 
 html.dark-theme .ai-msg.user {
-    background: linear-gradient(135deg, #3b68b7 0%, #1d4ed8 100%) !important;
+    background: rgba(255, 255, 255, 0.12) !important;
     color: #ffffff !important;
-    border: 1px solid rgba(147, 197, 253, 0.3) !important;
-    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
 }
 
 html.dark-theme .ai-chat-footer {
-    background: rgba(10, 16, 32, 0.95) !important;
-    border-top: 1px solid rgba(82, 120, 220, 0.2) !important;
+    background: #0D0D0D !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
 html.dark-theme .ai-chat-input {
-    background: rgba(22, 32, 58, 0.85) !important;
-    border: 1px solid rgba(82, 120, 220, 0.3) !important;
-    color: #f8fafc !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    color: #ffffff !important;
 }
 
 html.dark-theme .ai-chat-input::placeholder {
-    color: #94a3b8 !important;
+    color: #aaaaaa !important;
     opacity: 1 !important;
 }
 
 html.dark-theme .ai-mic-btn {
-    background: rgba(22, 32, 58, 0.85) !important;
-    border: 1px solid rgba(82, 120, 220, 0.3) !important;
-    color: #cbd5e1 !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    color: #cccccc !important;
 }
 
 html.dark-theme .ai-mic-btn:hover {
-    background: rgba(40, 60, 100, 0.9) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
     color: #ffffff !important;
 }
 
 html.dark-theme .ai-speak-btn {
-    color: #94a3b8 !important;
+    color: #aaaaaa !important;
 }
 
 html.dark-theme .ai-speak-btn:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-    color: #f1f5f9 !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
 }

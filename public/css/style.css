@@ -835,16 +835,16 @@ html.dark-theme .metric-card.red i {
 }
 html.dark-theme .metric-card.purple i {
     background: rgba(60, 20, 120, 0.5) !important;
-    color: #a78bfa !important;
+html.dark-theme .task-tab-btn.active {
+    background: rgba(255, 255, 255, 0.10) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #FFFFFF !important;
 }
 
-/* Stat icons */
-html.dark-theme .stat > i {
-    background: rgba(30, 60, 140, 0.4) !important;
-    color: #7aadff !important;
-}
-
-/* Alert colors */
+html.dark-theme .link-btn {
+    color: #ff8080 !important;
+    border: 1px solid rgba(239, 68, 68, 0.25) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05) !important;
 }
 
 html.dark-theme .logout-btn:hover {
@@ -866,154 +866,147 @@ html.dark-theme .files a, html.dark-theme .notification-list a,
 html.dark-theme .report-list div, html.dark-theme .project-report-list article,
 html.dark-theme .activity-row, html.dark-theme .details div,
 html.dark-theme .routine-card-meta, html.dark-theme .routine-card-actions {
-    border-color: rgba(82, 120, 220, 0.12) !important;
-    color: #c8d8f0 !important;
+    border-color: rgba(255, 255, 255, 0.06) !important;
+    color: #cccccc !important;
 }
 
 html.dark-theme th {
-    color: #5870a0 !important;
+    color: #aaaaaa !important;
     letter-spacing: 0.05em !important;
     font-weight: 700 !important;
 }
 
 html.dark-theme .details div {
-    background: rgba(10, 18, 45, 0.6) !important;
-    border: 1px solid rgba(82, 120, 220, 0.12) !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
 html.dark-theme .routine-card-meta {
-    background: rgba(6, 10, 28, 0.6) !important;
-    border-color: rgba(82, 120, 220, 0.10) !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-color: rgba(255, 255, 255, 0.06) !important;
 }
 
 /* ── Modals ──────────────────────────────── */
 html.dark-theme .modal {
-    background: rgba(0, 0, 0, 0.78) !important;
-    backdrop-filter: blur(8px) !important;
+    background: rgba(0, 0, 0, 0.85) !important;
+    backdrop-filter: blur(10px) !important;
 }
 
 html.dark-theme .modal-header-tabs {
-    border-bottom-color: rgba(82, 120, 220, 0.15) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.06) !important;
 }
 
 html.dark-theme .modal-tab {
-    background: rgba(12, 20, 48, 0.75) !important;
-    border-color: rgba(82, 120, 220, 0.15) !important;
-    color: #6880a8 !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(255, 255, 255, 0.06) !important;
+    color: #aaaaaa !important;
 }
 
 html.dark-theme .modal-tab.active {
-    background: linear-gradient(135deg, #3b7ef8 0%, #1d55d4 100%) !important;
+    background: rgba(255, 255, 255, 0.12) !important;
     color: #ffffff !important;
-    border-color: rgba(100, 160, 255, 0.4) !important;
-    box-shadow: 0 4px 14px rgba(37,99,235,0.4) !important;
+    border-color: rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
 }
 
 html.dark-theme .modal-close {
-    color: #6880a8 !important;
+    color: #aaaaaa !important;
 }
 
 html.dark-theme .modal-close:hover {
-    color: #e8eeff !important;
-    background: rgba(56, 100, 255, 0.15) !important;
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.08) !important;
 }
 
 /* ── CKEditor ───────────────────────────── */
 html.dark-theme .ck-toolbar {
-    background: rgba(8, 14, 34, 0.98) !important;
-    border-color: rgba(82, 120, 220, 0.15) !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(255, 255, 255, 0.06) !important;
 }
 
 html.dark-theme .ck-toolbar .ck-button {
-    color: #6880a8 !important;
+    color: #aaaaaa !important;
 }
 
 html.dark-theme .ck-toolbar .ck-button:hover,
 html.dark-theme .ck-toolbar .ck-button.ck-on {
-    color: #c0d8ff !important;
-    background: rgba(56, 100, 255, 0.15) !important;
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.08) !important;
 }
 
 html.dark-theme .ck-editor__editable_inline {
-    background: rgba(10, 16, 40, 0.90) !important;
-    color: #d8e8ff !important;
-    border-color: rgba(82, 120, 220, 0.18) !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.06) !important;
 }
 
 html.dark-theme .ck.ck-editor__main>.ck-editor__editable:not(.ck-focused) {
-    border-color: rgba(82, 120, 220, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.06) !important;
 }
 
 /* ── Toolbar & Filter Bar ─────────────────── */
 html.dark-theme .toolbar-ui {
-    background: linear-gradient(135deg, rgba(10, 16, 40, 0.88) 0%, rgba(14, 22, 50, 0.85) 100%) !important;
-    border-color: rgba(82, 120, 220, 0.14) !important;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.04) !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-color: rgba(255, 255, 255, 0.06) !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4) !important;
 }
 
 /* ── Entity Cards (Task Cards) ──────────────── */
 html.dark-theme .entity-card {
-    background: linear-gradient(145deg, rgba(16, 26, 58, 0.90) 0%, rgba(10, 16, 40, 0.88) 100%) !important;
-    border: 1.5px solid rgba(56, 100, 200, 0.20) !important;
-    box-shadow:
-        0 1px 0 rgba(255,255,255,0.05) inset,
-        0 4px 20px rgba(0,0,0,0.45),
-        0 1px 6px rgba(0,0,0,0.3) !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
 }
 
 html.dark-theme .entity-card:hover {
-    background: linear-gradient(145deg, rgba(20, 35, 75, 0.95) 0%, rgba(14, 22, 55, 0.92) 100%) !important;
-    border-color: rgba(70, 130, 255, 0.40) !important;
-    box-shadow:
-        0 1px 0 rgba(255,255,255,0.08) inset,
-        0 8px 32px rgba(0,0,0,0.55),
-        0 2px 10px rgba(37,99,235,0.15) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45) !important;
     transform: translateY(-1px) !important;
 }
 
 /* Status chips in dark mode */
 html.dark-theme .status-chip.completed {
-    background: rgba(20, 80, 40, 0.5) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
     color: #4ade80 !important;
-    border: 1px solid rgba(74, 222, 128, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 html.dark-theme .status-chip.overdue,
 html.dark-theme .status-chip.inactive {
-    background: rgba(90, 15, 15, 0.5) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
     color: #f87171 !important;
-    border: 1px solid rgba(248, 113, 113, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 html.dark-theme .status-chip.pending,
 html.dark-theme .status-chip.planned {
-    background: rgba(90, 60, 0, 0.5) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
     color: #fbbf24 !important;
-    border: 1px solid rgba(251, 191, 36, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 html.dark-theme .status-chip.in-progress,
 html.dark-theme .status-chip.active {
-    background: rgba(20, 50, 120, 0.5) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
     color: #60a5fa !important;
-    border: 1px solid rgba(96, 165, 250, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 /* Priority pills in dark mode */
 html.dark-theme .pill.low {
-    background: rgba(20, 50, 120, 0.45) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
     color: #60a5fa !important;
 }
 html.dark-theme .pill.medium {
-    background: rgba(90, 60, 0, 0.45) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
     color: #fbbf24 !important;
 }
 html.dark-theme .pill.high,
 html.dark-theme .pill.critical {
-    background: rgba(90, 15, 15, 0.45) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
     color: #f87171 !important;
 }
 
 /* Metric card icons in dark mode */
 html.dark-theme .metric-card i {
-    background: rgba(30, 60, 140, 0.4) !important;
     color: #7aadff !important;
 }
 html.dark-theme .metric-card.green i {
@@ -1067,18 +1060,18 @@ html.dark-theme ::-webkit-scrollbar-thumb:hover {
     background: rgba(56, 100, 200, 0.55);
 }
 
-/* ── CRITICAL OVERRIDES: Force full dark background everywhere ── */
+/* ── CRITICAL OVERRIDES: Force full DeepSeek matte black background everywhere ── */
 html.dark-theme {
-    --bg: transparent;
-    --panel: rgba(16, 26, 58, 0.85);
-    --line: rgba(82, 120, 220, 0.15);
-    --text: #e8edf5;
-    --muted: #7c91b8;
-    background:
-        radial-gradient(ellipse 80% 60% at 10% 0%, rgba(56, 100, 255, 0.22) 0%, transparent 55%),
-        radial-gradient(ellipse 60% 50% at 90% 100%, rgba(124, 58, 237, 0.18) 0%, transparent 55%),
-        radial-gradient(ellipse 50% 40% at 50% 50%, rgba(14, 165, 233, 0.08) 0%, transparent 60%),
-        linear-gradient(160deg, #06080f 0%, #0a0f1e 35%, #080c1a 65%, #050810 100%) !important;
+    --bg: #0D0D0D;
+    --panel: rgba(255, 255, 255, 0.03);
+    --line: rgba(255, 255, 255, 0.06);
+    --text: #FFFFFF;
+    --muted: #AAAAAA;
+    background-color: #0D0D0D !important;
+    background: #0D0D0D !important;
+    background-image:
+        radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 80%, rgba(255, 255, 255, 0.02) 0%, transparent 60%) !important;
     min-height: 100vh !important;
     background-attachment: fixed !important;
 }
@@ -1091,25 +1084,27 @@ html.dark-theme body .content {
     background-image: none !important;
 }
 
-/* Status Chips, Priority Badges, Awaiting Verification Pill Dark Mode Overrides */
+/* Status Chips & Priority Badges in Dark Mode */
 html.dark-theme body .status-chip,
 html.dark-theme body .role-chip,
 html.dark-theme body .pill,
 html.dark-theme body .priority-pill,
 html.dark-theme body .status,
-html.dark-theme body .priority-tag-pill {
-    background: rgba(30, 58, 138, 0.5) !important;
-    color: #93c5fd !important;
-    border: 1px solid rgba(96, 165, 250, 0.4) !important;
-    font-weight: 800 !important;
+html.dark-theme body .priority-tag-pill,
+html.dark-theme body .awaiting-chip,
+html.dark-theme body .awaiting-pill,
+html.dark-theme body .verified-chip {
+    background: rgba(255, 255, 255, 0.04) !important;
+    color: #DDDDDD !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    font-weight: 500 !important;
 }
 
 html.dark-theme body .status-chip.completed,
 html.dark-theme body .verified-chip {
-    background: rgba(20, 83, 45, 0.6) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
     color: #4ade80 !important;
-    border: 1px solid rgba(74, 222, 128, 0.4) !important;
-    font-weight: 800 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 html.dark-theme body .status-chip.overdue,
@@ -1118,10 +1113,9 @@ html.dark-theme body .pill.high,
 html.dark-theme body .pill.critical,
 html.dark-theme body .priority-tag-pill.priority-high,
 html.dark-theme body .priority-tag-pill.priority-critical {
-    background: rgba(153, 27, 27, 0.65) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
     color: #f87171 !important;
-    border: 1px solid rgba(248, 113, 113, 0.5) !important;
-    font-weight: 800 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 html.dark-theme body .status-chip.pending,
@@ -1131,20 +1125,18 @@ html.dark-theme body .awaiting-pill,
 html.dark-theme body .task-action-pill.awaiting-pill,
 html.dark-theme body .priority-tag-pill.priority-medium,
 html.dark-theme body .pill.medium {
-    background: rgba(120, 53, 15, 0.75) !important;
-    color: #fde047 !important;
-    border: 1px solid rgba(250, 204, 21, 0.5) !important;
-    font-weight: 800 !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: #fbbf24 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 html.dark-theme body .status-chip.in-progress,
 html.dark-theme body .status-chip.active,
 html.dark-theme body .priority-tag-pill.priority-low,
 html.dark-theme body .pill.low {
-    background: rgba(30, 64, 175, 0.55) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
     color: #60a5fa !important;
-    border: 1px solid rgba(96, 165, 250, 0.4) !important;
-    font-weight: 800 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 html.dark-theme body .status-chip i,
@@ -1162,10 +1154,10 @@ html.dark-theme body .modal-card select,
 html.dark-theme body .form-grid select,
 html.dark-theme body .compact-filter select,
 html.dark-theme body .toolbar-ui select {
-    background-color: #0f172a !important;
-    background: #0f172a !important;
-    color: #f1f5f9 !important;
-    border: 1px solid rgba(94, 134, 222, 0.35) !important;
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    color: #FFFFFF !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
 html.dark-theme body select option,
@@ -1173,20 +1165,20 @@ html.dark-theme body .modal-card select option,
 html.dark-theme body .form-grid select option,
 html.dark-theme body .compact-filter select option,
 html.dark-theme body .toolbar-ui select option {
-    background-color: #0f172a !important;
-    background: #0f172a !important;
-    color: #f1f5f9 !important;
+    background-color: #1a1a1a !important;
+    background: #1a1a1a !important;
+    color: #FFFFFF !important;
 }
 
 /* Notifications Page Dark Mode Panel */
 html.dark-theme body .notification-list {
-    background: linear-gradient(145deg, rgba(22, 32, 58, 0.92) 0%, rgba(13, 19, 38, 0.90) 100%) !important;
-    border: 1px solid rgba(82, 120, 220, 0.22) !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
 /* Notes Page Dark Mode Cards & Box */
 html.dark-theme body .empty-notes-box {
-    background: linear-gradient(145deg, rgba(22, 32, 58, 0.90) 0%, rgba(13, 19, 38, 0.88) 100%) !important;
-    border: 2px dashed rgba(82, 120, 220, 0.35) !important;
-    color: #cbd5e1 !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 2px dashed rgba(255, 255, 255, 0.08) !important;
+    color: #CCCCCC !important;
 }
