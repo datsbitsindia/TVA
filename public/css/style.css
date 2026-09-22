@@ -355,68 +355,107 @@ html.dark-theme .theme-toggle-btn .moon-icon {
 }
 
 /* ==========================================================================
-   PREMIUM DARK THEME — Deep Space Edition
+   DARK THEME SYSTEM (Gray & White Glass - DeepSeek Theme)
    ========================================================================== */
 
 html.dark-theme,
 html.dark-theme body {
-    background:
-        radial-gradient(ellipse 80% 60% at 10% 0%, rgba(56, 100, 255, 0.22) 0%, transparent 55%),
-        radial-gradient(ellipse 60% 50% at 90% 100%, rgba(124, 58, 237, 0.18) 0%, transparent 55%),
-        radial-gradient(ellipse 50% 40% at 50% 50%, rgba(14, 165, 233, 0.08) 0%, transparent 60%),
-        linear-gradient(160deg, #06080f 0%, #0a0f1e 35%, #080c1a 65%, #050810 100%) !important;
+    background-color: #0D0D0D !important;
+    background: #0D0D0D !important;
+    background-image:
+        radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 80%, rgba(255, 255, 255, 0.02) 0%, transparent 60%) !important;
     background-attachment: fixed !important;
-    color: #e8edf5 !important;
+    color: #FFFFFF !important;
 }
 
-html.dark-theme body::before {
-    background: radial-gradient(ellipse at top left, rgba(56, 100, 255, 0.12) 0%, transparent 60%) !important;
-}
-
+html.dark-theme body::before,
 html.dark-theme body::after {
-    background: radial-gradient(ellipse at bottom right, rgba(124, 58, 237, 0.10) 0%, transparent 60%) !important;
+    display: none !important;
 }
 
-/* ── Glass Panels & Cards ──────────────────────────── */
+/* ── Glass Panels & Main Containers ──────────────────── */
 html.dark-theme .panel,
 html.dark-theme .stat,
-html.dark-theme .metric-card,
 html.dark-theme .ui-panel,
-html.dark-theme .entity-card,
 html.dark-theme .modal-card,
+html.dark-theme .modal-content,
 html.dark-theme .task-detail-card,
 html.dark-theme .project-hero,
 html.dark-theme .compact-filter,
+html.dark-theme .toolbar-ui,
 html.dark-theme .routine-card,
 html.dark-theme .login-card,
 html.dark-theme .report-summary > div,
-html.dark-theme .report-insight > div {
-    background: linear-gradient(145deg, rgba(22, 32, 58, 0.85) 0%, rgba(13, 19, 38, 0.80) 100%) !important;
-    backdrop-filter: blur(40px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.09) !important;
-    box-shadow:
-        0 1px 0 0 rgba(255, 255, 255, 0.08) inset,
-        0 16px 48px rgba(0, 0, 0, 0.55),
-        0 4px 12px rgba(0, 0, 0, 0.3) !important;
-    color: #e8edf5 !important;
+html.dark-theme .report-insight > div,
+html.dark-theme .routine-panel,
+html.dark-theme .notes-editor-container {
+    background: rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: blur(24px) saturate(0.6) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+    color: #CCCCCC !important;
+}
+
+/* ── Task Cards & Entity Cards (Gray & White Glass) ───── */
+html.dark-theme .entity-card,
+html.dark-theme .task-card,
+html.dark-theme .metric-card,
+html.dark-theme .activity-row,
+html.dark-theme .note-card,
+html.dark-theme .routine-highlight-card {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(16px) saturate(0.5) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 18px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+    color: #CCCCCC !important;
+    transition: all 0.25s ease !important;
+}
+
+html.dark-theme .entity-card:hover,
+html.dark-theme .task-card:hover,
+html.dark-theme .metric-card:hover,
+html.dark-theme .activity-row:hover,
+html.dark-theme .note-card:hover {
+    background: rgba(255, 255, 255, 0.09) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Active KPI Card Highlight */
+html.dark-theme body .metric-card.active-kpi-filter,
+html.dark-theme .metric-card.active-kpi-filter {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-color: rgba(255, 255, 255, 0.20) !important;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25), 0 8px 30px rgba(0, 0, 0, 0.7) !important;
+    outline: none !important;
+}
+
+html.dark-theme .metric-card.active-kpi-filter b,
+html.dark-theme .metric-card.active-kpi-filter span {
+    color: #FFFFFF !important;
 }
 
 html.dark-theme .overdue-alert {
-    background: linear-gradient(135deg, rgba(127, 29, 29, 0.65) 0%, rgba(79, 14, 14, 0.75) 100%) !important;
-    border: 1px solid rgba(248, 113, 113, 0.45) !important;
-    box-shadow: 0 8px 24px rgba(185, 28, 28, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
 }
 
 html.dark-theme .overdue-alert b {
-    color: #ffffff !important;
-    font-weight: 800 !important;
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
 }
 
 html.dark-theme .overdue-alert span,
 html.dark-theme .overdue-alert p {
-    color: #fca5a5 !important;
-    font-weight: 500 !important;
+    color: #CCCCCC !important;
+    font-weight: 400 !important;
 }
 
 /* ── Typography ────────────────────────────── */
@@ -424,108 +463,102 @@ html.dark-theme h1, html.dark-theme h2, html.dark-theme h3, html.dark-theme h4, 
 html.dark-theme .page-head h1, html.dark-theme .stat b, html.dark-theme .metric-card b, html.dark-theme .panel h2,
 html.dark-theme .ui-panel-head h2, html.dark-theme .entity-title b, html.dark-theme .entity-title a,
 html.dark-theme .confirm-modal-title, html.dark-theme label, html.dark-theme .login-card h1,
-html.dark-theme .routine-card-info b, html.dark-theme .routine-card-meta b {
-    color: #ffffff !important;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.4) !important;
+html.dark-theme .routine-card-info b, html.dark-theme .routine-card-meta b,
+html.dark-theme body .entity-card.task-card .entity-title a {
+    color: #FFFFFF !important;
+    text-shadow: none !important;
 }
 
 html.dark-theme p, html.dark-theme small, html.dark-theme span, html.dark-theme .muted, html.dark-theme .empty,
 html.dark-theme .topbar-user small, html.dark-theme .page-head p,
 html.dark-theme .confirm-modal-message, html.dark-theme .login-card > p,
-html.dark-theme .details dt, html.dark-theme label small, html.dark-theme .description {
-    color: #cbd5e1 !important;
+html.dark-theme .details dt, html.dark-theme label small, html.dark-theme .description,
+html.dark-theme .metric-card span, html.dark-theme .stat span {
+    color: #CCCCCC !important;
 }
 
-/* KPI Card Labels ("Overdue", "Pending", "In Progress", etc.) */
-html.dark-theme .metric-card span,
-html.dark-theme .stat span {
-    color: #cbd5e1 !important;
-    font-weight: 600 !important;
-}
-
-/* Task Card Meta labels and values high specificity */
 html.dark-theme body .entity-card.task-card .entity-meta small,
 html.dark-theme .entity-meta small {
-    color: #94a3b8 !important;
-    font-weight: 700 !important;
+    color: #AAAAAA !important;
+    font-weight: 400 !important;
 }
 
 html.dark-theme body .entity-card.task-card .entity-meta b,
 html.dark-theme .entity-meta b {
-    color: #f1f5f9 !important;
-    font-weight: 700 !important;
+    color: #EEEEEE !important;
+    font-weight: 500 !important;
 }
 
 html.dark-theme .entity-title small {
-    color: #60a5fa !important;
-    font-weight: 700 !important;
+    color: #BBBBBB !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.04) !important;
+    padding: 2px 10px !important;
+    border-radius: 20px !important;
+    font-weight: 400 !important;
 }
 
 /* ── Topbar Header ───────────────────────── */
 html.dark-theme .topbar {
-    background: linear-gradient(90deg,
-        rgba(10, 16, 34, 0.95) 0%,
-        rgba(14, 22, 45, 0.93) 100%) !important;
-    backdrop-filter: blur(40px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
-    border-bottom: 1px solid rgba(82, 120, 220, 0.22) !important;
-    box-shadow:
-        0 1px 0 rgba(255,255,255,0.06) inset,
-        0 8px 32px rgba(0, 0, 0, 0.45) !important;
+    background: rgba(13, 13, 13, 0.90) !important;
+    backdrop-filter: blur(24px) saturate(0.6) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(0.6) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.8) !important;
 }
 
 html.dark-theme .topbar-user strong {
-    color: #ffffff !important;
-    font-weight: 700 !important;
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
 }
 
 html.dark-theme .topbar-user small {
-    color: #94a3b8 !important;
+    color: #CCCCCC !important;
 }
 
 /* ── Sidebar ──────────────────────────────── */
 html.dark-theme .sidebar {
-    background: linear-gradient(180deg,
-        rgba(8, 12, 30, 0.97) 0%,
-        rgba(6, 10, 24, 0.98) 100%) !important;
-    backdrop-filter: blur(40px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
-    border-right: 1px solid rgba(56, 100, 255, 0.14) !important;
-    box-shadow: 4px 0 30px rgba(0, 0, 0, 0.6), 1px 0 0 rgba(255,255,255,0.04) !important;
+    background: rgba(13, 13, 13, 0.95) !important;
+    backdrop-filter: blur(24px) saturate(0.6) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(0.6) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+    box-shadow: 4px 0 30px rgba(0, 0, 0, 0.8) !important;
 }
 
 html.dark-theme .sidebar .brand {
-    color: #ffffff !important;
+    color: #FFFFFF !important;
 }
 
 html.dark-theme .sidebar nav a {
-    color: #94a3b8 !important;
-    font-weight: 600 !important;
-    transition: all 0.2s cubic-bezier(0.4,0,0.2,1) !important;
+    color: #AAAAAA !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
 }
 
 html.dark-theme .sidebar nav a i {
-    color: #818cf8 !important;
+    color: #CCCCCC !important;
 }
 
 html.dark-theme .sidebar nav a:hover {
-    color: #ffffff !important;
-    background: rgba(56, 100, 255, 0.18) !important;
+    color: #FFFFFF !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-radius: 12px !important;
 }
 
 html.dark-theme .sidebar nav a:hover i {
-    color: #93c5fd !important;
+    color: #FFFFFF !important;
 }
 
 html.dark-theme .sidebar nav a.active {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.35) 0%, rgba(37, 99, 235, 0.30) 100%) !important;
-    color: #ffffff !important;
-    border: 1px solid rgba(59, 130, 246, 0.4) !important;
-    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3), inset 0 1px 0 rgba(255,255,255,0.1) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #FFFFFF !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+    border-radius: 12px !important;
 }
 
 html.dark-theme .sidebar nav a.active i {
-    color: #ffffff !important;
+    color: #FFFFFF !important;
 }
 
 /* ── Inputs, Selects, Textareas ─────────────── */
@@ -536,87 +569,84 @@ html.dark-theme body .compact-filter input,
 html.dark-theme body .compact-filter select,
 html.dark-theme body .toolbar-ui input,
 html.dark-theme body .toolbar-ui select {
-    background-color: #0f172a !important;
-    background: rgba(15, 23, 42, 0.90) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(94, 134, 222, 0.30) !important;
-    color: #f1f5f9 !important;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.3) !important;
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    color: #FFFFFF !important;
+    border-radius: 14px !important;
 }
 
 html.dark-theme select option,
 html.dark-theme body .compact-filter select option,
 html.dark-theme body .toolbar-ui select option {
-    background-color: #0f172a !important;
-    background: #0f172a !important;
-    color: #f1f5f9 !important;
+    background-color: #1a1a1a !important;
+    background: #1a1a1a !important;
+    color: #FFFFFF !important;
 }
 
 html.dark-theme ::placeholder,
 html.dark-theme input::placeholder,
 html.dark-theme textarea::placeholder {
-    color: #94a3b8 !important;
+    color: #888888 !important;
     opacity: 1 !important;
 }
 
 html.dark-theme input:focus,
 html.dark-theme select:focus,
 html.dark-theme textarea:focus {
-    border-color: rgba(99, 160, 255, 0.75) !important;
-    background-color: #1e293b !important;
-    background: rgba(30, 41, 59, 0.95) !important;
-    box-shadow: 0 0 0 3px rgba(56, 100, 255, 0.25), inset 0 1px 3px rgba(0,0,0,0.3) !important;
-}
-
-html.dark-theme input:-webkit-autofill,
-html.dark-theme input:-webkit-autofill:hover, 
-html.dark-theme input:-webkit-autofill:focus,
-html.dark-theme input:-webkit-autofill:active {
-    -webkit-text-fill-color: #f1f5f9 !important;
-    -webkit-box-shadow: 0 0 0px 1000px #0f1a38 inset !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06) !important;
 }
 
 /* ── Buttons ─────────────────────────────── */
 html.dark-theme .btn {
-    border: 1px solid rgba(82, 120, 220, 0.18) !important;
-    background: rgba(16, 26, 56, 0.75) !important;
-    color: #a8c0e8 !important;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 8px rgba(0,0,0,0.25) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    color: #CCCCCC !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 2px 8px rgba(0, 0, 0, 0.3) !important;
     transition: all 0.2s ease !important;
+    border-radius: 20px !important;
 }
 
 html.dark-theme .btn:hover {
-    background: rgba(30, 45, 90, 0.85) !important;
-    color: #d0e0ff !important;
-    border-color: rgba(99, 150, 255, 0.35) !important;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 16px rgba(0,0,0,0.3) !important;
+    background: rgba(255, 255, 255, 0.09) !important;
+    color: #FFFFFF !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
     transform: translateY(-1px) !important;
 }
 
 html.dark-theme .btn.primary {
-    background: linear-gradient(135deg, #3b7ef8 0%, #1d55d4 100%) !important;
-    color: #ffffff !important;
-    border: 1px solid rgba(100, 160, 255, 0.35) !important;
-    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5), inset 0 1px 0 rgba(255,255,255,0.2) !important;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+    background: rgba(255, 255, 255, 0.10) !important;
+    color: #FFFFFF !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6) !important;
 }
 
 html.dark-theme .btn.primary:hover {
-    background: linear-gradient(135deg, #5090ff 0%, #2560e8 100%) !important;
-    box-shadow: 0 8px 28px rgba(37, 99, 235, 0.6), inset 0 1px 0 rgba(255,255,255,0.25) !important;
+    background: rgba(255, 255, 255, 0.16) !important;
+    border-color: rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.7) !important;
     transform: translateY(-1px) !important;
 }
 
-html.dark-theme .link-btn {
-    background: rgba(20, 45, 110, 0.5) !important;
-    color: #7ab8ff !important;
-    border: 1px solid rgba(59, 130, 246, 0.25) !important;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06) !important;
+html.dark-theme .task-tab-btn {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    color: #CCCCCC !important;
 }
 
-html.dark-theme .logout-btn {
-    background: rgba(100, 15, 15, 0.35) !important;
+html.dark-theme .task-tab-btn.active {
+    background: rgba(255, 255, 255, 0.10) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #FFFFFF !important;
+}
+
+html.dark-theme .link-btn {
     color: #ff8080 !important;
     border: 1px solid rgba(239, 68, 68, 0.25) !important;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.05) !important;

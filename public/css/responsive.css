@@ -709,15 +709,15 @@ html body .task-detail-card ~ .ui-panel {
 /* ── Active KPI Filter Card ── CORRECT dark-theme selector ── */
 html.dark-theme body .metric-card.active-kpi-filter,
 html.dark-theme .metric-card.active-kpi-filter {
-    border-color: rgba(96, 165, 250, 0.7) !important;
-    background: linear-gradient(145deg, rgba(30, 60, 130, 0.7) 0%, rgba(20, 45, 100, 0.65) 100%) !important;
-    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3), 0 6px 20px rgba(0,0,0,0.4) !important;
+    border-color: rgba(255, 255, 255, 0.20) !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25), 0 8px 30px rgba(0, 0, 0, 0.7) !important;
     outline: none !important;
 }
 
 html.dark-theme .metric-card.active-kpi-filter b,
 html.dark-theme .metric-card.active-kpi-filter span {
-    color: #c0d8ff !important;
+    color: #ffffff !important;
 }
 
 /* Keep Row Actions Anchored Right Inline on Employee and Manager Cards */
