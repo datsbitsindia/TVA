@@ -57,12 +57,19 @@
             <i class="fa-solid fa-bars"></i>
         </button>
 
-        <div class="topbar-user">
-            <strong><%= user.name %></strong>
-            <small><%= user.role %><% if (typeof currentOrg !== 'undefined' && currentOrg && currentOrg.name) { %> · <%= currentOrg.name %><% } %></small>
+        <div class="topbar-user-area" style="display: flex; align-items: center; gap: 10px; margin-right: auto;">
+            <div class="topbar-user" style="margin-right: 0;">
+                <strong><%= user.name %></strong>
+                <small><%= user.role %><% if (typeof currentOrg !== 'undefined' && currentOrg && currentOrg.name) { %> · <%= currentOrg.name %><% } %></small>
+            </div>
+
+            <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
+                <i class="fa-solid fa-moon moon-icon"></i>
+                <i class="fa-regular fa-sun sun-icon"></i>
+            </button>
         </div>
 
-        <div class="topbar-right-group" style="display:flex; align-items:center; gap:8px; margin-left:auto;">
+        <div class="topbar-right-group" style="display:flex; align-items:center; gap:8px;">
             <% if (page === 'tasks') { %>
                 <button class="btn primary btn-sm" data-open="task-modal" style="white-space:nowrap;">
                     <i class="fa-solid fa-plus"></i> Add Task

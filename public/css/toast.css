@@ -76,3 +76,24 @@
         transform: translateY(0) scale(1);
     }
 }
+
+/* Toast Notifications Dark Mode */
+html.dark-theme .success-toast, html.dark-theme .app-toast {
+    background: rgba(15, 23, 42, 0.90) !important;
+    backdrop-filter: blur(20px) !important;
+    border-color: rgba(16, 185, 129, 0.4) !important;
+    color: #e2e8f0 !important;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5) !important;
+}
+
+html.dark-theme .success-toast b, html.dark-theme .app-toast b {
+    color: #34d399 !important;
+}
+
+html.dark-theme .success-toast small, html.dark-theme .app-toast small {
+    color: #94a3b8 !important;
+}
+
+html.dark-theme .toast-close-btn {
+    color: #94a3b8 !important;
+}

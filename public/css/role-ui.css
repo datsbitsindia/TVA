@@ -1,4 +1,4 @@
-.content{background:#edf2fa;min-height:calc(100vh - 54px);padding:12px 16px 20px}
+.content{background:var(--bg);min-height:calc(100vh - 54px);padding:12px 16px 20px}
 .role-hero{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px;padding:12px 18px;border-radius:16px;color:#fff;background:linear-gradient(120deg,#2b579a,#3b68b7);box-shadow:0 10px 24px rgba(59,104,183,.2)}
 .role-hero:after{content:"";position:absolute;width:180px;height:180px;right:-40px;top:-70px;border-radius:50%;background:rgba(255,255,255,.08)}
 .role-hero h1{margin:0 0 3px;color:#fff;font-size:20px!important;font-weight:800;line-height:1.25}.role-hero p{margin:0;color:#d3e3fd;font-size:11px}.role-hero-icon{position:relative;z-index:1;display:grid;place-items:center;min-width:46px;width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.18);font-size:20px}.role-hero .btn{position:relative;z-index:2;background:#fff;color:#3b68b7;border:0;font-weight:700}
@@ -1036,6 +1036,527 @@ a[href="/notifications"] .badge {
     100% { background-color: #ffffff !important; transform: translateY(0) scale(1); box-shadow: none; }
 }
 
+/* ==========================================================================
+   ROLE UI DARK MODE SPECIFICS
+   ========================================================================== */
 
+/* ─── CRITICAL: Fix page background areas ─── */
+html.dark-theme .content {
+    background: transparent !important;
+}
 
+html.dark-theme .main {
+    background: transparent !important;
+}
 
+html.dark-theme body .app {
+    background: transparent !important;
+}
+
+html.dark-theme .login-page {
+    background:
+        radial-gradient(ellipse 80% 60% at 10% 0%, rgba(56, 100, 255, 0.22) 0%, transparent 55%),
+        radial-gradient(ellipse 60% 50% at 90% 100%, rgba(124, 58, 237, 0.18) 0%, transparent 55%),
+        linear-gradient(160deg, #06080f 0%, #0a0f1e 35%, #050810 100%) !important;
+}
+
+/* Task Tab buttons in dark mode */
+html.dark-theme .task-tab-btn {
+    background: rgba(16, 26, 56, 0.75) !important;
+    color: #6880a8 !important;
+    border: 1px solid rgba(82, 120, 220, 0.18) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+html.dark-theme .task-tab-btn:hover {
+    background: rgba(30, 45, 90, 0.88) !important;
+    color: #b0c8f0 !important;
+    border-color: rgba(99, 150, 255, 0.35) !important;
+}
+
+html.dark-theme .task-tab-btn.active {
+    background: linear-gradient(135deg, rgba(37, 80, 200, 0.45) 0%, rgba(25, 60, 160, 0.40) 100%) !important;
+    color: #7ab8ff !important;
+    border: 1.5px solid rgba(59, 130, 246, 0.45) !important;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.25), inset 0 1px 0 rgba(255,255,255,0.08) !important;
+}
+
+html.dark-theme .task-tab-btn.active i {
+    color: #60a5fa !important;
+}
+
+/* Role Hero banner in dark */
+html.dark-theme .role-hero {
+    background: linear-gradient(120deg, rgba(20, 50, 140, 0.75) 0%, rgba(30, 70, 180, 0.65) 100%) !important;
+    border: 1px solid rgba(59, 130, 246, 0.25) !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06) !important;
+}
+
+/* Metric Card Icon Backgrounds in Dark Mode */
+html.dark-theme .metric-card i {
+    background: rgba(59, 130, 246, 0.2) !important;
+    color: #60a5fa !important;
+}
+
+html.dark-theme .metric-card.green i {
+    background: rgba(22, 163, 74, 0.2) !important;
+    color: #4ade80 !important;
+}
+
+html.dark-theme .metric-card.orange i {
+    background: rgba(217, 119, 6, 0.2) !important;
+    color: #fbbf24 !important;
+}
+
+html.dark-theme .metric-card.red i {
+    background: rgba(220, 38, 38, 0.2) !important;
+    color: #f87171 !important;
+}
+
+html.dark-theme .metric-card.purple i {
+    background: rgba(147, 51, 234, 0.2) !important;
+    color: #c084fc !important;
+}
+
+/* ── Logo brightness in dark mode ── */
+html.dark-theme .brand-logo {
+    filter: brightness(1.4) drop-shadow(0 2px 12px rgba(80, 140, 255, 0.5)) !important;
+}
+
+/* ── CRITICAL: Entity Cards ── override the !important white backgrounds ── */
+html.dark-theme .entity-card,
+html.dark-theme .entity-card[data-status="overdue"],
+html.dark-theme .entity-card[data-status="completed"],
+html.dark-theme .entity-card[data-status="pending"],
+html.dark-theme .entity-card[data-status="planned"],
+html.dark-theme .overdue-card {
+    background: linear-gradient(145deg, rgba(14, 22, 50, 0.92) 0%, rgba(10, 16, 40, 0.90) 100%) !important;
+    border: 1.5px solid rgba(56, 100, 200, 0.22) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04) !important;
+    color: #c8d8f0 !important;
+}
+
+html.dark-theme .entity-card:hover {
+    background: linear-gradient(145deg, rgba(20, 35, 75, 0.95) 0%, rgba(14, 24, 55, 0.93) 100%) !important;
+    border-color: rgba(70, 130, 255, 0.45) !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.55), 0 2px 10px rgba(37,99,235,0.15), inset 0 1px 0 rgba(255,255,255,0.06) !important;
+    transform: translateY(-1px) !important;
+}
+
+html.dark-theme .entity-action {
+    background: rgba(30, 41, 59, 0.8) !important;
+    color: #93c5fd !important;
+}
+
+html.dark-theme .entity-card:hover .entity-action {
+    background: #2563eb !important;
+    color: #ffffff !important;
+}
+
+/* Status Chips & Badges in Dark Mode */
+html.dark-theme .status-chip,
+html.dark-theme .role-chip,
+html.dark-theme .pill {
+    background: rgba(30, 41, 59, 0.8) !important;
+    color: #cbd5e1 !important;
+}
+
+html.dark-theme .status-chip.completed {
+    background: rgba(22, 163, 74, 0.22) !important;
+    color: #4ade80 !important;
+}
+
+html.dark-theme .status-chip.overdue,
+html.dark-theme .status-chip.inactive,
+html.dark-theme .pill.high,
+html.dark-theme .pill.critical {
+    background: rgba(220, 38, 38, 0.22) !important;
+    color: #f87171 !important;
+}
+
+html.dark-theme .status-chip.pending,
+html.dark-theme .status-chip.planned,
+html.dark-theme .pill.medium {
+    background: rgba(217, 119, 6, 0.22) !important;
+    color: #fbbf24 !important;
+}
+
+html.dark-theme .status-chip.in-progress,
+html.dark-theme .status-chip.active,
+html.dark-theme .pill.low {
+    background: rgba(37, 99, 235, 0.22) !important;
+    color: #60a5fa !important;
+}
+
+/* Overdue Alert Bar in Dark Mode */
+html.dark-theme .overdue-alert {
+    background: rgba(127, 29, 29, 0.35) !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+    color: #fca5a5 !important;
+    box-shadow: 0 5px 16px rgba(0, 0, 0, 0.3) !important;
+}
+
+html.dark-theme .overdue-alert i {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+}
+
+/* Multi-Assignee Chips in Dark Mode */
+html.dark-theme .assignee-chip {
+    background: rgba(30, 58, 138, 0.5) !important;
+    color: #a5b4fc !important;
+    border-color: rgba(99, 102, 241, 0.4) !important;
+}
+
+html.dark-theme .assignee-chip.chip-manager {
+    background: rgba(112, 26, 117, 0.4) !important;
+    color: #f0abfc !important;
+    border-color: rgba(217, 70, 239, 0.4) !important;
+}
+
+html.dark-theme .assignee-chip.chip-self {
+    background: rgba(20, 83, 45, 0.4) !important;
+    color: #86efac !important;
+    border-color: rgba(34, 197, 94, 0.4) !important;
+}
+
+/* Notification Badge in Sidebar */
+html.dark-theme a[href="/notifications"] .badge {
+    box-shadow: 0 0 0 2px #0a0f1e, 0 2px 6px rgba(220, 38, 38, 0.6) !important;
+}
+
+/* ── Text Colors ── Everything must be readable in dark mode ── */
+
+/* All regular body text */
+html.dark-theme td,
+html.dark-theme .entity-title b,
+html.dark-theme .entity-title a,
+html.dark-theme .entity-meta b,
+html.dark-theme .activity-time b,
+html.dark-theme .activity-person b,
+html.dark-theme .activity-action b,
+html.dark-theme .report-list div,
+html.dark-theme .comments p,
+html.dark-theme .task-title-group h2,
+html.dark-theme .task-desc-box p,
+html.dark-theme .task-info-grid b,
+html.dark-theme .metric-card b,
+html.dark-theme .stat b {
+    color: #dce8ff !important;
+}
+
+/* Muted/secondary text */
+html.dark-theme td small,
+html.dark-theme .entity-title small,
+html.dark-theme .entity-meta small,
+html.dark-theme .activity-row small,
+html.dark-theme .task-desc-box small,
+html.dark-theme .task-info-grid small,
+html.dark-theme .metric-card span,
+html.dark-theme .stat span,
+html.dark-theme .comments time,
+html.dark-theme .badge-count,
+html.dark-theme .project-tag {
+    color: #7090b8 !important;
+}
+
+/* Task desc box dark bg */
+html.dark-theme .task-desc-box {
+    background: rgba(10, 18, 48, 0.75) !important;
+    border-color: rgba(56, 100, 200, 0.18) !important;
+}
+
+/* Task info grid dark bg */
+html.dark-theme .task-info-grid {
+    background: rgba(10, 18, 48, 0.75) !important;
+    border-color: rgba(56, 100, 200, 0.18) !important;
+}
+
+/* Task detail card and whatsapp chat panel */
+html.dark-theme .task-detail-card,
+html.dark-theme .whatsapp-chat-panel {
+    background: linear-gradient(145deg, rgba(14, 22, 50, 0.92) 0%, rgba(10, 16, 40, 0.90) 100%) !important;
+    border: 1px solid rgba(56, 100, 200, 0.18) !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04) !important;
+}
+
+/* Chat panel */
+html.dark-theme .chat-messages-container {
+    background: rgba(6, 10, 28, 0.8) !important;
+    border-color: rgba(56, 100, 200, 0.15) !important;
+}
+
+html.dark-theme .chat-bubble.incoming {
+    background: rgba(22, 35, 70, 0.9) !important;
+    color: #dce8ff !important;
+}
+
+html.dark-theme .chat-bubble.outgoing {
+    background: rgba(30, 60, 130, 0.7) !important;
+    color: #dce8ff !important;
+}
+
+html.dark-theme .chat-header {
+    border-color: rgba(56, 100, 200, 0.15) !important;
+}
+
+html.dark-theme .chat-header h3,
+html.dark-theme .chat-header i {
+    color: #a0c4ff !important;
+}
+
+html.dark-theme .chat-input-form {
+    background: rgba(10, 18, 48, 0.8) !important;
+    border-color: rgba(56, 100, 200, 0.18) !important;
+}
+
+/* Status update form */
+html.dark-theme .status-update-form {
+    border-color: rgba(56, 100, 200, 0.18) !important;
+}
+
+/* Page head text in dark mode */
+html.dark-theme .page-head h1 {
+    color: #e8f0ff !important;
+}
+
+/* Detail labels */
+html.dark-theme .details dd {
+    color: #dce8ff !important;
+}
+
+/* task-desc-box small label color */
+html.dark-theme .task-desc-box small {
+    color: #7090b8 !important;
+}
+
+/* project tag color */
+html.dark-theme .project-tag,
+html.dark-theme .back-link {
+    color: #6baaf0 !important;
+}
+
+/* ui-panel dark */
+html.dark-theme .ui-panel {
+    background: linear-gradient(145deg, rgba(14, 22, 50, 0.90) 0%, rgba(10, 16, 40, 0.88) 100%) !important;
+    border-color: rgba(56, 100, 200, 0.18) !important;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04) !important;
+}
+
+html.dark-theme .ui-panel-head h2 {
+    color: #e0eaff !important;
+}
+
+html.dark-theme .ui-panel-head a {
+    color: #6baaf0 !important;
+}
+
+/* Report insight boxes */
+html.dark-theme .report-insight > div {
+    background: linear-gradient(135deg, rgba(20, 40, 100, 0.7) 0%, rgba(14, 28, 70, 0.65) 100%) !important;
+    border-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+html.dark-theme .report-insight b {
+    color: #c8d8ff !important;
+}
+
+html.dark-theme .report-insight p {
+    color: #6880a8 !important;
+}
+
+/* Report summary boxes */
+html.dark-theme .report-summary > div {
+    background: linear-gradient(145deg, rgba(14, 22, 50, 0.88) 0%, rgba(10, 16, 40, 0.85) 100%) !important;
+    border-color: rgba(56, 100, 200, 0.15) !important;
+}
+
+html.dark-theme .report-summary b {
+    color: #c8d8ff !important;
+}
+
+/* Priority badges */
+html.dark-theme .priority-badge {
+    background: rgba(30, 50, 100, 0.6) !important;
+    color: #a0c0ff !important;
+    border-color: rgba(56, 100, 200, 0.2) !important;
+}
+html.dark-theme .priority-badge.high,
+html.dark-theme .priority-badge.critical {
+    background: rgba(90, 15, 15, 0.5) !important;
+    color: #f87171 !important;
+    border-color: rgba(239, 68, 68, 0.25) !important;
+}
+html.dark-theme .priority-badge.medium {
+    background: rgba(90, 60, 0, 0.5) !important;
+    color: #fbbf24 !important;
+    border-color: rgba(251, 191, 36, 0.2) !important;
+}
+html.dark-theme .priority-badge.low {
+    background: rgba(20, 50, 120, 0.5) !important;
+    color: #60a5fa !important;
+    border-color: rgba(96, 165, 250, 0.2) !important;
+}
+
+/* entity action button */
+html.dark-theme .entity-action {
+    background: rgba(20, 40, 100, 0.65) !important;
+    color: #6baaf0 !important;
+}
+
+html.dark-theme .entity-card:hover .entity-action {
+    background: linear-gradient(135deg, #3b7ef8 0%, #1d55d4 100%) !important;
+    color: #ffffff !important;
+}
+
+/* Assignee chips */
+html.dark-theme .assignee-chip {
+    background: rgba(20, 45, 110, 0.55) !important;
+    color: #8ab4f8 !important;
+    border-color: rgba(99, 102, 241, 0.3) !important;
+}
+
+/* Comments section */
+html.dark-theme .comments header b {
+    color: #c8d8ff !important;
+}
+
+html.dark-theme .avatar {
+    background: rgba(30, 60, 140, 0.6) !important;
+    color: #7ab8ff !important;
+}
+
+/* Files list */
+html.dark-theme .files a,
+html.dark-theme .notification-list a {
+    color: #c0d4f0 !important;
+}
+
+/* Compact filter chip */
+html.dark-theme .compact-filter {
+    background: linear-gradient(135deg, rgba(10, 16, 40, 0.88) 0%, rgba(14, 22, 50, 0.85) 100%) !important;
+    border-color: rgba(56, 100, 200, 0.14) !important;
+}
+
+/* Search input placeholder */
+html.dark-theme ::placeholder,
+html.dark-theme input::placeholder,
+html.dark-theme textarea::placeholder {
+    color: #94a3b8 !important;
+    opacity: 1 !important;
+}
+
+/* Overdue alert text */
+html.dark-theme .overdue-alert b {
+    color: #ffffff !important;
+}
+html.dark-theme .overdue-alert span,
+html.dark-theme .overdue-alert p {
+    color: #fca5a5 !important;
+}
+
+/* Task card metadata label & value contrast fix */
+html.dark-theme body .entity-card.task-card .entity-meta small,
+html.dark-theme .entity-meta small {
+    color: #94a3b8 !important;
+    font-weight: 700 !important;
+}
+
+html.dark-theme body .entity-card.task-card .entity-meta b,
+html.dark-theme .entity-meta b {
+    color: #f1f5f9 !important;
+    font-weight: 700 !important;
+}
+
+html.dark-theme .entity-title b,
+html.dark-theme .entity-title a {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+}
+
+html.dark-theme .entity-title small {
+    color: #60a5fa !important;
+    font-weight: 700 !important;
+}
+
+/* KPI Card Labels ("Overdue", "Pending", "Completed", etc.) */
+html.dark-theme body .task-kpis .metric-card span,
+html.dark-theme .metric-card span,
+html.dark-theme .stat span {
+    color: #cbd5e1 !important;
+    font-weight: 600 !important;
+}
+
+html.dark-theme body .task-kpis .metric-card b,
+html.dark-theme .metric-card b,
+html.dark-theme .stat b {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+}
+
+/* Entity before bar colors intact */
+html.dark-theme .entity-card[data-status="overdue"]::before,
+html.dark-theme .overdue-card::before {
+    background: #ef4444 !important;
+    box-shadow: 2px 0 8px rgba(239,68,68,0.5) !important;
+}
+html.dark-theme .entity-card[data-status="completed"]::before {
+    background: #22c55e !important;
+    box-shadow: 2px 0 8px rgba(34,197,94,0.5) !important;
+}
+html.dark-theme .entity-card[data-status="pending"]::before,
+html.dark-theme .entity-card[data-status="planned"]::before {
+    background: #f59e0b !important;
+    box-shadow: 2px 0 8px rgba(245,158,11,0.5) !important;
+}
+/* Dark Mode High-Contrast Status Chips & Priority Pills */
+html.dark-theme body .status-chip,
+html.dark-theme body .role-chip,
+html.dark-theme body .pill,
+html.dark-theme body .priority-pill,
+html.dark-theme body .status {
+    background: rgba(30, 58, 138, 0.5) !important;
+    color: #93c5fd !important;
+    border: 1px solid rgba(96, 165, 250, 0.4) !important;
+    font-weight: 800 !important;
+}
+
+html.dark-theme body .status-chip.completed,
+html.dark-theme body .verified-chip {
+    background: rgba(20, 83, 45, 0.6) !important;
+    color: #4ade80 !important;
+    border: 1px solid rgba(74, 222, 128, 0.4) !important;
+}
+
+html.dark-theme body .status-chip.overdue,
+html.dark-theme body .status-chip.inactive,
+html.dark-theme body .pill.high,
+html.dark-theme body .pill.critical {
+    background: rgba(153, 27, 27, 0.6) !important;
+    color: #f87171 !important;
+    border: 1px solid rgba(248, 113, 113, 0.4) !important;
+}
+
+html.dark-theme body .status-chip.pending,
+html.dark-theme body .status-chip.planned,
+html.dark-theme body .awaiting-chip,
+html.dark-theme body .pill.medium {
+    background: rgba(120, 53, 15, 0.65) !important;
+    color: #fde047 !important;
+    border: 1px solid rgba(250, 204, 21, 0.5) !important;
+}
+
+html.dark-theme body .status-chip.in-progress,
+html.dark-theme body .status-chip.active,
+html.dark-theme body .pill.low {
+    background: rgba(30, 64, 175, 0.5) !important;
+    color: #60a5fa !important;
+    border: 1px solid rgba(96, 165, 250, 0.4) !important;
+}
+
+html.dark-theme body .status-chip i,
+html.dark-theme body .awaiting-chip i,
+html.dark-theme body .verified-chip i,
+html.dark-theme body .pill i {
+    color: inherit !important;
+}

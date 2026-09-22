@@ -1175,4 +1175,13 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => toast.remove(), 300);
         }, 3500);
     });
+
+    // Theme Toggle Handler
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.toggle('dark-theme');
+            localStorage.setItem('tva_theme', isDark ? 'dark' : 'light');
+        });
+    }
 });

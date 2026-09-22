@@ -1,7 +1,124 @@
 <%- include('partials/head',{title:'Notifications'}) %><%- include('partials/nav',{page:'notifications'}) %>
+<style>
+.notif-header {
+    padding: 14px 14px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.notif-header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.notif-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s ease;
+    position: relative;
+}
+.notif-item.unread {
+    background: #eff6ff;
+}
+.notif-item.read {
+    background: #ffffff;
+}
+.notif-icon-box {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.notif-item.unread .notif-icon-box {
+    background: #dbeafe;
+    margin-left: 6px;
+}
+.notif-item.read .notif-icon-box {
+    background: #f1f5f9;
+    margin-left: 0;
+}
+.notif-message-title {
+    display: block;
+    font-size: 13px;
+    line-height: 1.35;
+}
+.notif-item.unread .notif-message-title {
+    font-weight: 700;
+    color: #0f172a;
+}
+.notif-item.read .notif-message-title {
+    font-weight: 600;
+    color: #475569;
+}
+.notif-time {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+/* Dark Theme Overrides for Notifications Page */
+html.dark-theme .notification-list {
+    background: linear-gradient(145deg, rgba(22, 32, 58, 0.90) 0%, rgba(13, 19, 38, 0.88) 100%) !important;
+    border: 1px solid rgba(82, 120, 220, 0.2) !important;
+}
+html.dark-theme .notif-header {
+    border-bottom-color: rgba(82, 120, 220, 0.18) !important;
+}
+html.dark-theme .notif-header h2 {
+    color: #ffffff !important;
+}
+html.dark-theme .notif-item {
+    border-bottom-color: rgba(82, 120, 220, 0.12) !important;
+}
+html.dark-theme .notif-item.unread {
+    background: rgba(30, 58, 138, 0.35) !important;
+}
+html.dark-theme .notif-item.read {
+    background: rgba(15, 23, 42, 0.4) !important;
+}
+html.dark-theme .notif-item:hover {
+    background: rgba(40, 75, 160, 0.3) !important;
+}
+html.dark-theme .notif-item.unread .notif-icon-box {
+    background: rgba(59, 130, 246, 0.3) !important;
+}
+html.dark-theme .notif-item.unread .notif-icon-box i {
+    color: #60a5fa !important;
+}
+html.dark-theme .notif-item.read .notif-icon-box {
+    background: rgba(30, 41, 59, 0.6) !important;
+}
+html.dark-theme .notif-item.read .notif-icon-box i {
+    color: #94a3b8 !important;
+}
+html.dark-theme .notif-item.unread .notif-message-title {
+    color: #ffffff !important;
+}
+html.dark-theme .notif-item.read .notif-message-title {
+    color: #cbd5e1 !important;
+}
+html.dark-theme .notif-time {
+    color: #94a3b8 !important;
+}
+</style>
+
 <section class="panel notification-list" style="padding:0; overflow:hidden;">
-    <div style="padding:14px 14px 10px; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between;">
-        <h2 style="margin:0; font-size:16px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
+    <div class="notif-header">
+        <h2>
             <i class="fa-solid fa-bell" style="color:#3b68b7;"></i> Notifications
         </h2>
         <% const unread = typeof unreadCount !== 'undefined' ? unreadCount : notes.filter(n => !n.is_read).length; %>
@@ -19,18 +136,7 @@
 
     <div id="notif-items-container">
         <% notes.forEach(n => { %>
-            <a href="/notifications/<%= n.id %>/open" style="
-                display:flex;
-                align-items:center;
-                gap:10px;
-                padding:12px 10px;
-                border-bottom:1px solid #f1f5f9;
-                text-decoration:none;
-                color:inherit;
-                background: <%= !n.is_read ? '#eff6ff' : '#ffffff' %>;
-                transition: background 0.15s ease;
-                position: relative;
-            ">
+            <a href="/notifications/<%= n.id %>/open" class="notif-item <%= !n.is_read ? 'unread' : 'read' %>">
                 <!-- Unread Red Dot -->
                 <% if (!n.is_read) { %>
                     <span style="
@@ -47,22 +153,16 @@
                 <% } %>
 
                 <!-- Bell Icon -->
-                <div style="
-                    width:34px; height:34px; flex-shrink:0;
-                    border-radius:50%;
-                    background: <%= !n.is_read ? '#dbeafe' : '#f1f5f9' %>;
-                    display:flex; align-items:center; justify-content:center;
-                    margin-left: <%= !n.is_read ? '6px' : '0px' %>;
-                ">
+                <div class="notif-icon-box">
                     <i class="fa-solid fa-bell" style="font-size:13px; color:<%= !n.is_read ? '#2563eb' : '#94a3b8' %>;"></i>
                 </div>
 
                 <!-- Message -->
                 <div style="flex:1; min-width:0;">
-                    <b style="display:block; font-size:13px; font-weight:<%= !n.is_read ? '700' : '600' %>; color:<%= !n.is_read ? '#0f172a' : '#475569' %>; line-height:1.35;">
+                    <b class="notif-message-title">
                         <%= n.message %>
                     </b>
-                    <small style="display:block; margin-top:2px; font-size:11px; color:#94a3b8;">
+                    <small class="notif-time">
                         <i class="fa-regular fa-clock"></i> <%= formatDateTime(n.created_at) %>
                     </small>
                 </div>
@@ -95,29 +195,18 @@ function formatDateTimeStr(dStr) {
 function createNotificationNode(n) {
     const a = document.createElement('a');
     a.href = `/notifications/${n.id}/open`;
-    a.style.cssText = `
-        display:flex;
-        align-items:center;
-        gap:10px;
-        padding:12px 10px;
-        border-bottom:1px solid #f1f5f9;
-        text-decoration:none;
-        color:inherit;
-        background:${!n.is_read ? '#eff6ff' : '#ffffff'};
-        transition: background 0.15s ease;
-        position: relative;
-    `;
+    a.className = `notif-item ${!n.is_read ? 'unread' : 'read'}`;
 
     a.innerHTML = `
         ${!n.is_read ? '<span style="position:absolute; left:3px; top:50%; transform:translateY(-50%); width:6px; height:6px; background:#dc2626; border-radius:50%; flex-shrink:0;"></span>' : ''}
-        <div style="width:34px; height:34px; flex-shrink:0; border-radius:50%; background:${!n.is_read ? '#dbeafe' : '#f1f5f9'}; display:flex; align-items:center; justify-content:center; margin-left:${!n.is_read ? '6px' : '0px'};">
+        <div class="notif-icon-box">
             <i class="fa-solid fa-bell" style="font-size:13px; color:${!n.is_read ? '#2563eb' : '#94a3b8'};"></i>
         </div>
         <div style="flex:1; min-width:0;">
-            <b style="display:block; font-size:13px; font-weight:${!n.is_read ? '700' : '600'}; color:${!n.is_read ? '#0f172a' : '#475569'}; line-height:1.35;">
+            <b class="notif-message-title">
                 ${n.message}
             </b>
-            <small style="display:block; margin-top:2px; font-size:11px; color:#94a3b8;">
+            <small class="notif-time">
                 <i class="fa-regular fa-clock"></i> ${formatDateTimeStr(n.created_at)}
             </small>
         </div>

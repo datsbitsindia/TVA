@@ -63,7 +63,7 @@
                         </form>
                     <% } %>
                 <% } else { %>
-                    <span class="task-action-pill" style="background:#fef9c3; color:#b45309; border-color:#fde68a; font-weight:700; cursor:default;" title="Waiting for <%= task.creator_name || 'Manager' %> verification">
+                    <span class="task-action-pill awaiting-pill" style="background:#fef9c3; color:#92400e; border-color:#fde68a; font-weight:700; cursor:default;" title="Waiting for <%= task.creator_name || 'Manager' %> verification">
                         <i class="fa-solid fa-triangle-exclamation"></i> Awaiting Verification
                     </span>
                     <% if (canVerify) { %>
@@ -96,7 +96,7 @@
               let pBg = '#f1f5f9', pText = '#475569', pBorder = '#cbd5e1';
               const pVal = (task.priority || '').toLowerCase();
               if (pVal === 'medium') {
-                  pBg = '#e0f2fe'; pText = '#0369a1'; pBorder = '#bae6fd';
+                  pBg = '#fef3c7'; pText = '#92400e'; pBorder = '#fde68a';
               } else if (pVal === 'high') {
                   pBg = '#fef3c7'; pText = '#b45309'; pBorder = '#fde68a';
               } else if (pVal === 'critical') {
@@ -104,7 +104,7 @@
               }
             %>
             <div style="margin-top: 2px;">
-                <span style="display: inline-block; padding: 2px 10px; border-radius: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; background: <%= pBg %>; color: <%= pText %>; border: 1px solid <%= pBorder %>; margin: 0 !important;">
+                <span class="priority-tag-pill priority-<%= pVal %>" style="display: inline-block; padding: 2px 10px; border-radius: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; background: <%= pBg %>; color: <%= pText %>; border: 1px solid <%= pBorder %>; margin: 0 !important;">
                     <%= task.priority %>
                 </span>
             </div>

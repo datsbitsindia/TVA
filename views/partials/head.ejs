@@ -28,11 +28,22 @@
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
 
-    <link rel="stylesheet" href="/css/style.css?v=13">
-    <link rel="stylesheet" href="/css/responsive.css?v=13">
-    <link rel="stylesheet" href="/css/role-ui.css?v=13">
-    <link rel="stylesheet" href="/css/toast.css?v=13">
-    <link rel="stylesheet" href="/css/ai-chat.css">
+    <script>
+        (function() {
+            var savedTheme = localStorage.getItem('tva_theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark-theme');
+            } else {
+                document.documentElement.classList.remove('dark-theme');
+            }
+        })();
+    </script>
+
+    <link rel="stylesheet" href="/css/style.css?v=21">
+    <link rel="stylesheet" href="/css/responsive.css?v=21">
+    <link rel="stylesheet" href="/css/role-ui.css?v=21">
+    <link rel="stylesheet" href="/css/toast.css?v=21">
+    <link rel="stylesheet" href="/css/ai-chat.css?v=21">
 
     <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
     <script>window.currentUserId = <%= typeof user !== 'undefined' && user ? user.id : 0 %>;</script>
