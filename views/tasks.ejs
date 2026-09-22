@@ -375,7 +375,7 @@ function createTaskCardNode(t) {
                 <span class="status-chip task-status-pill ${t.is_overdue ? 'overdue' : String(t.status || 'Pending').toLowerCase().replaceAll(' ', '-')}" style="flex:0 0 auto; font-size:9px; padding:2px 6px; margin:0!important;">
                     ${t.is_overdue ? 'Overdue' : t.status}
                 </span>
-                ${(t.status === 'Completed' || t.status === '2') ? (
+                ${(String(t.status || '').toLowerCase() === 'completed' || String(t.status) === '2') ? (
                     t.is_verified ? `
                         <span class="status-chip verified-chip" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; padding:2px 6px; font-size:9px; font-weight:700; flex:0 0 auto; margin:0!important;" title="Verified by ${t.verifier_name || 'Manager'}">
                             <i class="fa-solid fa-certificate"></i> Verified
@@ -417,17 +417,25 @@ function createTaskCardNode(t) {
     return article;
 }
 
+let activeTaskFetchController = null;
+
 async function fetchNextTaskBatch(isReset = false) {
-    if (isLoadingTaskBatch) return;
+    if (!isReset && isLoadingTaskBatch) return;
     if (!isReset && !hasMoreTaskBatch) return;
 
     if (isReset) {
+        if (activeTaskFetchController) {
+            try { activeTaskFetchController.abort(); } catch(e) {}
+        }
         currentTaskPage = 1;
         hasMoreTaskBatch = true;
+        isLoadingTaskBatch = false;
     } else {
         currentTaskPage++;
     }
 
+    activeTaskFetchController = new AbortController();
+    const currentFetchController = activeTaskFetchController;
     isLoadingTaskBatch = true;
     const spinner = document.getElementById('task-infinite-spinner');
     if (spinner) spinner.style.display = 'block';
@@ -451,7 +459,9 @@ async function fetchNextTaskBatch(isReset = false) {
     });
 
     try {
-        const res = await fetch(`/tasks/api/list?${params.toString()}`);
+        const res = await fetch(`/tasks/api/list?${params.toString()}`, {
+            signal: currentFetchController.signal
+        });
         const data = await res.json();
         if (data.success) {
             const container = document.querySelector('.entity-list');
@@ -477,21 +487,25 @@ async function fetchNextTaskBatch(isReset = false) {
             hasMoreTaskBatch = data.pagination ? data.pagination.hasMore : false;
         }
     } catch (err) {
+        if (err.name === 'AbortError') return;
         console.error('Error fetching task batch:', err);
     } finally {
-        isLoadingTaskBatch = false;
-        if (spinner) spinner.style.display = 'none';
+        if (activeTaskFetchController === currentFetchController) {
+            isLoadingTaskBatch = false;
+            if (spinner) spinner.style.display = 'none';
 
-        // Auto-fill screen if content is shorter than viewport and more pages exist
-        if (hasMoreTaskBatch && document.documentElement.scrollHeight <= window.innerHeight + 150) {
-            setTimeout(() => {
-                if (!isLoadingTaskBatch && hasMoreTaskBatch) {
-                    fetchNextTaskBatch(false);
-                }
-            }, 250);
+            // Auto-fill screen if content is shorter than viewport and more pages exist
+            if (hasMoreTaskBatch && document.documentElement.scrollHeight <= window.innerHeight + 150) {
+                setTimeout(() => {
+                    if (!isLoadingTaskBatch && hasMoreTaskBatch) {
+                        fetchNextTaskBatch(false);
+                    }
+                }, 250);
+            }
         }
     }
 }
+window.fetchNextTaskBatch = fetchNextTaskBatch;
 
 window.filterTaskType = function(type, btn) {
     document.querySelectorAll('.task-tab-btn').forEach(b => {
@@ -504,30 +518,34 @@ window.filterTaskType = function(type, btn) {
 };
 
 window.filterByKpi = function(filterVal, event) {
-    const valStr = String(filterVal || '').toLowerCase().trim();
-    window.currentKpiFilter = valStr;
+    try {
+        const valStr = String(filterVal || '').toLowerCase().trim();
+        window.currentKpiFilter = valStr;
 
-    document.querySelectorAll('.metric-card').forEach(card => {
-        card.classList.remove('active-kpi-filter');
-    });
-
-    let targetCard = null;
-    if (event && event.currentTarget) {
-        targetCard = event.currentTarget.closest('.metric-card');
-    }
-    if (!targetCard) {
         document.querySelectorAll('.metric-card').forEach(card => {
-            const onclickAttr = (card.getAttribute('onclick') || '').toLowerCase();
-            if (onclickAttr.includes(`'${valStr}'`) || onclickAttr.includes(`"${valStr}"`)) {
-                targetCard = card;
-            }
+            card.classList.remove('active-kpi-filter');
         });
-    }
-    if (targetCard) {
-        targetCard.classList.add('active-kpi-filter');
-    }
 
-    fetchNextTaskBatch(true);
+        let targetCard = null;
+        if (event && event.currentTarget) {
+            targetCard = event.currentTarget.closest('.metric-card');
+        }
+        if (!targetCard) {
+            document.querySelectorAll('.metric-card').forEach(card => {
+                const onclickAttr = (card.getAttribute('onclick') || '').toLowerCase();
+                if (onclickAttr.includes(`'${valStr}'`) || onclickAttr.includes(`"${valStr}"`)) {
+                    targetCard = card;
+                }
+            });
+        }
+        if (targetCard) {
+            targetCard.classList.add('active-kpi-filter');
+        }
+    } catch(e) {
+        console.error("filterByKpi ui update error:", e);
+    } finally {
+        fetchNextTaskBatch(true);
+    }
 };
 
 let filterTimeout = null;
@@ -581,7 +599,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (hasMoreTaskBatch && document.documentElement.scrollHeight <= window.innerHeight + 150) {
         setTimeout(() => {
             if (!isLoadingTaskBatch && hasMoreTaskBatch) {
-                fetchNextTaskBatch(false);
+                // Remove immediate page 2 fetch on load to prevent racing with KPI initial clicks
+                // fetchNextTaskBatch(false);
             }
         }, 300);
     }

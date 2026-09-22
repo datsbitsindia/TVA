@@ -190,11 +190,12 @@ window.applyCompactFilter = function(bar) {
         const cardRole = (card.dataset.role || '').toLowerCase();
         const cardAction = (card.dataset.action || '').toLowerCase();
 
+        const isTaskCard = card.classList.contains('task-card');
         const matchQuery = !query || text.includes(query);
         let matchStatus = true;
 
         const checkStatusMatch = (target) => {
-            if (!target) return true;
+            if (!target || isTaskCard) return true; // Server API already handles status filtering for task cards
             const targetLower = String(target).toLowerCase().trim();
             const targetClean = targetLower.replaceAll(' ', '-');
             const targetSpace = targetLower.replaceAll('-', ' ');
@@ -209,7 +210,7 @@ window.applyCompactFilter = function(bar) {
                 return isForwarded;
             }
             if (targetLower === 'pending') {
-                return cardStatusLower === 'pending' || cardStatusLower === 'planned';
+                return cardStatusLower === 'pending' || cardStatusLower === 'planned' || cardStatusLower === '0' || cardStatusLower === '4';
             }
             if (cardStatusLower) {
                 return cardStatusLower === targetLower || 
@@ -224,14 +225,16 @@ window.applyCompactFilter = function(bar) {
             return cardRole === targetClean || cardAction === targetClean || text.includes(targetLower);
         };
 
-        if (activeKpi && activeKpi !== 'all') {
-            matchStatus = checkStatusMatch(activeKpi);
-        } else if (statusFilter) {
-            matchStatus = checkStatusMatch(statusFilter);
+        if (!isTaskCard) {
+            if (activeKpi && activeKpi !== 'all') {
+                matchStatus = checkStatusMatch(activeKpi);
+            } else if (statusFilter) {
+                matchStatus = checkStatusMatch(statusFilter);
+            }
         }
 
         let matchProject = true;
-        if (projectFilter) {
+        if (projectFilter && !isTaskCard) {
             if (cardProject) {
                 matchProject = cardProject === projectFilter || cardProject.includes(projectFilter);
             } else if (cardAction || cardRole) {
@@ -261,11 +264,7 @@ window.applyCompactFilter = function(bar) {
 
             const statusPill = card.querySelector('.task-status-pill');
             if (statusPill) {
-                if (!activeKpi || activeKpi === 'all') {
-                    statusPill.style.setProperty('display', '', '');
-                } else {
-                    statusPill.style.setProperty('display', 'none', 'important');
-                }
+                statusPill.style.setProperty('display', '', '');
             }
         } else {
             card.style.setProperty('display', 'none', 'important');
@@ -502,7 +501,12 @@ window.filterByKpi = function(filterVal, event) {
 
     if (!valStr || valStr === 'all') {
         if (searchInput) searchInput.value = '';
-        selects.forEach(s => s.selectedIndex = 0);
+        selects.forEach(s => {
+            const firstOpt = (s.options[0]?.text || '').toLowerCase();
+            if (!firstOpt.includes('project')) {
+                s.selectedIndex = 0;
+            }
+        });
         if (!targetCard) {
             targetCard = document.querySelector('.metric-card[onclick*="all"], .metric-card[title*="all"]');
         }
@@ -511,6 +515,8 @@ window.filterByKpi = function(filterVal, event) {
         const cleanValStr = valStr.replaceAll(' ', '-');
         const spaceValStr = valStr.replaceAll('-', ' ');
         selects.forEach(s => {
+            const firstOpt = (s.options[0]?.text || '').toLowerCase();
+            if (firstOpt.includes('project')) return;
             [...s.options].forEach((opt, idx) => {
                 const optText = opt.text.toLowerCase().trim();
                 const optVal = opt.value.toLowerCase().trim();
@@ -542,7 +548,9 @@ window.filterByKpi = function(filterVal, event) {
         targetCard.classList.add('active-kpi-filter');
     }
 
-    if (bar) {
+    if (typeof window.fetchNextTaskBatch === 'function') {
+        window.fetchNextTaskBatch(true);
+    } else if (bar) {
         applyCompactFilter(bar);
     } else {
         const cards = document.querySelectorAll('.entity-card, .activity-row');
@@ -590,7 +598,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const statusParam = params.get('status');
     if (window.location.pathname === '/tasks' || window.location.pathname === '/tasks/') {
-        window.filterByKpi(statusParam || 'Pending');
+        if (statusParam) {
+            window.filterByKpi(statusParam);
+        } else {
+            window.currentKpiFilter = '';
+            const defaultCard = document.querySelector('.metric-card[onclick*="all"], .metric-card[title*="all"]');
+            if (defaultCard) {
+                document.querySelectorAll('.metric-card').forEach(c => c.classList.remove('active-kpi-filter'));
+                defaultCard.classList.add('active-kpi-filter');
+            }
+        }
     } else if (statusParam) {
         window.filterByKpi(statusParam);
     } else {

@@ -43,7 +43,7 @@ const baseQuery = `
     FROM tasks t
     LEFT JOIN task_assignees ta_sub ON ta_sub.task_id=t.id AND ta_sub.user_id=?
     LEFT JOIN users a ON a.id=t.assigned_to
-    JOIN users c ON c.id=t.created_by
+    LEFT JOIN users c ON c.id=t.created_by
     LEFT JOIN projects p ON p.id=t.project_id
     LEFT JOIN users v ON v.id=t.verified_by
 `;
@@ -162,15 +162,13 @@ const getTasksWithPaginationAndCounts = async (req) => {
         queryParams.push(projVal, projVal);
     }
 
-    if (req.query.task_tab) {
-        const tab = req.query.task_tab.trim().toLowerCase();
-        if (tab === 'assigned-to-me') {
-            filters.push("(FIND_IN_SET(?, t.assigned_to) > 0 OR t.id IN (SELECT task_id FROM task_assignees WHERE user_id=?))");
-            queryParams.push(u.id, u.id);
-        } else if (tab === 'assigned-by-me') {
-            filters.push("(t.created_by = ? AND (NOT FIND_IN_SET(?, t.assigned_to) > 0 OR (LENGTH(t.assigned_to) - LENGTH(REPLACE(t.assigned_to, ',', '')) + 1) > 1))");
-            queryParams.push(u.id, u.id);
-        }
+    const tab = (req.query.task_tab && req.query.task_tab.trim() !== '') ? req.query.task_tab.trim().toLowerCase() : 'assigned-to-me';
+    if (tab === 'assigned-to-me') {
+        filters.push("(FIND_IN_SET(?, t.assigned_to) > 0 OR t.id IN (SELECT task_id FROM task_assignees WHERE user_id=?))");
+        queryParams.push(u.id, u.id);
+    } else if (tab === 'assigned-by-me') {
+        filters.push("(t.created_by = ? AND (NOT FIND_IN_SET(?, t.assigned_to) > 0 OR (LENGTH(t.assigned_to) - LENGTH(REPLACE(t.assigned_to, ',', '')) + 1) > 1))");
+        queryParams.push(u.id, u.id);
     }
 
     if (req.query.q) {

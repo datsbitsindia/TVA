@@ -187,7 +187,18 @@ exports.detail = async (req, res) => {
 
     const projectAssignees = await db.prepare('SELECT pa.*, u.name, u.email FROM project_assignees pa JOIN users u ON u.id=pa.user_id WHERE pa.project_id=?').all(project.id);
 
-    const tasks = await db.prepare("SELECT t.*, u.name employee_name FROM tasks t JOIN users u ON u.id=t.assigned_to WHERE t.project_id=? AND t.organization_id=? ORDER BY t.created_at DESC").all(project.id, orgId);
+    const tasks = await db.prepare(`
+        SELECT t.*,
+            COALESCE(
+                (SELECT GROUP_CONCAT(u.name ORDER BY u.name SEPARATOR ', ') FROM task_assignees ta2 JOIN users u ON u.id=ta2.user_id WHERE ta2.task_id=t.id),
+                (SELECT GROUP_CONCAT(u.name ORDER BY u.id SEPARATOR ', ') FROM users u WHERE FIND_IN_SET(u.id, t.assigned_to) > 0),
+                a.name, 'Unassigned'
+            ) AS employee_name
+        FROM tasks t
+        LEFT JOIN users a ON a.id=t.assigned_to
+        WHERE t.project_id=? AND t.organization_id=?
+        ORDER BY t.created_at DESC
+    `).all(project.id, orgId);
     const priorityRank = (priorityStr) => {
         const p = String(priorityStr || '').toLowerCase().trim();
         if (p === 'critical') return 1;
