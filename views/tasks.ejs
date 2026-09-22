@@ -321,6 +321,12 @@ let isLoadingTaskBatch = false;
 let hasMoreTaskBatch = <%= typeof pagination !== 'undefined' && pagination.hasMore ? 'true' : 'false' %>;
 const myUserId = <%= user.id %>;
 
+// Initialize KPI filter from URL query param if available, otherwise default to empty string (all tasks)
+const initialUrlParams = new URLSearchParams(window.location.search);
+if (window.currentKpiFilter === undefined) {
+    window.currentKpiFilter = initialUrlParams.has('status') ? initialUrlParams.get('status').trim() : '';
+}
+
 function createTaskCardNode(t) {
     const assignedIds = String(t.assigned_to || '').split(',').map(x => Number(x.trim()));
     const isPureSelf = t.is_self_task || String(t.project_name || '').toLowerCase() === 'self task' || (Number(t.created_by) === myUserId && assignedIds.length === 1 && assignedIds[0] === myUserId);
@@ -426,7 +432,7 @@ async function fetchNextTaskBatch(isReset = false) {
     const spinner = document.getElementById('task-infinite-spinner');
     if (spinner) spinner.style.display = 'block';
 
-    const activeKpi = window.currentKpiFilter || 'Pending';
+    const activeKpi = window.currentKpiFilter !== undefined && window.currentKpiFilter !== null ? window.currentKpiFilter : '';
     const bar = document.querySelector('.compact-filter');
     const searchInput = bar ? bar.querySelector('input[type="search"]') : null;
     const queryVal = searchInput ? searchInput.value.trim() : '';
@@ -475,6 +481,15 @@ async function fetchNextTaskBatch(isReset = false) {
     } finally {
         isLoadingTaskBatch = false;
         if (spinner) spinner.style.display = 'none';
+
+        // Auto-fill screen if content is shorter than viewport and more pages exist
+        if (hasMoreTaskBatch && document.documentElement.scrollHeight <= window.innerHeight + 150) {
+            setTimeout(() => {
+                if (!isLoadingTaskBatch && hasMoreTaskBatch) {
+                    fetchNextTaskBatch(false);
+                }
+            }, 250);
+        }
     }
 }
 
@@ -534,7 +549,7 @@ document.addEventListener('change', function(e) {
 window.addEventListener('scroll', function() {
     if (isLoadingTaskBatch || !hasMoreTaskBatch) return;
     const scrollPos = window.innerHeight + window.scrollY;
-    const threshold = document.documentElement.scrollHeight - 400;
+    const threshold = document.documentElement.scrollHeight - 200;
     if (scrollPos >= threshold) {
         fetchNextTaskBatch(false);
     }
@@ -560,6 +575,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
         window.history.replaceState({path: cleanUrl}, '', cleanUrl);
+    }
+
+    // Auto check if initial load needs auto-filling for high resolution screens
+    if (hasMoreTaskBatch && document.documentElement.scrollHeight <= window.innerHeight + 150) {
+        setTimeout(() => {
+            if (!isLoadingTaskBatch && hasMoreTaskBatch) {
+                fetchNextTaskBatch(false);
+            }
+        }, 300);
     }
 });
 </script>
