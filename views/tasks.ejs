@@ -7,7 +7,6 @@
     const progress = typeof kpiCounts !== 'undefined' ? kpiCounts.progress : tasks.filter(t => String(t.status).toLowerCase() === 'in progress').length;
     const overdueCount = typeof kpiCounts !== 'undefined' ? kpiCounts.overdueCount : tasks.filter(t => t.is_overdue).length;
     const totalCount = typeof kpiCounts !== 'undefined' ? kpiCounts.total : tasks.length;
-<%
     const activeKpiStatus = (typeof filters !== 'undefined' && filters.status !== undefined) ? String(filters.status).toLowerCase().trim() : 'pending';
 %>
 
