@@ -601,11 +601,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (statusParam) {
             window.filterByKpi(statusParam);
         } else {
-            window.currentKpiFilter = '';
-            const defaultCard = document.querySelector('.metric-card[onclick*="all"], .metric-card[title*="all"]');
-            if (defaultCard) {
+            window.currentKpiFilter = 'pending';
+            const pendingCard = document.querySelector('.metric-card[onclick*="Pending"], .metric-card[onclick*="pending"]');
+            if (pendingCard) {
                 document.querySelectorAll('.metric-card').forEach(c => c.classList.remove('active-kpi-filter'));
-                defaultCard.classList.add('active-kpi-filter');
+                pendingCard.classList.add('active-kpi-filter');
             }
         }
     } else if (statusParam) {

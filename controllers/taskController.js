@@ -129,20 +129,20 @@ const getTasksWithPaginationAndCounts = async (req) => {
         filters.push('t.is_forwarded=1');
     }
 
-    // Filter by KPI status
-    if (req.query.status) {
-        const val = req.query.status.trim().toLowerCase();
-        if (val === 'pending') {
+    // Filter by KPI status (default to 'pending' if not specified)
+    const statusVal = req.query.status !== undefined ? req.query.status.trim().toLowerCase() : 'pending';
+    if (statusVal) {
+        if (statusVal === 'pending') {
             filters.push(`LOWER(${taskStatusSql}) IN ('pending', 'planned', '0', '4')`);
-        } else if (val === 'in progress' || val === 'in-progress') {
+        } else if (statusVal === 'in progress' || statusVal === 'in-progress') {
             filters.push(`LOWER(${taskStatusSql}) IN ('in progress', '1')`);
-        } else if (val === 'completed') {
+        } else if (statusVal === 'completed') {
             filters.push(`LOWER(${taskStatusSql}) IN ('completed', '2')`);
-        } else if (val === 'overdue') {
+        } else if (statusVal === 'overdue') {
             filters.push(`(t.due_date < CURDATE() AND LOWER(${taskStatusSql}) NOT IN ('completed', 'cancelled', '2', '3'))`);
-        } else if (val !== 'all' && val !== '') {
+        } else if (statusVal !== 'all' && statusVal !== '') {
             filters.push(`LOWER(${taskStatusSql}) = ?`);
-            queryParams.push(val);
+            queryParams.push(statusVal);
         }
     }
 

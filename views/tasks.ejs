@@ -7,35 +7,37 @@
     const progress = typeof kpiCounts !== 'undefined' ? kpiCounts.progress : tasks.filter(t => String(t.status).toLowerCase() === 'in progress').length;
     const overdueCount = typeof kpiCounts !== 'undefined' ? kpiCounts.overdueCount : tasks.filter(t => t.is_overdue).length;
     const totalCount = typeof kpiCounts !== 'undefined' ? kpiCounts.total : tasks.length;
+<%
+    const activeKpiStatus = (typeof filters !== 'undefined' && filters.status !== undefined) ? String(filters.status).toLowerCase().trim() : 'pending';
 %>
 
 <div class="metric-grid task-kpis five">
 
-    <div class="metric-card red" onclick="filterByKpi('Overdue', event)" title="Click to filter Overdue tasks">
+    <div class="metric-card red <%= activeKpiStatus === 'overdue' ? 'active-kpi-filter' : '' %>" onclick="filterByKpi('Overdue', event)" title="Click to filter Overdue tasks">
         <i class="fa-solid fa-triangle-exclamation"></i>
         <b><%= overdueCount %></b>
         <span>Overdue</span>
     </div>
 
-    <div class="metric-card orange" onclick="filterByKpi('Pending', event)" title="Click to filter Pending tasks">
+    <div class="metric-card orange <%= activeKpiStatus === 'pending' ? 'active-kpi-filter' : '' %>" onclick="filterByKpi('Pending', event)" title="Click to filter Pending tasks">
         <i class="fa-regular fa-clock"></i>
         <b><%= pending %></b>
         <span>Pending</span>
     </div>
 
-    <div class="metric-card purple" onclick="filterByKpi('In Progress', event)" title="Click to filter In Progress tasks">
+    <div class="metric-card purple <%= (activeKpiStatus === 'in progress' || activeKpiStatus === 'in-progress') ? 'active-kpi-filter' : '' %>" onclick="filterByKpi('In Progress', event)" title="Click to filter In Progress tasks">
         <i class="fa-solid fa-spinner"></i>
         <b><%= progress %></b>
         <span>In Progress</span>
     </div>
 
-    <div class="metric-card green" onclick="filterByKpi('Completed', event)" title="Click to filter Completed tasks">
+    <div class="metric-card green <%= activeKpiStatus === 'completed' ? 'active-kpi-filter' : '' %>" onclick="filterByKpi('Completed', event)" title="Click to filter Completed tasks">
         <i class="fa-regular fa-circle-check"></i>
         <b><%= done %></b>
         <span>Completed</span>
     </div>
 
-    <div class="metric-card" onclick="filterByKpi('all', event)" title="Click to show all tasks">
+    <div class="metric-card <%= activeKpiStatus === 'all' ? 'active-kpi-filter' : '' %>" onclick="filterByKpi('all', event)" title="Click to show all tasks">
         <i class="fa-solid fa-list-check"></i>
         <b><%= totalCount %></b>
         <span>Total Tasks</span>
