@@ -515,9 +515,9 @@ html body .toolbar-ui select {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
 }
 
-html body input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not(.note-title-field):focus,
-html body select:focus,
-html body textarea:focus {
+html:not(.dark-theme) body input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not(.note-title-field):focus,
+html:not(.dark-theme) body select:focus,
+html:not(.dark-theme) body textarea:focus {
     background-color: #ffffff !important;
     background: #ffffff !important;
     border-color: #3b68b7 !important;
@@ -1076,10 +1076,10 @@ body {
     transform: translateY(-1px) !important;
 }
 
-/* Glass Inputs & Form Fields */
-html body input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not(.note-title-field),
-html body select,
-html body textarea {
+/* Glass Inputs & Form Fields (Light Theme Only) */
+html:not(.dark-theme) body input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not(.note-title-field),
+html:not(.dark-theme) body select,
+html:not(.dark-theme) body textarea {
     background: rgba(255, 255, 255, 0.7) !important;
     backdrop-filter: blur(10px) !important;
     -webkit-backdrop-filter: blur(10px) !important;
@@ -1088,9 +1088,9 @@ html body textarea {
     transition: all 0.2s ease !important;
 }
 
-html body input:focus,
-html body select:focus,
-html body textarea:focus {
+html:not(.dark-theme) body input:focus,
+html:not(.dark-theme) body select:focus,
+html:not(.dark-theme) body textarea:focus {
     background: rgba(255, 255, 255, 0.95) !important;
     border-color: #3b68b7 !important;
     box-shadow: 0 0 0 3px rgba(59, 104, 183, 0.18) !important;
@@ -1133,14 +1133,18 @@ html.dark-theme .login-card input {
     border: 1px solid rgba(255, 255, 255, 0.12) !important;
 }
 
+html.dark-theme body input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not(.note-title-field):focus,
 html.dark-theme body input:focus,
 html.dark-theme body select:focus,
 html.dark-theme body textarea:focus,
-html.dark-theme .login-card input:focus {
+html.dark-theme .login-card input:focus,
+html.dark-theme input:focus {
     background-color: rgba(255, 255, 255, 0.08) !important;
     background: rgba(255, 255, 255, 0.08) !important;
-    border-color: rgba(255, 255, 255, 0.25) !important;
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1) !important;
+    color: #FFFFFF !important;
+    border-color: rgba(96, 165, 250, 0.6) !important;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25) !important;
+    outline: none !important;
 }
 
 html.dark-theme body input::placeholder,
