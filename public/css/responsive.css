@@ -1122,6 +1122,72 @@ html body textarea:focus {
         border-radius: 14px !important;
         padding: 10px !important;
     }
+/* Dark Theme Glass Inputs & Form Fields Hardening */
+html.dark-theme body input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not(.note-title-field),
+html.dark-theme body select,
+html.dark-theme body textarea,
+html.dark-theme .login-card input {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #FFFFFF !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+html.dark-theme body input:focus,
+html.dark-theme body select:focus,
+html.dark-theme body textarea:focus,
+html.dark-theme .login-card input:focus {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark-theme body input::placeholder,
+html.dark-theme body textarea::placeholder,
+html.dark-theme .login-card input::placeholder {
+    color: #888888 !important;
+    opacity: 1 !important;
+}
+
+/* Chrome Autofill Dark Mode Override */
+html.dark-theme input:-webkit-autofill,
+html.dark-theme input:-webkit-autofill:hover,
+html.dark-theme input:-webkit-autofill:focus,
+html.dark-theme input:-webkit-autofill:active {
+    -webkit-text-fill-color: #FFFFFF !important;
+    -webkit-box-shadow: 0 0 0px 1000px #18181c inset !important;
+    transition: background-color 5000s ease-in-out 0s !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Dark Theme Primary Button Override */
+html.dark-theme body .btn.primary,
+html.dark-theme .btn.primary,
+html.dark-theme .login-card .btn.primary {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4) !important;
+    font-weight: 700 !important;
+}
+
+html.dark-theme body .btn.primary:hover,
+html.dark-theme .btn.primary:hover,
+html.dark-theme .login-card .btn.primary:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5) !important;
+}
+
+/* Dark Theme Alert Error Box */
+html.dark-theme body .alert.error,
+html.dark-theme .alert.error,
+html.dark-theme .login-card .alert.error {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: #f87171 !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+    backdrop-filter: blur(10px) !important;
 }
 
 
