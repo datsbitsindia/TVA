@@ -322,8 +322,8 @@ input:-webkit-autofill:active {
 }
 
 html.dark-theme .theme-toggle-btn {
-    background: rgba(30, 41, 59, 0.85) !important;
-    border: 1.5px solid rgba(82, 120, 220, 0.35) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
     color: #fbbf24 !important;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
 }
