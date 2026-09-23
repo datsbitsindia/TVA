@@ -927,14 +927,14 @@ body {
         position: fixed !important;
         inset: auto 12px calc(10px + env(safe-area-inset-bottom)) 12px !important;
         width: calc(100% - 24px) !important;
-        height: 60px !important;
+        height: 62px !important;
         padding: 4px !important;
-        background: rgba(255, 255, 255, 0.78) !important;
+        background: rgba(255, 255, 255, 0.92) !important;
         backdrop-filter: blur(25px) saturate(200%) !important;
         -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.9) !important;
+        border: 1.5px solid rgba(203, 213, 225, 0.9) !important;
         border-radius: 20px !important;
-        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+        box-shadow: 0 12px 35px rgba(15, 23, 42, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
         z-index: 9999 !important;
         overflow: hidden !important;
     }
@@ -954,7 +954,7 @@ body {
         position: relative !important;
         flex: 1 !important;
         min-width: 0 !important;
-        height: 52px !important;
+        height: 54px !important;
         padding: 5px 2px !important;
         border-radius: 14px !important;
         display: flex !important;
@@ -962,16 +962,17 @@ body {
         align-items: center !important;
         justify-content: center !important;
         gap: 3px !important;
-        color: #64748b !important;
-        font-size: 10px !important;
+        color: #334155 !important;
+        font-size: 11px !important;
         font-weight: 600 !important;
         transition: all 0.2s ease !important;
         background: transparent !important;
         box-shadow: none !important;
+        border: 1px solid transparent !important;
     }
     .sidebar nav a i {
-        font-size: 18px !important;
-        color: #64748b !important;
+        font-size: 19px !important;
+        color: #1e293b !important;
         transition: transform 0.2s ease, color 0.2s ease !important;
     }
     .sidebar nav a:hover {
@@ -982,7 +983,8 @@ body {
         background: rgba(37, 99, 235, 0.12) !important;
         color: #1d4ed8 !important;
         font-weight: 700 !important;
-        box-shadow: none !important;
+        border: 1px solid rgba(37, 99, 235, 0.2) !important;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15) !important;
     }
     .sidebar nav a.active i {
         color: #1d4ed8 !important;
@@ -992,10 +994,67 @@ body {
         content: "" !important;
         position: absolute !important;
         bottom: 3px !important;
-        width: 4px !important;
-        height: 4px !important;
+        width: 5px !important;
+        height: 5px !important;
         border-radius: 50% !important;
         background: #1d4ed8 !important;
+    }
+
+    /* Dark Mode Overrides for Mobile Dock */
+    html.dark-theme .sidebar {
+        background: rgba(22, 22, 26, 0.96) !important;
+        backdrop-filter: blur(25px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+        border: 1.5px solid rgba(255, 255, 255, 0.20) !important;
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+    }
+    html.dark-theme .sidebar nav a {
+        color: #e2e8f0 !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        border: 1px solid transparent !important;
+    }
+    html.dark-theme .sidebar nav a i {
+        color: #ffffff !important;
+        font-size: 19px !important;
+        opacity: 0.9 !important;
+    }
+    html.dark-theme .sidebar nav a:hover {
+        color: #ffffff !important;
+        background: rgba(255, 255, 255, 0.10) !important;
+    }
+    html.dark-theme .sidebar nav a:hover i {
+        color: #ffffff !important;
+        opacity: 1 !important;
+    }
+    html.dark-theme .sidebar nav a.active {
+        background: rgba(255, 255, 255, 0.16) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.25) !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5) !important;
+        font-weight: 700 !important;
+    }
+    html.dark-theme .sidebar nav a.active i {
+        color: #ffffff !important;
+        opacity: 1 !important;
+        transform: translateY(-1px) scale(1.1) !important;
+    }
+    html.dark-theme .sidebar nav a.active::after {
+        content: "" !important;
+        position: absolute !important;
+        bottom: 3px !important;
+        width: 5px !important;
+        height: 5px !important;
+        border-radius: 50% !important;
+        background: #3b82f6 !important;
+        box-shadow: 0 0 8px #3b82f6 !important;
+    }
+    html.dark-theme .sidebar .badge {
+        background: #ef4444 !important;
+        color: #ffffff !important;
+        border: 1.5px solid #141418 !important;
+        font-weight: 700 !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
     }
 }
 
