@@ -28,8 +28,9 @@
     </script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link rel="stylesheet" href="/css/style.css?v=22">
-    <link rel="stylesheet" href="/css/responsive.css?v=22">
+    <link rel="stylesheet" href="/css/style.css?v=23">
+    <link rel="stylesheet" href="/css/responsive.css?v=23">
+    <link rel="stylesheet" href="/css/role-ui.css?v=23">
 </head>
 <body class="login-page" style="position: relative;">
 
@@ -71,16 +72,5 @@
     </div>
 
     <script src="/js/app.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const btn = document.getElementById('theme-toggle-btn');
-            if (btn) {
-                btn.addEventListener('click', function() {
-                    const isDark = document.documentElement.classList.toggle('dark-theme');
-                    localStorage.setItem('tva_theme', isDark ? 'dark' : 'light');
-                });
-            }
-        });
-    </script>
 </body>
 </html>

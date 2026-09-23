@@ -1077,11 +1077,32 @@ html.dark-theme {
 }
 
 html.dark-theme body,
+html.dark-theme body.login-page,
 html.dark-theme body .app,
 html.dark-theme body .main,
 html.dark-theme body .content {
     background-color: transparent !important;
     background-image: none !important;
+}
+
+html.dark-theme .login-card {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(24px) !important;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.9) !important;
+    color: #FFFFFF !important;
+}
+
+html.dark-theme .login-card h1 {
+    color: #FFFFFF !important;
+}
+
+html.dark-theme .login-card p {
+    color: #CCCCCC !important;
+}
+
+html.dark-theme .login-card label {
+    color: #FFFFFF !important;
 }
 
 /* Status Chips & Priority Badges in Dark Mode */
