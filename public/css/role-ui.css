@@ -1492,3 +1492,163 @@ html.dark-theme .entity-card[data-status="planned"]::before {
 }.pill i {
     color: inherit !important;
 }
+
+/* Mention Autocomplete Dropdown */
+.chat-input-form {
+    position: relative !important;
+}
+
+.mention-dropdown {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 8px;
+    right: 8px;
+    max-width: 380px;
+    max-height: 220px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
+    z-index: 1000;
+    overflow-y: auto;
+    display: none;
+    padding: 6px;
+    animation: mentionFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes mentionFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.mention-dropdown-header {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 6px 10px 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 4px;
+}
+
+.mention-dropdown-header i {
+    color: #2563eb;
+    font-size: 11px;
+}
+
+.mention-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    font-size: 13px;
+    color: #1e293b;
+}
+
+.mention-item:hover,
+.mention-item.active {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.mention-item .mention-user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mention-item .mention-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #dbeafe;
+    color: #2563eb;
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.mention-item .mention-name {
+    font-weight: 600;
+    font-size: 12.5px;
+}
+
+.mention-item .mention-role-pill {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 99px;
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.mention-item:hover .mention-role-pill,
+.mention-item.active .mention-role-pill {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+/* Mention Tag Text in Chat Messages */
+.mention-tag {
+    color: #2563eb !important;
+    font-weight: 700 !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: inline !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+.mention-tag i {
+    display: none !important;
+}
+
+/* Dark Theme Support for Mentions */
+html.dark-theme .mention-dropdown {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+}
+
+html.dark-theme .mention-dropdown-header {
+    color: #94a3b8 !important;
+    border-color: #334155 !important;
+}
+
+html.dark-theme .mention-item {
+    color: #f8fafc !important;
+}
+
+html.dark-theme .mention-item:hover,
+html.dark-theme .mention-item.active {
+    background: rgba(59, 130, 246, 0.2) !important;
+    color: #60a5fa !important;
+}
+
+html.dark-theme .mention-item .mention-avatar {
+    background: rgba(59, 130, 246, 0.25) !important;
+    color: #93c5fd !important;
+}
+
+html.dark-theme .mention-item .mention-role-pill {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #cbd5e1 !important;
+}
+
+html.dark-theme .mention-tag {
+    color: #60a5fa !important;
+    background: transparent !important;
+    border: none !important;
+}
+

@@ -1,4 +1,52 @@
 <%- include('partials/head',{title:task.title}) %><%- include('partials/nav',{page:'task-detail'}) %>
+<%
+  const tagMembers = [];
+  const tagAddedIds = new Set();
+
+  if (task.created_by && task.creator_name) {
+    tagMembers.push({ id: Number(task.created_by), name: String(task.creator_name).trim(), role: 'Assigned By' });
+    tagAddedIds.add(Number(task.created_by));
+  }
+
+  if (typeof taskAssignees !== 'undefined' && Array.isArray(taskAssignees)) {
+    taskAssignees.forEach(a => {
+      const uId = Number(a.user_id);
+      if (uId && a.name && !tagAddedIds.has(uId)) {
+        tagMembers.push({ id: uId, name: String(a.name).trim(), role: a.role === 'manager' ? 'Manager' : 'Assignee' });
+        tagAddedIds.add(uId);
+      }
+    });
+  }
+
+  if (task.assigned_to && task.assigned_name) {
+    const names = String(task.assigned_name).split(',');
+    const ids = String(task.assigned_to).split(',');
+    ids.forEach((idStr, idx) => {
+      const uId = Number(idStr.trim());
+      const nameStr = (names[idx] || '').trim();
+      if (uId && nameStr && !tagAddedIds.has(uId)) {
+        tagMembers.push({ id: uId, name: nameStr, role: 'Assignee' });
+        tagAddedIds.add(uId);
+      }
+    });
+  }
+
+  function renderFormattedMessage(text) {
+    if (!text) return '';
+    let safeText = String(text)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+
+    const sorted = [...tagMembers].sort((a,b) => b.name.length - a.name.length);
+    sorted.forEach(m => {
+      const escapedName = m.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`@${escapedName}`, 'gi');
+      safeText = safeText.replace(regex, `<span class="mention-tag">@${m.name}</span>`);
+    });
+    return safeText;
+  }
+%>
 <% if(success){ %>
     <div class="success-toast">
         <i class="fa-solid fa-circle-check"></i>
@@ -191,7 +239,7 @@
                 <% if(c.user_id !== user.id){ %>
                     <span class="sender-name"><%= c.name %></span>
                 <% } %>
-                <p class="message-text"><%= c.message %></p>
+                <p class="message-text"><%- renderFormattedMessage(c.message) %></p>
                 <div class="message-meta">
                     <time><%= formatDateTime(c.created_at) %></time>
                     <% if(c.user_id === user.id){ %>
@@ -205,7 +253,7 @@
         <% } %>
     </div>
     <form action="/tasks/<%= task.id %>/comment" method="post" class="chat-input-form">
-        <textarea name="message" required placeholder="Write an update..."></textarea>
+        <textarea name="message" required placeholder="Write an update... (Use @ to tag team members)"></textarea>
         <button class="btn primary send-btn" title="Post Update"><i class="fa-solid fa-paper-plane"></i></button>
     </form>
 </section>
@@ -329,6 +377,26 @@
 <% } %>
 
 <script>
+window.taskMembers = <%- JSON.stringify(tagMembers) %>;
+
+function formatMessageMentions(text) {
+    if (!text) return '';
+    let safeText = String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+
+    if (window.taskMembers && window.taskMembers.length) {
+        const sorted = [...window.taskMembers].sort((a, b) => b.name.length - a.name.length);
+        sorted.forEach(m => {
+            const escapedName = m.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(`@${escapedName}`, 'gi');
+            safeText = safeText.replace(regex, `<span class="mention-tag">@${m.name}</span>`);
+        });
+    }
+    return safeText;
+}
+
 window.addEventListener('DOMContentLoaded', () => {
     const box = document.getElementById('chat-messages-box');
     if(box) box.scrollTop = box.scrollHeight;
@@ -394,6 +462,13 @@ window.addEventListener('DOMContentLoaded', () => {
         const textarea = chatForm.querySelector('textarea');
         if (textarea) {
             textarea.addEventListener('keydown', (e) => {
+                const dropdown = chatForm.querySelector('.mention-dropdown');
+                if (dropdown && dropdown.style.display === 'block') {
+                    if (['Enter', 'Tab', 'ArrowUp', 'ArrowDown', 'Escape'].includes(e.key)) {
+                        return; // Let mention dropdown keyboard handler process navigation & selection
+                    }
+                }
+
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     if (textarea.value.trim()) {
@@ -408,7 +483,6 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         chatForm.addEventListener('submit', async (e) => {
-
             e.preventDefault();
             const textarea = chatForm.querySelector('textarea');
             const msg = textarea.value.trim();
@@ -445,7 +519,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     const timeStr = d.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
 
                     bubble.innerHTML = `
-                        <p class="message-text">${c.message}</p>
+                        <p class="message-text">${formatMessageMentions(c.message)}</p>
                         <div class="message-meta">
                             <time>${timeStr}</time>
                             <i class="fa-solid fa-check-double read-receipt"></i>
@@ -469,8 +543,153 @@ window.addEventListener('DOMContentLoaded', () => {
                 btn.disabled = false;
             }
         });
+
+        // Initialize @mention autocomplete dropdown system
+        initTaskMentionSystem(chatForm, textarea);
     }
 });
+
+function initTaskMentionSystem(chatForm, textarea) {
+    if (!chatForm || !textarea) return;
+
+    const dropdown = document.createElement('div');
+    dropdown.className = 'mention-dropdown';
+    chatForm.appendChild(dropdown);
+
+    let activeIndex = 0;
+    let currentMatch = null;
+    let filteredMembers = [];
+
+    function getCursorMentionMatch() {
+        const text = textarea.value;
+        const cursorPos = textarea.selectionStart;
+        const textBeforeCursor = text.slice(0, cursorPos);
+        
+        const match = textBeforeCursor.match(/@([a-zA-Z0-9_\s]*)$/);
+        if (!match) return null;
+
+        const query = match[1];
+        if (query.includes('\n')) return null;
+
+        return {
+            query: query.trim(),
+            fullMatch: match[0],
+            startIndex: cursorPos - match[0].length,
+            endIndex: cursorPos
+        };
+    }
+
+    function renderDropdown(members) {
+        if (!members.length) {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        dropdown.innerHTML = `
+            <div class="mention-dropdown-header">
+                <i class="fa-solid fa-at"></i> Mention Team Member (${members.length})
+            </div>
+            ${members.map((m, idx) => `
+                <div class="mention-item ${idx === activeIndex ? 'active' : ''}" data-index="${idx}">
+                    <div class="mention-user-info">
+                        <div class="mention-avatar">
+                            <i class="fa-solid ${m.role === 'Manager' || m.role === 'Assigned By' ? 'fa-user-tie' : 'fa-user'}"></i>
+                        </div>
+                        <span class="mention-name">${m.name}</span>
+                    </div>
+                    <span class="mention-role-pill">${m.role}</span>
+                </div>
+            `).join('')}
+        `;
+
+        dropdown.style.display = 'block';
+
+        dropdown.querySelectorAll('.mention-item').forEach(item => {
+            item.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                const idx = parseInt(item.dataset.index, 10);
+                selectMember(filteredMembers[idx]);
+            });
+        });
+    }
+
+    function selectMember(member) {
+        if (!member || !currentMatch) return;
+
+        const val = textarea.value;
+        const before = val.slice(0, currentMatch.startIndex);
+        const after = val.slice(currentMatch.endIndex);
+        const inserted = `@${member.name} `;
+
+        textarea.value = before + inserted + after;
+        const newCursorPos = before.length + inserted.length;
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
+        textarea.focus();
+
+        dropdown.style.display = 'none';
+        currentMatch = null;
+    }
+
+    function checkAndTriggerMentions() {
+        if (!window.taskMembers || !window.taskMembers.length) {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        currentMatch = getCursorMentionMatch();
+        if (!currentMatch) {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        const q = currentMatch.query.toLowerCase();
+        filteredMembers = window.taskMembers.filter(m => m.name.toLowerCase().includes(q));
+
+        if (!filteredMembers.length) {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        if (activeIndex >= filteredMembers.length) {
+            activeIndex = Math.max(0, filteredMembers.length - 1);
+        }
+
+        renderDropdown(filteredMembers);
+    }
+
+    textarea.addEventListener('input', checkAndTriggerMentions);
+    textarea.addEventListener('click', checkAndTriggerMentions);
+    textarea.addEventListener('keyup', (e) => {
+        if (['ArrowUp', 'ArrowDown', 'Enter', 'Tab', 'Escape'].includes(e.key)) return;
+        checkAndTriggerMentions();
+    });
+
+    textarea.addEventListener('keydown', (e) => {
+        if (dropdown.style.display !== 'block' || !filteredMembers.length) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            activeIndex = (activeIndex + 1) % filteredMembers.length;
+            renderDropdown(filteredMembers);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeIndex = (activeIndex - 1 + filteredMembers.length) % filteredMembers.length;
+            renderDropdown(filteredMembers);
+        } else if (e.key === 'Enter' || e.key === 'Tab') {
+            e.preventDefault();
+            selectMember(filteredMembers[activeIndex]);
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            dropdown.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!chatForm.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+}
 </script>
 <%- include('partials/task-modal') %>
 <%- include('partials/foot') %>
