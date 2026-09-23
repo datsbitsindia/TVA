@@ -267,15 +267,15 @@ html body textarea {
 html body input,
 html body select,
 html body textarea,
-.login-card input,
-form input {
+html:not(.dark-theme) .login-card input,
+html:not(.dark-theme) form input {
     font-weight: 400 !important;
     font-size: 14px !important;
     color: #0f172a !important;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
 }
 
-input:-webkit-autofill,
+html:not(.dark-theme) input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {

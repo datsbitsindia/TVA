@@ -1158,10 +1158,18 @@ html.dark-theme .login-card input::placeholder {
 html.dark-theme input:-webkit-autofill,
 html.dark-theme input:-webkit-autofill:hover,
 html.dark-theme input:-webkit-autofill:focus,
-html.dark-theme input:-webkit-autofill:active {
+html.dark-theme input:-webkit-autofill:active,
+html.dark-theme textarea:-webkit-autofill,
+html.dark-theme select:-webkit-autofill,
+.dark-theme input:-webkit-autofill,
+.dark-theme input:-webkit-autofill:hover,
+.dark-theme input:-webkit-autofill:focus,
+.dark-theme input:-webkit-autofill:active {
     -webkit-text-fill-color: #FFFFFF !important;
     -webkit-box-shadow: 0 0 0px 1000px #18181c inset !important;
-    transition: background-color 5000s ease-in-out 0s !important;
+    box-shadow: 0 0 0px 1000px #18181c inset !important;
+    caret-color: #FFFFFF !important;
+    transition: background-color 600000s ease-in-out 0s, color 600000s ease-in-out 0s !important;
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
 
@@ -1188,10 +1196,13 @@ html.dark-theme .login-card .btn.primary:hover {
 html.dark-theme body .alert.error,
 html.dark-theme .alert.error,
 html.dark-theme .login-card .alert.error {
-    background: rgba(239, 68, 68, 0.15) !important;
-    color: #f87171 !important;
-    border: 1px solid rgba(239, 68, 68, 0.3) !important;
-    backdrop-filter: blur(10px) !important;
+    background: rgba(153, 27, 27, 0.35) !important;
+    color: #fca5a5 !important;
+    border: 1px solid rgba(248, 113, 113, 0.4) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
 }
 
 
