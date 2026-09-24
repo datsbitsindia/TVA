@@ -97,3 +97,25 @@ html.dark-theme .success-toast small, html.dark-theme .app-toast small {
 html.dark-theme .toast-close-btn {
     color: #aaaaaa !important;
 }
+
+/* Toast Notifications Gray Glass Mode */
+html.gray-glass-theme .success-toast, html.gray-glass-theme .app-toast {
+    background: rgba(255, 255, 255, 0.45) !important;
+    backdrop-filter: blur(24px) saturate(1.2) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(1.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    color: #0F172A !important;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.1) !important;
+}
+
+html.gray-glass-theme .success-toast b, html.gray-glass-theme .app-toast b {
+    color: #0F172A !important;
+}
+
+html.gray-glass-theme .success-toast small, html.gray-glass-theme .app-toast small {
+    color: #334155 !important;
+}
+
+html.gray-glass-theme .toast-close-btn {
+    color: #334155 !important;
+}

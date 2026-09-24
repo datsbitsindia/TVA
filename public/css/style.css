@@ -283,66 +283,71 @@ input:-webkit-autofill:active {
     -webkit-text-fill-color: #0f172a !important;
 }
 
-/* Header Theme Toggle Button - Unified Premium Round Design */
-.theme-toggle-btn {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 34px !important;
+/* Header Theme Select Dropdown - Unified Premium Pill Design */
+.theme-select-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    margin-left: 6px;
+}
+
+.theme-select-wrapper .theme-select-icon {
+    position: absolute;
+    left: 10px;
+    pointer-events: none;
+    font-size: 12px;
+    color: #3b68b7;
+    transition: color 0.2s ease;
+    z-index: 2;
+}
+
+.theme-select-dropdown {
     height: 34px !important;
-    border-radius: 50% !important;
+    padding: 0 10px 0 28px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    border-radius: 20px !important;
     border: 1.5px solid #cbd5e1 !important;
     background: #ffffff !important;
     color: #1e293b !important;
     cursor: pointer !important;
+    outline: none !important;
     transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08) !important;
-    flex-shrink: 0 !important;
-    margin-left: 6px !important;
-    padding: 0 !important;
 }
 
-.theme-toggle-btn:hover {
-    transform: scale(1.08) !important;
+.theme-select-dropdown:hover {
     background: #f8fafc !important;
     border-color: #3b68b7 !important;
     box-shadow: 0 4px 14px rgba(59, 104, 183, 0.2) !important;
 }
 
-.theme-toggle-btn .sun-icon {
-    display: none !important;
-    color: #f59e0b !important;
-    font-size: 16px !important;
+.theme-select-dropdown option {
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+    font-weight: 500 !important;
 }
 
-.theme-toggle-btn .moon-icon {
-    display: inline-block !important;
-    color: #3b68b7 !important;
-    font-size: 16px !important;
+html.dark-theme .theme-select-wrapper .theme-select-icon {
+    color: #fbbf24 !important;
 }
 
-html.dark-theme .theme-toggle-btn {
+html.dark-theme .theme-select-dropdown {
     background: rgba(255, 255, 255, 0.08) !important;
     border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
-    color: #fbbf24 !important;
+    color: #ffffff !important;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
 }
 
-html.dark-theme .theme-toggle-btn:hover {
-    transform: scale(1.08) !important;
+html.dark-theme .theme-select-dropdown:hover {
     background: rgba(51, 65, 85, 0.95) !important;
     border-color: rgba(99, 160, 255, 0.5) !important;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 12px rgba(251, 191, 36, 0.2) !important;
 }
 
-html.dark-theme .theme-toggle-btn .sun-icon {
-    display: inline-block !important;
-    color: #fbbf24 !important;
-    font-size: 16px !important;
-}
-
-html.dark-theme .theme-toggle-btn .moon-icon {
-    display: none !important;
+html.dark-theme .theme-select-dropdown option {
+    background-color: #111827 !important;
+    color: #ffffff !important;
 }
 
 /* Primary Windows 11 Accent Button */
@@ -1203,3 +1208,552 @@ html.dark-theme body .empty-notes-box {
     border: 2px dashed rgba(255, 255, 255, 0.08) !important;
     color: #CCCCCC !important;
 }
+
+/* ==========================================================================
+   TRANSPARENT GRAY GLASS THEME SYSTEM (Aperture Gray Glass Theme)
+   ========================================================================== */
+
+html.gray-glass-theme,
+html.gray-glass-theme body {
+    background: #C9CED6 !important;
+    background-image: 
+        radial-gradient(ellipse at 15% 20%, rgba(255, 255, 255, 0.7) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 75%, rgba(160, 170, 190, 0.5) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(200, 210, 225, 0.3) 0%, transparent 70%),
+        linear-gradient(135deg, #D5DCE4 0%, #B8C2CE 100%) !important;
+    background-attachment: fixed !important;
+    color: #0F172A !important;
+}
+
+html.gray-glass-theme body::before,
+html.gray-glass-theme body::after {
+    display: none !important;
+}
+
+/* ── Glass Panels & Main Containers ──────────────────── */
+html.gray-glass-theme .panel,
+html.gray-glass-theme .stat,
+html.gray-glass-theme .ui-panel,
+html.gray-glass-theme .modal-card,
+html.gray-glass-theme .modal-content,
+html.gray-glass-theme .task-detail-card,
+html.gray-glass-theme .project-hero,
+html.gray-glass-theme .compact-filter,
+html.gray-glass-theme .toolbar-ui,
+html.gray-glass-theme .routine-card,
+html.gray-glass-theme .login-card,
+html.gray-glass-theme .report-summary > div,
+html.gray-glass-theme .report-insight > div,
+html.gray-glass-theme .routine-panel,
+html.gray-glass-theme .notes-editor-container {
+    background: rgba(255, 255, 255, 0.22) !important;
+    backdrop-filter: blur(24px) saturate(1.2) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(1.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+    color: #0F172A !important;
+}
+
+/* ── Task Cards & Entity Cards (Transparent Gray Glass) ───── */
+html.gray-glass-theme .entity-card,
+html.gray-glass-theme .task-card,
+html.gray-glass-theme .metric-card,
+html.gray-glass-theme .activity-row,
+html.gray-glass-theme .note-card,
+html.gray-glass-theme .routine-highlight-card {
+    background: rgba(255, 255, 255, 0.18) !important;
+    backdrop-filter: blur(16px) saturate(1.1) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(1.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    border-radius: 18px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+    color: #0F172A !important;
+    transition: all 0.3s ease !important;
+}
+
+html.gray-glass-theme .entity-card:hover,
+html.gray-glass-theme .task-card:hover,
+html.gray-glass-theme .metric-card:hover,
+html.gray-glass-theme .activity-row:hover,
+html.gray-glass-theme .note-card:hover {
+    background: rgba(255, 255, 255, 0.35) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Active KPI Card Highlight */
+html.gray-glass-theme body .metric-card.active-kpi-filter,
+html.gray-glass-theme .metric-card.active-kpi-filter {
+    background: rgba(255, 255, 255, 0.45) !important;
+    border-color: rgba(255, 255, 255, 0.65) !important;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5), 0 8px 30px rgba(0, 0, 0, 0.1) !important;
+    outline: none !important;
+}
+
+html.gray-glass-theme .metric-card.active-kpi-filter b,
+html.gray-glass-theme .metric-card.active-kpi-filter span {
+    color: #0F172A !important;
+}
+
+/* ── Typography ────────────────────────────── */
+html.gray-glass-theme h1, html.gray-glass-theme h2, html.gray-glass-theme h3, html.gray-glass-theme h4, html.gray-glass-theme h5, html.gray-glass-theme h6,
+html.gray-glass-theme .page-head h1, html.gray-glass-theme .stat b, html.gray-glass-theme .metric-card b, html.gray-glass-theme .panel h2,
+html.gray-glass-theme .ui-panel-head h2, html.gray-glass-theme .entity-title b, html.gray-glass-theme .entity-title a,
+html.gray-glass-theme .confirm-modal-title, html.gray-glass-theme label, html.gray-glass-theme .login-card h1,
+html.gray-glass-theme .routine-card-info b, html.gray-glass-theme .routine-card-meta b,
+html.gray-glass-theme body .entity-card.task-card .entity-title a {
+    color: #0F172A !important;
+    text-shadow: none !important;
+}
+
+html.gray-glass-theme p, html.gray-glass-theme small, html.gray-glass-theme span, html.gray-glass-theme .muted, html.gray-glass-theme .empty,
+html.gray-glass-theme .topbar-user small, html.gray-glass-theme .page-head p,
+html.gray-glass-theme .confirm-modal-message, html.gray-glass-theme .login-card > p,
+html.gray-glass-theme .details dt, html.gray-glass-theme label small, html.gray-glass-theme .description,
+html.gray-glass-theme .metric-card span, html.gray-glass-theme .stat span {
+    color: #334155 !important;
+}
+
+html.gray-glass-theme body .entity-card.task-card .entity-meta small,
+html.gray-glass-theme .entity-meta small {
+    color: #475569 !important;
+    font-weight: 400 !important;
+}
+
+html.gray-glass-theme body .entity-card.task-card .entity-meta b,
+html.gray-glass-theme .entity-meta b {
+    color: #1E293B !important;
+    font-weight: 600 !important;
+}
+
+html.gray-glass-theme .entity-title small {
+    color: #334155 !important;
+    background: rgba(255, 255, 255, 0.25) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    padding: 2px 10px !important;
+    border-radius: 20px !important;
+    font-weight: 500 !important;
+}
+
+/* ── Topbar Header ───────────────────────── */
+html.gray-glass-theme .topbar {
+    background: rgba(255, 255, 255, 0.25) !important;
+    backdrop-filter: blur(24px) saturate(1.2) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(1.2) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+html.gray-glass-theme .topbar-user strong {
+    color: #0F172A !important;
+    font-weight: 700 !important;
+}
+
+html.gray-glass-theme .topbar-user small {
+    color: #334155 !important;
+}
+
+/* ── Sidebar ──────────────────────────────── */
+html.gray-glass-theme .sidebar {
+    background: rgba(255, 255, 255, 0.35) !important;
+    backdrop-filter: blur(24px) saturate(1.2) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(1.2) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.35) !important;
+    box-shadow: 4px 0 30px rgba(0, 0, 0, 0.05) !important;
+}
+
+html.gray-glass-theme .sidebar .brand {
+    color: #0F172A !important;
+}
+
+html.gray-glass-theme .sidebar nav a {
+    color: #334155 !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+}
+
+html.gray-glass-theme .sidebar nav a i {
+    color: #334155 !important;
+}
+
+html.gray-glass-theme .sidebar nav a:hover {
+    color: #0F172A !important;
+    background: rgba(255, 255, 255, 0.3) !important;
+    border-radius: 12px !important;
+}
+
+html.gray-glass-theme .sidebar nav a:hover i {
+    color: #0F172A !important;
+}
+
+html.gray-glass-theme .sidebar nav a.active {
+    background: rgba(255, 255, 255, 0.45) !important;
+    color: #0F172A !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+}
+
+html.gray-glass-theme .sidebar nav a.active i {
+    color: #0F172A !important;
+}
+
+/* ── Inputs, Selects, Textareas ─────────────── */
+html.gray-glass-theme input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not(.note-title-field),
+html.gray-glass-theme select,
+html.gray-glass-theme textarea,
+html.gray-glass-theme body .compact-filter input,
+html.gray-glass-theme body .compact-filter select,
+html.gray-glass-theme body .toolbar-ui input,
+html.gray-glass-theme body .toolbar-ui select {
+    background-color: rgba(255, 255, 255, 0.25) !important;
+    background: rgba(255, 255, 255, 0.25) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    color: #0F172A !important;
+    border-radius: 14px !important;
+}
+
+html.gray-glass-theme select option,
+html.gray-glass-theme body select option,
+html.gray-glass-theme body .modal-card select option,
+html.gray-glass-theme body .form-grid select option,
+html.gray-glass-theme body .compact-filter select option,
+html.gray-glass-theme body .toolbar-ui select option {
+    background-color: #D5DCE4 !important;
+    background: #D5DCE4 !important;
+    color: #0F172A !important;
+}
+
+html.gray-glass-theme ::placeholder,
+html.gray-glass-theme input::placeholder,
+html.gray-glass-theme textarea::placeholder {
+    color: #475569 !important;
+    opacity: 1 !important;
+}
+
+html.gray-glass-theme input:focus,
+html.gray-glass-theme select:focus,
+html.gray-glass-theme textarea:focus {
+    border-color: rgba(255, 255, 255, 0.7) !important;
+    background-color: rgba(255, 255, 255, 0.45) !important;
+    background: rgba(255, 255, 255, 0.45) !important;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3) !important;
+}
+
+/* ── Buttons ─────────────────────────────── */
+html.gray-glass-theme .btn {
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    background: rgba(255, 255, 255, 0.25) !important;
+    color: #0F172A !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+    transition: all 0.2s ease !important;
+    border-radius: 20px !important;
+}
+
+html.gray-glass-theme .btn:hover {
+    background: rgba(255, 255, 255, 0.45) !important;
+    color: #0F172A !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+    transform: translateY(-1px) !important;
+}
+
+html.gray-glass-theme .btn.primary {
+    background: rgba(15, 23, 42, 0.85) !important;
+    color: #FFFFFF !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.2) !important;
+}
+
+html.gray-glass-theme .btn.primary:hover {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 8px 28px rgba(15, 23, 42, 0.3) !important;
+    transform: translateY(-1px) !important;
+}
+
+html.gray-glass-theme .task-tab-btn {
+    background: rgba(255, 255, 255, 0.25) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    color: #1E293B !important;
+}
+
+html.gray-glass-theme .task-tab-btn.active {
+    background: rgba(255, 255, 255, 0.55) !important;
+    border-color: rgba(255, 255, 255, 0.7) !important;
+    color: #0F172A !important;
+    font-weight: 700 !important;
+}
+
+/* Theme Select Dropdown for Gray Glass Theme */
+html.gray-glass-theme .theme-select-wrapper .theme-select-icon {
+    color: #0F172A !important;
+}
+
+html.gray-glass-theme .theme-select-dropdown {
+    background: rgba(255, 255, 255, 0.35) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.5) !important;
+    color: #0F172A !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08) !important;
+}
+
+html.gray-glass-theme .theme-select-dropdown:hover {
+    background: rgba(255, 255, 255, 0.55) !important;
+    border-color: rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+}
+
+html.gray-glass-theme .theme-select-dropdown option {
+    background-color: #D5DCE4 !important;
+    color: #0F172A !important;
+}
+
+/* ==========================================================================
+   TVA THEME PICKER — Clean Pill + Floating Popup
+   ========================================================================== */
+
+/* Wrapper */
+.tva-theme-picker {
+    position: relative;
+    display: inline-block;
+}
+
+/* Trigger Pill */
+.tva-theme-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 14px 0 10px;
+    height: 34px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1.5px solid rgba(59, 104, 183, 0.22);
+    color: #1e293b;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255,255,255,0.9);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+    white-space: nowrap;
+}
+
+.tva-theme-pill:hover {
+    background: rgba(255, 255, 255, 0.92);
+    border-color: rgba(59, 104, 183, 0.45);
+    box-shadow: 0 4px 16px rgba(59, 104, 183, 0.15), inset 0 1px 0 rgba(255,255,255,1);
+    transform: translateY(-1px);
+}
+
+.tva-theme-pill:active {
+    transform: translateY(0);
+}
+
+.tva-pill-icon {
+    font-size: 15px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+}
+
+.tva-pill-name {
+    flex: 1;
+}
+
+.tva-pill-arrow {
+    font-size: 10px;
+    color: #64748b;
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s;
+    margin-left: 2px;
+}
+
+.tva-theme-picker.open .tva-pill-arrow {
+    transform: rotate(180deg);
+    color: #3b68b7;
+}
+
+/* Floating Popup */
+.tva-theme-popup {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 165px;
+    padding: 5px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(30px) saturate(200%);
+    -webkit-backdrop-filter: blur(30px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 32px rgba(15, 23, 42, 0.14), 0 2px 8px rgba(15,23,42,0.06), inset 0 1px 0 rgba(255,255,255,1);
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px) scale(0.97);
+    transition: opacity 0.18s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.18s;
+    pointer-events: none;
+}
+
+.tva-theme-picker.open .tva-theme-popup {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+/* Option Rows */
+.tva-theme-opt {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 8px 10px;
+    border: none;
+    background: transparent;
+    border-radius: 9px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    text-align: left;
+}
+
+.tva-opt-icon {
+    font-size: 15px;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.tva-opt-label {
+    flex: 1;
+}
+
+.tva-opt-tick {
+    font-size: 11px;
+    color: #3b68b7;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: opacity 0.15s, transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tva-theme-opt:hover {
+    background: rgba(59, 104, 183, 0.08);
+    color: #0f172a;
+}
+
+.tva-theme-opt.active {
+    background: rgba(59, 104, 183, 0.1);
+    color: #1d4ed8;
+    font-weight: 700;
+}
+
+.tva-theme-opt.active .tva-opt-tick {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* ── Dark Theme ── */
+html.dark-theme .tva-theme-pill {
+    background: rgba(15, 23, 42, 0.75) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #e2e8f0 !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06) !important;
+}
+
+html.dark-theme .tva-theme-pill:hover {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border-color: rgba(96, 165, 250, 0.4) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+}
+
+html.dark-theme .tva-pill-arrow {
+    color: #64748b !important;
+}
+
+html.dark-theme .tva-theme-picker.open .tva-pill-arrow {
+    color: #60a5fa !important;
+}
+
+html.dark-theme .tva-theme-popup {
+    background: rgba(15, 23, 42, 0.92) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5) !important;
+}
+
+html.dark-theme .tva-theme-opt {
+    color: #94a3b8 !important;
+}
+
+html.dark-theme .tva-theme-opt:hover {
+    background: rgba(96, 165, 250, 0.12) !important;
+    color: #f1f5f9 !important;
+}
+
+html.dark-theme .tva-theme-opt.active {
+    background: rgba(96, 165, 250, 0.18) !important;
+    color: #93c5fd !important;
+}
+
+html.dark-theme .tva-theme-opt.active .tva-opt-tick {
+    color: #60a5fa !important;
+}
+
+/* ── Gray Glass Theme ── */
+html.gray-glass-theme .tva-theme-pill {
+    background: rgba(255, 255, 255, 0.38) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+    color: #0f172a !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6) !important;
+}
+
+html.gray-glass-theme .tva-theme-pill:hover {
+    background: rgba(255, 255, 255, 0.62) !important;
+    border-color: rgba(255, 255, 255, 0.9) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12) !important;
+}
+
+html.gray-glass-theme .tva-pill-arrow {
+    color: #475569 !important;
+}
+
+html.gray-glass-theme .tva-theme-popup {
+    background: rgba(225, 232, 242, 0.90) !important;
+    border-color: rgba(255, 255, 255, 0.75) !important;
+    box-shadow: 0 10px 36px rgba(15,23,42,0.16), inset 0 1px 0 rgba(255,255,255,0.9) !important;
+}
+
+html.gray-glass-theme .tva-theme-opt {
+    color: #1e293b !important;
+}
+
+html.gray-glass-theme .tva-theme-opt:hover {
+    background: rgba(255, 255, 255, 0.55) !important;
+    color: #0f172a !important;
+}
+
+html.gray-glass-theme .tva-theme-opt.active {
+    background: rgba(255, 255, 255, 0.75) !important;
+    color: #0f172a !important;
+    font-weight: 700 !important;
+}
+
+html.gray-glass-theme .tva-theme-opt.active .tva-opt-tick {
+    color: #334155 !important;
+}
+
+
+
+

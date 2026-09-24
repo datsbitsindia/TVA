@@ -1193,12 +1193,164 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3500);
     });
 
-    // Theme Toggle Handler
-    const themeToggleBtn = document.getElementById('theme-toggle-btn');
-    if (themeToggleBtn) {
-        themeToggleBtn.addEventListener('click', () => {
-            const isDark = document.documentElement.classList.toggle('dark-theme');
-            localStorage.setItem('tva_theme', isDark ? 'dark' : 'light');
+    // TVA Theme Picker — Pill + Floating Popup
+    const tvaPickers = document.querySelectorAll('.tva-theme-picker');
+    if (tvaPickers.length > 0) {
+        const TVA_THEMES = {
+            'light':      { icon: '☀️', name: 'Light Theme' },
+            'dark':       { icon: '🌙', name: 'Dark Theme' },
+            'gray-glass': { icon: '💎', name: 'Gray Glass'  }
+        };
+
+        const getActiveTheme = () =>
+            localStorage.getItem('tva_theme') ||
+            (document.documentElement.classList.contains('dark-theme') ? 'dark' :
+             document.documentElement.classList.contains('gray-glass-theme') ? 'gray-glass' : 'light');
+
+        const closeAllPopups = () => {
+            tvaPickers.forEach(p => {
+                const popup = p.querySelector('.tva-theme-popup');
+                if (popup) popup.style.display = 'none';
+                p.classList.remove('open');
+            });
+        };
+
+        const openPopup = (picker) => {
+            closeAllPopups();
+            const popup = picker.querySelector('.tva-theme-popup');
+            if (popup) popup.style.display = 'flex';
+            picker.classList.add('open');
+        };
+
+        const applyTheme = (theme) => {
+            document.documentElement.classList.remove('dark-theme', 'gray-glass-theme');
+            if (theme === 'dark')            document.documentElement.classList.add('dark-theme');
+            else if (theme === 'gray-glass') document.documentElement.classList.add('gray-glass-theme');
+            localStorage.setItem('tva_theme', theme);
+            syncUI(theme);
+        };
+
+        // Theme palette for pill + popup per theme
+        const THEME_PALETTE = {
+            'light': {
+                pillBg: 'rgba(255,255,255,0.78)',
+                pillBorder: '1.5px solid rgba(59,104,183,0.28)',
+                pillColor: '#1e293b',
+                pillShadow: '0 2px 8px rgba(15,23,42,0.09)',
+                popupBg: '#fff',
+                popupBorder: '1px solid #e2e8f0',
+                popupShadow: '0 10px 28px rgba(15,23,42,0.16)',
+                optColor: '#1e293b',
+                activeOptBg: 'rgba(59,104,183,0.08)',
+                activeOptColor: '#3b68b7',
+                hoverBg: 'rgba(59,104,183,0.06)',
+                tickColor: '#3b68b7',
+            },
+            'dark': {
+                pillBg: 'rgba(30,41,59,0.85)',
+                pillBorder: '1.5px solid rgba(255,255,255,0.15)',
+                pillColor: '#e2e8f0',
+                pillShadow: '0 2px 10px rgba(0,0,0,0.35)',
+                popupBg: '#1e293b',
+                popupBorder: '1px solid rgba(255,255,255,0.1)',
+                popupShadow: '0 12px 32px rgba(0,0,0,0.5)',
+                optColor: '#94a3b8',
+                activeOptBg: 'rgba(96,165,250,0.18)',
+                activeOptColor: '#93c5fd',
+                hoverBg: 'rgba(96,165,250,0.1)',
+                tickColor: '#60a5fa',
+            },
+            'gray-glass': {
+                pillBg: 'rgba(255,255,255,0.38)',
+                pillBorder: '1.5px solid rgba(255,255,255,0.6)',
+                pillColor: '#0f172a',
+                pillShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                popupBg: 'rgba(225,232,242,0.95)',
+                popupBorder: '1px solid rgba(255,255,255,0.75)',
+                popupShadow: '0 10px 28px rgba(15,23,42,0.14)',
+                optColor: '#1e293b',
+                activeOptBg: 'rgba(255,255,255,0.7)',
+                activeOptColor: '#0f172a',
+                hoverBg: 'rgba(255,255,255,0.5)',
+                tickColor: '#334155',
+            }
+        };
+
+        const syncUI = (theme) => {
+            const meta = TVA_THEMES[theme] || TVA_THEMES['light'];
+            const pal = THEME_PALETTE[theme] || THEME_PALETTE['light'];
+            tvaPickers.forEach(picker => {
+                // Update pill label
+                const iconEl = picker.querySelector('.tva-pill-icon');
+                const nameEl = picker.querySelector('.tva-pill-name');
+                if (iconEl) iconEl.textContent = meta.icon;
+                if (nameEl) nameEl.textContent = meta.name;
+
+                // Update pill styles
+                const pill = picker.querySelector('.tva-theme-pill');
+                if (pill) {
+                    pill.style.background = pal.pillBg;
+                    pill.style.border = pal.pillBorder;
+                    pill.style.color = pal.pillColor;
+                    pill.style.boxShadow = pal.pillShadow;
+                }
+
+                // Update popup styles
+                const popup = picker.querySelector('.tva-theme-popup');
+                if (popup) {
+                    popup.style.background = pal.popupBg;
+                    popup.style.border = pal.popupBorder;
+                    popup.style.boxShadow = pal.popupShadow;
+                }
+
+                // Update option rows
+                picker.querySelectorAll('.tva-theme-opt').forEach(btn => {
+                    const tick = btn.querySelector('.tva-opt-tick');
+                    const isActive = btn.dataset.theme === theme;
+                    if (tick) {
+                        tick.style.display = isActive ? 'inline-block' : 'none';
+                        tick.style.color = pal.tickColor;
+                    }
+                    btn.style.fontWeight = isActive ? '700' : '500';
+                    btn.style.background = isActive ? pal.activeOptBg : 'transparent';
+                    btn.style.color = isActive ? pal.activeOptColor : pal.optColor;
+                    btn.onmouseenter = () => {
+                        if (!isActive) btn.style.background = pal.hoverBg;
+                    };
+                    btn.onmouseleave = () => {
+                        if (!isActive) btn.style.background = 'transparent';
+                    };
+                });
+            });
+        };
+
+        // Init
+        syncUI(getActiveTheme());
+
+        tvaPickers.forEach(picker => {
+            const pill = picker.querySelector('.tva-theme-pill');
+
+            pill.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const popup = picker.querySelector('.tva-theme-popup');
+                const isOpen = picker.classList.contains('open');
+                closeAllPopups();
+                if (!isOpen) openPopup(picker);
+            });
+
+            picker.querySelectorAll('.tva-theme-opt').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    applyTheme(btn.dataset.theme);
+                    closeAllPopups();
+                });
+            });
+        });
+
+        // Close on outside click or Escape
+        document.addEventListener('click', closeAllPopups);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeAllPopups();
         });
     }
 });

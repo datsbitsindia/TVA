@@ -1652,3 +1652,315 @@ html.dark-theme .mention-tag {
     border: none !important;
 }
 
+/* ==========================================================================
+   ROLE UI GRAY GLASS THEME SPECIFICS (Aperture Transparent Gray Glass)
+   ========================================================================== */
+
+html.gray-glass-theme .content,
+html.gray-glass-theme .main,
+html.gray-glass-theme body .app {
+    background: transparent !important;
+}
+
+html.gray-glass-theme .login-page {
+    background: #C9CED6 !important;
+    background-image: 
+        radial-gradient(ellipse at 15% 20%, rgba(255, 255, 255, 0.7) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 75%, rgba(160, 170, 190, 0.5) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(200, 210, 225, 0.3) 0%, transparent 70%),
+        linear-gradient(135deg, #D5DCE4 0%, #B8C2CE 100%) !important;
+}
+
+html.gray-glass-theme .login-card {
+    background: rgba(255, 255, 255, 0.22) !important;
+    backdrop-filter: blur(24px) saturate(1.2) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(1.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    border-radius: 32px !important;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+
+html.gray-glass-theme .role-hero {
+    background: rgba(255, 255, 255, 0.22) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.06) !important;
+}
+
+html.gray-glass-theme .metric-card i,
+html.gray-glass-theme .metric-card.green i,
+html.gray-glass-theme .metric-card.orange i,
+html.gray-glass-theme .metric-card.red i,
+html.gray-glass-theme .metric-card.purple i {
+    background: rgba(255, 255, 255, 0.3) !important;
+    color: #0F172A !important;
+}
+
+html.gray-glass-theme .brand-logo {
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1)) !important;
+}
+
+/* ==========================================================================
+   APERTURE TRANSPARENT GRAY GLASS THEME (COMPLETE OVERRIDE SYSTEM)
+   ========================================================================== */
+
+html.gray-glass-theme,
+html.gray-glass-theme body {
+    background-color: #C9CED6 !important;
+    background: #C9CED6 !important;
+    background-image: 
+        radial-gradient(ellipse at 15% 20%, rgba(255, 255, 255, 0.7) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 75%, rgba(160, 170, 190, 0.5) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(200, 210, 225, 0.3) 0%, transparent 70%),
+        linear-gradient(135deg, #D5DCE4 0%, #B8C2CE 100%) !important;
+    background-attachment: fixed !important;
+    color: #0F172A !important;
+}
+
+html.gray-glass-theme body::before,
+html.gray-glass-theme body::after {
+    display: none !important;
+}
+
+html.gray-glass-theme body .app,
+html.gray-glass-theme body .main,
+html.gray-glass-theme body .content {
+    background: transparent !important;
+}
+
+/* ── Topbar & Sidebar ───────────────────────────────── */
+html.gray-glass-theme body .topbar,
+html.gray-glass-theme .topbar {
+    background: rgba(255, 255, 255, 0.18) !important;
+    backdrop-filter: blur(24px) saturate(1.2) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(1.2) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+}
+
+html.gray-glass-theme body .topbar strong,
+html.gray-glass-theme body .topbar-user strong,
+html.gray-glass-theme body .topbar-user small,
+html.gray-glass-theme body .topbar small {
+    color: #0F172A !important;
+}
+
+html.gray-glass-theme body .sidebar,
+html.gray-glass-theme .sidebar {
+    background: rgba(255, 255, 255, 0.18) !important;
+    backdrop-filter: blur(24px) saturate(1.2) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(1.2) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-top: none !important;
+    box-shadow: 4px 0 30px rgba(0, 0, 0, 0.04) !important;
+}
+
+html.gray-glass-theme body .sidebar .brand,
+html.gray-glass-theme body .sidebar .brand strong,
+html.gray-glass-theme body .sidebar .brand i {
+    color: #0F172A !important;
+}
+
+html.gray-glass-theme body .sidebar nav a {
+    color: #334155 !important;
+    font-weight: 600 !important;
+}
+
+html.gray-glass-theme body .sidebar nav a i {
+    color: #334155 !important;
+}
+
+html.gray-glass-theme body .sidebar nav a:hover {
+    color: #0F172A !important;
+    background: rgba(255, 255, 255, 0.25) !important;
+}
+
+html.gray-glass-theme body .sidebar nav a.active {
+    background: rgba(255, 255, 255, 0.45) !important;
+    color: #0F172A !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+    font-weight: 700 !important;
+}
+
+html.gray-glass-theme body .sidebar nav a.active i {
+    color: #0F172A !important;
+}
+
+/* ── Panels, Cards, Metric Cards, Overdue Banner ───── */
+html.gray-glass-theme body .panel,
+html.gray-glass-theme body .stat,
+html.gray-glass-theme body .ui-panel,
+html.gray-glass-theme body .modal-card,
+html.gray-glass-theme body .modal-content,
+html.gray-glass-theme body .task-detail-card,
+html.gray-glass-theme body .project-hero,
+html.gray-glass-theme body .compact-filter,
+html.gray-glass-theme body .toolbar-ui,
+html.gray-glass-theme body .routine-card,
+html.gray-glass-theme body .login-card,
+html.gray-glass-theme body .report-summary > div,
+html.gray-glass-theme body .report-insight > div,
+html.gray-glass-theme body .routine-panel,
+html.gray-glass-theme body .notes-editor-container,
+html.gray-glass-theme body .role-hero,
+html.gray-glass-theme body .overdue-alert,
+html.gray-glass-theme body .task-desc-box,
+html.gray-glass-theme body .task-info-grid,
+html.gray-glass-theme body .whatsapp-chat-panel,
+html.gray-glass-theme body .status-update-form {
+    background: rgba(255, 255, 255, 0.20) !important;
+    backdrop-filter: blur(24px) saturate(1.2) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(1.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+    color: #0F172A !important;
+}
+
+/* Entity Cards & Task Cards & Metric Cards */
+html.gray-glass-theme body .entity-card,
+html.gray-glass-theme body .task-card,
+html.gray-glass-theme body .metric-card,
+html.gray-glass-theme body .activity-row,
+html.gray-glass-theme body .note-card,
+html.gray-glass-theme body .routine-highlight-card {
+    background: rgba(255, 255, 255, 0.22) !important;
+    backdrop-filter: blur(16px) saturate(1.1) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(1.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 18px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+    color: #0F172A !important;
+    transition: all 0.3s ease !important;
+}
+
+html.gray-glass-theme body .entity-card:hover,
+html.gray-glass-theme body .task-card:hover,
+html.gray-glass-theme body .metric-card:hover,
+html.gray-glass-theme body .activity-row:hover,
+html.gray-glass-theme body .note-card:hover {
+    background: rgba(255, 255, 255, 0.38) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Metric card icon badges */
+html.gray-glass-theme body .metric-card i,
+html.gray-glass-theme body .metric-card.green i,
+html.gray-glass-theme body .metric-card.orange i,
+html.gray-glass-theme body .metric-card.red i,
+html.gray-glass-theme body .metric-card.purple i {
+    background: rgba(255, 255, 255, 0.3) !important;
+    color: #0F172A !important;
+}
+
+/* Active KPI Card Filter */
+html.gray-glass-theme body .metric-card.active-kpi-filter {
+    background: rgba(255, 255, 255, 0.45) !important;
+    border-color: rgba(255, 255, 255, 0.65) !important;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5), 0 8px 30px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Task Tab Buttons (To Do / Assigned) */
+html.gray-glass-theme body .task-tab-btn {
+    background: rgba(255, 255, 255, 0.22) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    color: #1E293B !important;
+    backdrop-filter: blur(8px) !important;
+}
+
+html.gray-glass-theme body .task-tab-btn.active {
+    background: rgba(255, 255, 255, 0.55) !important;
+    border-color: rgba(255, 255, 255, 0.75) !important;
+    color: #0F172A !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Inputs, Selects, Textareas */
+html.gray-glass-theme body input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not(.note-title-field),
+html.gray-glass-theme body select,
+html.gray-glass-theme body textarea,
+html.gray-glass-theme body .compact-filter input,
+html.gray-glass-theme body .compact-filter select,
+html.gray-glass-theme body .toolbar-ui input,
+html.gray-glass-theme body .toolbar-ui select {
+    background: rgba(255, 255, 255, 0.25) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    color: #0F172A !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border-radius: 14px !important;
+}
+
+/* Status Chips & Badges */
+html.gray-glass-theme body .status-chip,
+html.gray-glass-theme body .role-chip,
+html.gray-glass-theme body .pill,
+html.gray-glass-theme body .priority-pill,
+html.gray-glass-theme body .status,
+html.gray-glass-theme body .verified-chip,
+html.gray-glass-theme body .awaiting-chip,
+html.gray-glass-theme body .routine-badge,
+html.gray-glass-theme body .priority-badge {
+    background: rgba(255, 255, 255, 0.25) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    color: #1E293B !important;
+}
+
+/* Chat & Discussion Updates in Gray Glass Mode */
+html.gray-glass-theme body .chat-messages-container {
+    background: rgba(255, 255, 255, 0.18) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    backdrop-filter: blur(16px) !important;
+}
+
+html.gray-glass-theme body .chat-bubble.incoming {
+    background: rgba(255, 255, 255, 0.45) !important;
+    color: #0F172A !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+}
+
+html.gray-glass-theme body .chat-bubble.outgoing {
+    background: rgba(255, 255, 255, 0.65) !important;
+    color: #0F172A !important;
+    border: 1px solid rgba(255, 255, 255, 0.7) !important;
+}
+
+html.gray-glass-theme body .chat-input-form {
+    background: rgba(255, 255, 255, 0.25) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    backdrop-filter: blur(16px) !important;
+}
+
+html.gray-glass-theme body .chat-input-form textarea {
+    background: transparent !important;
+    color: #0F172A !important;
+}
+
+html.gray-glass-theme body .chat-input-form textarea::placeholder {
+    color: #475569 !important;
+}
+
+html.gray-glass-theme body .empty-chat {
+    color: #334155 !important;
+}
+
+/* Logout button */
+html.gray-glass-theme body .logout-btn {
+    background: rgba(255, 255, 255, 0.35) !important;
+    color: #dc2626 !important;
+    border: 1px solid rgba(239, 68, 68, 0.35) !important;
+    backdrop-filter: blur(8px) !important;
+}
+
+html.gray-glass-theme body .logout-btn:hover {
+    background: rgba(220, 38, 38, 0.9) !important;
+    color: #ffffff !important;
+    border-color: #dc2626 !important;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3) !important;
+}
+
+
