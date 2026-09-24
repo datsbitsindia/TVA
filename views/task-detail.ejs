@@ -263,7 +263,7 @@
     <div class="modal-card">
         <button class="modal-close" data-close>&times;</button>
         <h2><i class="fa-solid fa-share" style="color:#6366f1;"></i> Forward Task to Colleague</h2>
-        <p style="color:#64748b; font-size:13px; margin-bottom:14px;">Select the colleague you want to hand over this task to and provide a handover note.</p>
+        <p class="muted" style="font-size:13px; margin-bottom:14px;">Select the colleague you want to hand over this task to and provide a handover note.</p>
         <form action="/tasks/<%= task.id %>/forward" method="post" class="form-grid">
             <label class="full">Forward To Colleague
                 <select name="to_user_id" required>

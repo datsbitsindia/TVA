@@ -696,63 +696,7 @@ html.dark-theme .routine-card-meta {
     border-color: rgba(82, 120, 220, 0.10) !important;
 }
 
-/* ── Modals ──────────────────────────────── */
-html.dark-theme .modal {
-    background: rgba(0, 0, 0, 0.78) !important;
-    backdrop-filter: blur(8px) !important;
-}
 
-html.dark-theme .modal-header-tabs {
-    border-bottom-color: rgba(82, 120, 220, 0.15) !important;
-}
-
-html.dark-theme .modal-tab {
-    background: rgba(12, 20, 48, 0.75) !important;
-    border-color: rgba(82, 120, 220, 0.15) !important;
-    color: #6880a8 !important;
-}
-
-html.dark-theme .modal-tab.active {
-    background: linear-gradient(135deg, #3b7ef8 0%, #1d55d4 100%) !important;
-    color: #ffffff !important;
-    border-color: rgba(100, 160, 255, 0.4) !important;
-    box-shadow: 0 4px 14px rgba(37,99,235,0.4) !important;
-}
-
-html.dark-theme .modal-close {
-    color: #6880a8 !important;
-}
-
-html.dark-theme .modal-close:hover {
-    color: #e8eeff !important;
-    background: rgba(56, 100, 255, 0.15) !important;
-}
-
-/* ── CKEditor ───────────────────────────── */
-html.dark-theme .ck-toolbar {
-    background: rgba(8, 14, 34, 0.98) !important;
-    border-color: rgba(82, 120, 220, 0.15) !important;
-}
-
-html.dark-theme .ck-toolbar .ck-button {
-    color: #6880a8 !important;
-}
-
-html.dark-theme .ck-toolbar .ck-button:hover,
-html.dark-theme .ck-toolbar .ck-button.ck-on {
-    color: #c0d8ff !important;
-    background: rgba(56, 100, 255, 0.15) !important;
-}
-
-html.dark-theme .ck-editor__editable_inline {
-    background: rgba(10, 16, 40, 0.90) !important;
-    color: #d8e8ff !important;
-    border-color: rgba(82, 120, 220, 0.18) !important;
-}
-
-html.dark-theme .ck.ck-editor__main>.ck-editor__editable:not(.ck-focused) {
-    border-color: rgba(82, 120, 220, 0.15) !important;
-}
 
 /* ── Toolbar & Filter Bar ─────────────────── */
 html.dark-theme .toolbar-ui {
@@ -891,62 +835,136 @@ html.dark-theme .routine-card-meta {
     border-color: rgba(255, 255, 255, 0.06) !important;
 }
 
-/* ── Modals ──────────────────────────────── */
+/* ── Modals & Glass Dialogs ──────────────── */
 html.dark-theme .modal {
-    background: rgba(0, 0, 0, 0.85) !important;
-    backdrop-filter: blur(10px) !important;
+    background: rgba(0, 0, 0, 0.58) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+}
+
+html.dark-theme .modal-card,
+html.dark-theme .modal-content {
+    background: #141418 !important;
+    backdrop-filter: blur(24px) saturate(1.2) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(1.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    color: #FFFFFF !important;
+}
+
+html.dark-theme .modal-card h1,
+html.dark-theme .modal-card h2,
+html.dark-theme .modal-card h3,
+html.dark-theme .modal-card label {
+    color: #FFFFFF !important;
+}
+
+html.dark-theme .modal-card p,
+html.dark-theme .modal-card span,
+html.dark-theme .modal-card small {
+    color: #CCCCCC !important;
 }
 
 html.dark-theme .modal-header-tabs {
-    border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.10) !important;
 }
 
 html.dark-theme .modal-tab {
-    background: rgba(255, 255, 255, 0.04) !important;
-    border-color: rgba(255, 255, 255, 0.06) !important;
-    color: #aaaaaa !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+    color: #94A3B8 !important;
 }
 
 html.dark-theme .modal-tab.active {
-    background: rgba(255, 255, 255, 0.12) !important;
+    background: rgba(255, 255, 255, 0.14) !important;
     color: #ffffff !important;
-    border-color: rgba(255, 255, 255, 0.18) !important;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.20) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
 }
 
 html.dark-theme .modal-close {
-    color: #aaaaaa !important;
+    color: #AAAAAA !important;
 }
 
 html.dark-theme .modal-close:hover {
-    color: #ffffff !important;
+    color: #FFFFFF !important;
+    background: rgba(255, 255, 255, 0.10) !important;
+}
+
+/* ── Form Inputs & Select Dropdowns in Dark Mode ── */
+html.dark-theme .modal-card input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not(.note-title-field),
+html.dark-theme .modal-card select,
+html.dark-theme .modal-card textarea,
+html.dark-theme .assignee-select-dropdown {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    color: #FFFFFF !important;
+    color-scheme: dark !important;
+    border-radius: 10px !important;
+}
+
+html.dark-theme select option,
+html.dark-theme .assignee-select-dropdown option {
+    background-color: #1a1a1e !important;
+    background: #1a1a1e !important;
+    color: #FFFFFF !important;
+}
+
+html.dark-theme optgroup {
+    background-color: #141418 !important;
+    color: #A1A1AA !important;
+    font-weight: 700 !important;
+}
+
+html.dark-theme .assignee-chip,
+html.dark-theme .assignee-chip.chip-manager,
+html.dark-theme .assignee-chip.chip-self {
     background: rgba(255, 255, 255, 0.08) !important;
+    color: #F1F5F9 !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
 
-/* ── CKEditor ───────────────────────────── */
-html.dark-theme .ck-toolbar {
-    background: rgba(255, 255, 255, 0.04) !important;
-    border-color: rgba(255, 255, 255, 0.06) !important;
+/* ── CKEditor in Dark Mode ───────────────── */
+html.dark-theme .ck-toolbar,
+html.dark-theme .ck.ck-toolbar {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
-html.dark-theme .ck-toolbar .ck-button {
-    color: #aaaaaa !important;
+html.dark-theme .ck-toolbar .ck-button,
+html.dark-theme .ck.ck-button {
+    color: #CCCCCC !important;
 }
 
 html.dark-theme .ck-toolbar .ck-button:hover,
-html.dark-theme .ck-toolbar .ck-button.ck-on {
+html.dark-theme .ck-toolbar .ck-button.ck-on,
+html.dark-theme .ck.ck-button:hover,
+html.dark-theme .ck.ck-button.ck-on {
     color: #ffffff !important;
-    background: rgba(255, 255, 255, 0.08) !important;
+    background: rgba(255, 255, 255, 0.12) !important;
 }
 
-html.dark-theme .ck-editor__editable_inline {
-    background: rgba(255, 255, 255, 0.03) !important;
+html.dark-theme .ck-editor__editable_inline,
+html.dark-theme .ck.ck-editor__main>.ck-editor__editable {
+    background: rgba(15, 15, 18, 0.6) !important;
     color: #ffffff !important;
-    border-color: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
 html.dark-theme .ck.ck-editor__main>.ck-editor__editable:not(.ck-focused) {
-    border-color: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.dark-theme .ck.ck-editor__main>.ck-editor__editable.ck-focused {
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark-theme .ck.ck-dropdown__panel {
+    background: #1a1a1e !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
 /* ── Toolbar & Filter Bar ─────────────────── */
@@ -1512,6 +1530,130 @@ html.gray-glass-theme .theme-select-dropdown option {
     background-color: #D5DCE4 !important;
     color: #0F172A !important;
 }
+
+/* ── CKEditor (Description field) ─────────────── */
+html.gray-glass-theme .ck-editor__editable,
+html.gray-glass-theme .ck.ck-editor__main > .ck-editor__editable,
+html.gray-glass-theme .ck.ck-editor__main > .ck-editor__editable:not(.ck-focused) {
+    background: rgba(255, 255, 255, 0.25) !important;
+    border-color: rgba(255, 255, 255, 0.35) !important;
+    color: #0F172A !important;
+}
+
+html.gray-glass-theme .ck.ck-editor__main > .ck-editor__editable.ck-focused {
+    background: rgba(255, 255, 255, 0.42) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25) !important;
+}
+
+html.gray-glass-theme .ck-toolbar,
+html.gray-glass-theme .ck.ck-toolbar {
+    background: rgba(255, 255, 255, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+html.gray-glass-theme .ck-toolbar .ck-button,
+html.gray-glass-theme .ck.ck-button {
+    color: #0F172A !important;
+}
+
+html.gray-glass-theme .ck-toolbar .ck-button:hover,
+html.gray-glass-theme .ck.ck-button:hover {
+    background: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* ── Modal inner details / info boxes ────────── */
+html.gray-glass-theme .details > div,
+html.gray-glass-theme .modal-card .details div {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+html.gray-glass-theme .modal-card .details dd,
+html.gray-glass-theme .modal-card .details dt {
+    color: #0F172A !important;
+}
+
+/* ── Modal overlay background ─────────────────── */
+html.gray-glass-theme .modal {
+    background: rgba(15, 23, 42, 0.40) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+}
+
+html.gray-glass-theme .modal-card,
+html.gray-glass-theme .modal-content {
+    background: rgba(235, 240, 248, 0.94) !important;
+    backdrop-filter: blur(24px) saturate(1.2) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(1.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.85) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+    color: #0F172A !important;
+}
+
+html.gray-glass-theme .modal-card h1,
+html.gray-glass-theme .modal-card h2,
+html.gray-glass-theme .modal-card h3,
+html.gray-glass-theme .modal-card label {
+    color: #0F172A !important;
+}
+
+html.gray-glass-theme .modal-card input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not(.note-title-field),
+html.gray-glass-theme .modal-card select,
+html.gray-glass-theme .modal-card textarea,
+html.gray-glass-theme .assignee-select-dropdown {
+    background-color: rgba(255, 255, 255, 0.65) !important;
+    background: rgba(255, 255, 255, 0.65) !important;
+    border: 1px solid rgba(255, 255, 255, 0.85) !important;
+    color: #0F172A !important;
+    color-scheme: light !important;
+    border-radius: 10px !important;
+}
+
+html.gray-glass-theme optgroup {
+    background-color: #E2E8F0 !important;
+    color: #334155 !important;
+    font-weight: 700 !important;
+}
+
+/* ── Assignee chips inside modal ──────────────── */
+html.gray-glass-theme .assignee-chip,
+html.gray-glass-theme .assignee-chip.chip-manager,
+html.gray-glass-theme .assignee-chip.chip-self {
+    background: rgba(255, 255, 255, 0.70) !important;
+    border-color: rgba(255, 255, 255, 0.90) !important;
+    color: #0F172A !important;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* ── Modal close button ───────────────────────── */
+html.gray-glass-theme .modal-close {
+    color: #334155 !important;
+}
+
+html.gray-glass-theme .modal-close:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* ── Modal tab buttons ────────────────────────── */
+html.gray-glass-theme .modal-tab {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    color: #334155 !important;
+}
+
+html.gray-glass-theme .modal-tab:hover {
+    background: rgba(255, 255, 255, 0.35) !important;
+    color: #0F172A !important;
+}
+
+html.gray-glass-theme .modal-tab.active {
+    background: rgba(15, 23, 42, 0.75) !important;
+    border-color: rgba(15, 23, 42, 0.4) !important;
+    color: #ffffff !important;
+}
+
 
 /* ==========================================================================
    TVA THEME PICKER — Clean Pill + Floating Popup
