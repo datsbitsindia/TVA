@@ -108,57 +108,15 @@ async function start() {
         next();
     });
 
-    // Safe res.render wrapper to catch EJS render & template syntax errors gracefully
-    webApp.use((req, res, next) => {
-        const _render = res.render.bind(res);
-        res.render = function(view, options, callback) {
-            try {
-                _render(view, options, (err, html) => {
-                    if (err) {
-                        console.error(`EJS Render Error in view '${view}':`, err);
-                        if (typeof callback === 'function') return callback(err, html);
-                        return next(err);
-                    }
-                    if (typeof callback === 'function') return callback(null, html);
-                    res.send(html);
-                });
-            } catch (e) {
-                console.error(`Sync EJS Exception in '${view}':`, e);
-                next(e);
-            }
-        };
-        next();
-    });
-
     webApp.use(require('./routes'));
     webApp.use((req, res) => res.status(404).render('error', {
         message: 'Page not found'
     }));
     webApp.use((err, req, res, next) => {
-        console.error('Unhandled Application Error:', err);
-        const isEjsError = err && (String(err.message || '').includes('<%') || String(err.message || '').includes('EJS') || err.name === 'SyntaxError');
-        const cleanMessage = isEjsError 
-            ? 'A temporary template processing issue occurred. Please try refreshing or returning to the previous page.'
-            : (err.message || 'Something went wrong');
-
-        try {
-            res.status(500).render('error', {
-                message: cleanMessage
-            });
-        } catch (renderErr) {
-            console.error('Error rendering error page fallback:', renderErr);
-            res.status(500).send(`
-                <!DOCTYPE html>
-                <html>
-                <head><title>System Notice</title><style>body{font-family:sans-serif;text-align:center;padding:50px;background:#f8fafc;color:#1e293b}h1{color:#ef4444}a{color:#3b68b7;font-weight:bold;text-decoration:none}</style></head>
-                <body>
-                    <h1>Something went wrong</h1>
-                    <p>A temporary system error occurred. Please try refreshing.</p>
-                    <a href="/dashboard">Go back to Dashboard</a>
-                </body>
-                </html>
-            `);
-        }
+        console.error(err);
+        res.status(500).render('error', {
+            message: err.message || 'Something went wrong'
+        });
     });
 
     const server = await new Promise((resolve, reject) => {
