@@ -130,13 +130,13 @@
     </div>
 <% } %>
 
-<% if (overdueTasks.length) { %>
+<% if (overdueCount > 0) { %>
     <div class="overdue-alert">
         <i class="fa-solid fa-triangle-exclamation"></i>
         <div>
             <b>
-                <%= overdueTasks.length %>
-                overdue task<%= overdueTasks.length > 1 ? 's' : '' %>
+                <%= overdueCount %>
+                overdue task<%= overdueCount > 1 ? 's' : '' %>
             </b>
             <span>
                 <%= user.role === 'manager'
