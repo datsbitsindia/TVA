@@ -1896,6 +1896,15 @@ html.gray-glass-theme .tva-theme-opt.active .tva-opt-tick {
     color: #334155 !important;
 }
 
+/* Hyperlink Stripping Safety Rules */
+.ck-content a, .description-content a, .task-description-content a, .description a, .details dd a {
+    pointer-events: none !important;
+    cursor: text !important;
+    text-decoration: none !important;
+    color: inherit !important;
+}
+
+
 
 
 

@@ -406,7 +406,15 @@ window.initCKEditor = function(elementOrSelector) {
         })
         .then(editor => {
             editor.model.document.on('change:data', () => {
-                el.value = editor.getData();
+                let data = editor.getData();
+                if (data && /<a\b[^>]*>/i.test(data)) {
+                    const cleanData = data.replace(/<a\b[^>]*>([\s\S]*?)<\/a>/gi, '$1').replace(/<\/a>/gi, '').replace(/<a\b[^>]*>/gi, '');
+                    if (cleanData !== data) {
+                        editor.setData(cleanData);
+                        data = cleanData;
+                    }
+                }
+                el.value = data;
                 el.dispatchEvent(new Event('input', { bubbles: true }));
                 el.dispatchEvent(new Event('change', { bubbles: true }));
             });
@@ -415,9 +423,12 @@ window.initCKEditor = function(elementOrSelector) {
                 const clipboardPipeline = editor.plugins.get('ClipboardPipeline');
                 if (clipboardPipeline) {
                     clipboardPipeline.on('inputTransformation', (evt, data) => {
-                        if (data.dataTransfer && data.dataTransfer.getData('text/html')) {
-                            let html = data.dataTransfer.getData('text/html');
-                            if (html.includes('mso-') || html.includes('<style') || html.includes('<o:')) {
+                        if (data.dataTransfer) {
+                            let html = data.dataTransfer.getData('text/html') || data.dataTransfer.getData('text/plain');
+                            if (html) {
+                                let hasLink = /<a\b[^>]*>/i.test(html) || html.includes('mso-') || html.includes('<style');
+                                html = html.replace(/<a\b[^>]*>([\s\S]*?)<\/a>/gi, '$1');
+                                html = html.replace(/<\/a>/gi, '').replace(/<a\b[^>]*>/gi, '');
                                 html = html.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
                                 html = html.replace(/\s+style\s*=\s*"[^"]*"/gi, '');
                                 html = html.replace(/\s+style\s*=\s*'[^']*'/gi, '');
@@ -425,9 +436,11 @@ window.initCKEditor = function(elementOrSelector) {
                                 html = html.replace(/\s+class\s*=\s*'[^']*'/gi, '');
                                 html = html.replace(/<\/?[owm]:[^>]*>/gi, '');
                                 html = html.replace(/<!--\[if[\s\S]*?\[endif\]-->/gi, '');
-                                try {
-                                    data.content = editor.data.parse(html);
-                                } catch(e) {}
+                                if (hasLink) {
+                                    try {
+                                        data.content = editor.data.parse(html);
+                                    } catch(e) {}
+                                }
                             }
                         }
                     }, { priority: 'high' });
@@ -443,6 +456,33 @@ window.initCKEditor = function(elementOrSelector) {
         });
 };
 
+window.removeDescriptionHyperlinks = function() {
+    const selectors = [
+        '.ck-content a',
+        '.description-content a',
+        '.task-description-content a',
+        '.task-desc-box a',
+        '.entity-card a[href^="http"]',
+        '.entity-card a[href^="https"]',
+        '.task-card a[href^="http"]',
+        '.task-card a[href^="https"]'
+    ];
+    document.querySelectorAll(selectors.join(', ')).forEach(link => {
+        link.style.pointerEvents = 'none';
+        link.style.cursor = 'text';
+        link.style.textDecoration = 'none';
+        link.style.color = 'inherit';
+        link.removeAttribute('href');
+        link.removeAttribute('target');
+        link.onclick = function(e) { e.preventDefault(); e.stopPropagation(); return false; };
+        
+        const textNode = document.createTextNode(link.textContent || link.innerText);
+        if (link.parentNode) {
+            link.parentNode.replaceChild(textNode, link);
+        }
+    });
+};
+
 window.initAllCKEditors = function() {
     document.querySelectorAll('textarea.ck-editor-target').forEach(el => {
         window.initCKEditor(el);
@@ -451,6 +491,7 @@ window.initAllCKEditors = function() {
 
 document.addEventListener('DOMContentLoaded', () => {
     window.initAllCKEditors();
+    window.removeDescriptionHyperlinks();
 });
 
 document.addEventListener('keydown', (e) => {

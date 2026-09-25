@@ -51,4 +51,12 @@ function safeReturn(value, fallback = '/dashboard') {
     return typeof value === 'string' && value.startsWith('/') && !value.startsWith('//') ? value : fallback;
 }
 
-module.exports = { formatDate, formatDateTime, safeReturn };
+function stripHyperlinks(htmlOrText) {
+    if (!htmlOrText || typeof htmlOrText !== 'string') return htmlOrText;
+    let cleaned = htmlOrText;
+    cleaned = cleaned.replace(/<a\b[^>]*>([\s\S]*?)<\/a>/gi, '$1');
+    cleaned = cleaned.replace(/<\/a>/gi, '').replace(/<a\b[^>]*>/gi, '');
+    return cleaned;
+}
+
+module.exports = { formatDate, formatDateTime, safeReturn, stripHyperlinks };
