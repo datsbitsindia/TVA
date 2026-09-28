@@ -494,13 +494,15 @@ html.dark-theme .entity-meta b {
     font-weight: 500 !important;
 }
 
+html.dark-theme body .entity-card.task-card .entity-title small,
+html.dark-theme .entity-card .entity-title small,
 html.dark-theme .entity-title small {
-    color: #BBBBBB !important;
-    background: rgba(255, 255, 255, 0.04) !important;
-    border: 1px solid rgba(255, 255, 255, 0.04) !important;
-    padding: 2px 10px !important;
-    border-radius: 20px !important;
-    font-weight: 400 !important;
+    color: #3b68b7 !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    font-weight: 600 !important;
 }
 
 /* ── Topbar Header ───────────────────────── */

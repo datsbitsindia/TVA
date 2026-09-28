@@ -1484,7 +1484,6 @@ html.dark-theme .comments header b {
 }
 
 html.dark-theme td small,
-html.dark-theme .entity-title small,
 html.dark-theme .entity-meta small,
 html.dark-theme .activity-row small,
 html.dark-theme .task-desc-box small,
@@ -2154,5 +2153,18 @@ html.gray-glass-theme body .logout-btn:hover {
     border-color: #dc2626 !important;
     box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3) !important;
 }
+
+/* Dark Theme - Clean Project Name without pill background/border */
+html.dark-theme body .entity-card.task-card .entity-title small,
+html.dark-theme .entity-card .entity-title small,
+html.dark-theme .entity-title small {
+    color: #3b68b7 !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    font-weight: 600 !important;
+}
+
 
 
