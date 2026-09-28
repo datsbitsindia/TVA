@@ -109,9 +109,11 @@
                 </button>
             <% } %>
 
-            <form action="/logout" method="post" style="margin:0;">
-                <button class="logout-btn" style="white-space:nowrap;"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
-            </form>
+            <% if (typeof page !== 'undefined' && page === 'profile') { %>
+                <form action="/logout" method="post" style="margin:0;">
+                    <button class="logout-btn" style="white-space:nowrap;"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                </form>
+            <% } %>
         </div>
     </header>
 
