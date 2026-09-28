@@ -1058,11 +1058,9 @@ document.addEventListener('submit', async function(e) {
                                         `
                                     ) : ''}
                                 </div>
-                                ${hasProject ? `
-                                    <small style="display: block; color: #3b68b7; font-weight: 600; margin-top: 2px; font-size: 11px;">
-                                        <i class="fa-solid fa-folder-open" style="margin-right: 3px;"></i>${t.project_name}
-                                    </small>
-                                ` : ''}
+                                <small style="display: block; color: #3b68b7; font-weight: 600; margin-top: 2px; font-size: 11px;">
+                                    <i class="fa-solid fa-folder-open" style="margin-right: 3px;"></i>${t.project_name || 'No project'}
+                                </small>
                             </div>
                             <div class="entity-meta">
                                 <small>Assigned By</small>
