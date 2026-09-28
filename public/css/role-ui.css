@@ -1291,12 +1291,38 @@ html.dark-theme .role-hero {
 
 /* Metric Card Icon Backgrounds in Dark Mode */
 html.dark-theme .metric-card i,
+html.dark-theme body .metric-card i {
+    color: #60a5fa !important;
+    background: rgba(59, 104, 183, 0.25) !important;
+    border: 1px solid rgba(96, 165, 250, 0.3) !important;
+}
+
 html.dark-theme .metric-card.green i,
+html.dark-theme body .metric-card.green i {
+    color: #4ade80 !important;
+    background: rgba(22, 163, 74, 0.25) !important;
+    border: 1px solid rgba(74, 222, 128, 0.3) !important;
+}
+
 html.dark-theme .metric-card.orange i,
+html.dark-theme body .metric-card.orange i {
+    color: #fbbf24 !important;
+    background: rgba(217, 119, 6, 0.25) !important;
+    border: 1px solid rgba(251, 191, 36, 0.3) !important;
+}
+
 html.dark-theme .metric-card.red i,
-html.dark-theme .metric-card.purple i {
-    background: rgba(255, 255, 255, 0.06) !important;
-    color: #FFFFFF !important;
+html.dark-theme body .metric-card.red i {
+    color: #f87171 !important;
+    background: rgba(220, 38, 38, 0.25) !important;
+    border: 1px solid rgba(248, 113, 113, 0.3) !important;
+}
+
+html.dark-theme .metric-card.purple i,
+html.dark-theme body .metric-card.purple i {
+    color: #a78bfa !important;
+    background: rgba(124, 58, 237, 0.25) !important;
+    border: 1px solid rgba(167, 139, 250, 0.3) !important;
 }
 
 /* Logo brightness in dark mode */
@@ -1346,21 +1372,75 @@ html.dark-theme body .status-chip,
 html.dark-theme body .role-chip,
 html.dark-theme body .pill,
 html.dark-theme body .priority-pill,
+html.dark-theme body .priority-tag-pill,
 html.dark-theme body .status,
 html.dark-theme body .verified-chip,
 html.dark-theme body .awaiting-chip,
 html.dark-theme body .routine-badge,
 html.dark-theme body .priority-badge {
-    background: rgba(255, 255, 255, 0.04) !important;
-    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
     color: #DDDDDD !important;
-    font-weight: 500 !important;
+    font-weight: 700 !important;
+}
+
+/* Specific Status & Priority Color Overrides for Dark Mode */
+html.dark-theme body .status-chip.overdue,
+html.dark-theme body .status-chip.inactive,
+html.dark-theme body .pill.high,
+html.dark-theme body .pill.critical,
+html.dark-theme body .priority-pill.high,
+html.dark-theme body .priority-pill.critical,
+html.dark-theme body .priority-tag-pill.priority-high,
+html.dark-theme body .priority-tag-pill.priority-critical,
+html.dark-theme body .priority-badge.high,
+html.dark-theme body .priority-badge.critical,
+html.dark-theme body .high,
+html.dark-theme body .critical {
+    background: rgba(220, 38, 38, 0.22) !important;
+    color: #f87171 !important;
+    border: 1px solid rgba(248, 113, 113, 0.35) !important;
+}
+
+html.dark-theme body .status-chip.pending,
+html.dark-theme body .status-chip.planned,
+html.dark-theme body .awaiting-chip,
+html.dark-theme body .pill.medium,
+html.dark-theme body .priority-pill.medium,
+html.dark-theme body .priority-tag-pill.priority-medium,
+html.dark-theme body .priority-badge.medium,
+html.dark-theme body .medium {
+    background: rgba(217, 119, 6, 0.22) !important;
+    color: #fbbf24 !important;
+    border: 1px solid rgba(251, 191, 36, 0.35) !important;
+}
+
+html.dark-theme body .status-chip.completed,
+html.dark-theme body .verified-chip,
+html.dark-theme body .pill.completed,
+html.dark-theme body .completed {
+    background: rgba(22, 163, 74, 0.22) !important;
+    color: #4ade80 !important;
+    border: 1px solid rgba(74, 222, 128, 0.35) !important;
+}
+
+html.dark-theme body .status-chip.in-progress,
+html.dark-theme body .status-chip.active,
+html.dark-theme body .pill.low,
+html.dark-theme body .priority-pill.low,
+html.dark-theme body .priority-tag-pill.priority-low,
+html.dark-theme body .priority-badge.low,
+html.dark-theme body .low {
+    background: rgba(59, 104, 183, 0.22) !important;
+    color: #60a5fa !important;
+    border: 1px solid rgba(96, 165, 250, 0.35) !important;
 }
 
 html.dark-theme body .status-chip i,
 html.dark-theme body .awaiting-chip i,
 html.dark-theme body .verified-chip i,
-html.dark-theme body .pill i {
+html.dark-theme body .pill i,
+html.dark-theme body .priority-pill i {
     color: inherit !important;
 }
 
@@ -1691,12 +1771,38 @@ html.gray-glass-theme .role-hero {
 }
 
 html.gray-glass-theme .metric-card i,
+html.gray-glass-theme body .metric-card i {
+    background: rgba(219, 234, 254, 0.75) !important;
+    color: #2563eb !important;
+    border: 1px solid rgba(96, 165, 250, 0.4) !important;
+}
+
 html.gray-glass-theme .metric-card.green i,
+html.gray-glass-theme body .metric-card.green i {
+    background: rgba(220, 252, 231, 0.75) !important;
+    color: #16a34a !important;
+    border: 1px solid rgba(34, 197, 94, 0.4) !important;
+}
+
 html.gray-glass-theme .metric-card.orange i,
+html.gray-glass-theme body .metric-card.orange i {
+    background: rgba(254, 243, 199, 0.75) !important;
+    color: #d97706 !important;
+    border: 1px solid rgba(245, 158, 11, 0.4) !important;
+}
+
 html.gray-glass-theme .metric-card.red i,
-html.gray-glass-theme .metric-card.purple i {
-    background: rgba(255, 255, 255, 0.3) !important;
-    color: #0F172A !important;
+html.gray-glass-theme body .metric-card.red i {
+    background: rgba(254, 226, 226, 0.75) !important;
+    color: #dc2626 !important;
+    border: 1px solid rgba(239, 68, 68, 0.4) !important;
+}
+
+html.gray-glass-theme .metric-card.purple i,
+html.gray-glass-theme body .metric-card.purple i {
+    background: rgba(237, 233, 254, 0.75) !important;
+    color: #7c3aed !important;
+    border: 1px solid rgba(167, 139, 250, 0.4) !important;
 }
 
 html.gray-glass-theme .brand-logo {
@@ -1850,13 +1956,34 @@ html.gray-glass-theme body .note-card:hover {
 }
 
 /* Metric card icon badges */
-html.gray-glass-theme body .metric-card i,
-html.gray-glass-theme body .metric-card.green i,
-html.gray-glass-theme body .metric-card.orange i,
-html.gray-glass-theme body .metric-card.red i,
+html.gray-glass-theme body .metric-card i {
+    background: rgba(219, 234, 254, 0.75) !important;
+    color: #2563eb !important;
+    border: 1px solid rgba(96, 165, 250, 0.4) !important;
+}
+
+html.gray-glass-theme body .metric-card.green i {
+    background: rgba(220, 252, 231, 0.75) !important;
+    color: #16a34a !important;
+    border: 1px solid rgba(34, 197, 94, 0.4) !important;
+}
+
+html.gray-glass-theme body .metric-card.orange i {
+    background: rgba(254, 243, 199, 0.75) !important;
+    color: #d97706 !important;
+    border: 1px solid rgba(245, 158, 11, 0.4) !important;
+}
+
+html.gray-glass-theme body .metric-card.red i {
+    background: rgba(254, 226, 226, 0.75) !important;
+    color: #dc2626 !important;
+    border: 1px solid rgba(239, 68, 68, 0.4) !important;
+}
+
 html.gray-glass-theme body .metric-card.purple i {
-    background: rgba(255, 255, 255, 0.3) !important;
-    color: #0F172A !important;
+    background: rgba(237, 233, 254, 0.75) !important;
+    color: #7c3aed !important;
+    border: 1px solid rgba(167, 139, 250, 0.4) !important;
 }
 
 /* Active KPI Card Filter */
@@ -1898,19 +2025,81 @@ html.gray-glass-theme body .toolbar-ui select {
     border-radius: 14px !important;
 }
 
-/* Status Chips & Badges */
+/* Status Chips & Badges in Gray Glass Theme */
 html.gray-glass-theme body .status-chip,
 html.gray-glass-theme body .role-chip,
 html.gray-glass-theme body .pill,
 html.gray-glass-theme body .priority-pill,
+html.gray-glass-theme body .priority-tag-pill,
 html.gray-glass-theme body .status,
 html.gray-glass-theme body .verified-chip,
 html.gray-glass-theme body .awaiting-chip,
 html.gray-glass-theme body .routine-badge,
 html.gray-glass-theme body .priority-badge {
-    background: rgba(255, 255, 255, 0.25) !important;
-    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    background: rgba(255, 255, 255, 0.35) !important;
+    border: 1px solid rgba(255, 255, 255, 0.45) !important;
     color: #1E293B !important;
+    font-weight: 700 !important;
+}
+
+/* Specific Status & Priority Color Overrides for Gray Glass Mode */
+html.gray-glass-theme body .status-chip.overdue,
+html.gray-glass-theme body .status-chip.inactive,
+html.gray-glass-theme body .pill.high,
+html.gray-glass-theme body .pill.critical,
+html.gray-glass-theme body .priority-pill.high,
+html.gray-glass-theme body .priority-pill.critical,
+html.gray-glass-theme body .priority-tag-pill.priority-high,
+html.gray-glass-theme body .priority-tag-pill.priority-critical,
+html.gray-glass-theme body .priority-badge.high,
+html.gray-glass-theme body .priority-badge.critical,
+html.gray-glass-theme body .high,
+html.gray-glass-theme body .critical {
+    background: rgba(254, 226, 226, 0.85) !important;
+    color: #b91c1c !important;
+    border: 1px solid rgba(252, 165, 165, 0.6) !important;
+}
+
+html.gray-glass-theme body .status-chip.pending,
+html.gray-glass-theme body .status-chip.planned,
+html.gray-glass-theme body .awaiting-chip,
+html.gray-glass-theme body .pill.medium,
+html.gray-glass-theme body .priority-pill.medium,
+html.gray-glass-theme body .priority-tag-pill.priority-medium,
+html.gray-glass-theme body .priority-badge.medium,
+html.gray-glass-theme body .medium {
+    background: rgba(254, 243, 199, 0.85) !important;
+    color: #b45309 !important;
+    border: 1px solid rgba(252, 211, 77, 0.6) !important;
+}
+
+html.gray-glass-theme body .status-chip.completed,
+html.gray-glass-theme body .verified-chip,
+html.gray-glass-theme body .pill.completed,
+html.gray-glass-theme body .completed {
+    background: rgba(220, 252, 231, 0.85) !important;
+    color: #15803d !important;
+    border: 1px solid rgba(134, 239, 172, 0.6) !important;
+}
+
+html.gray-glass-theme body .status-chip.in-progress,
+html.gray-glass-theme body .status-chip.active,
+html.gray-glass-theme body .pill.low,
+html.gray-glass-theme body .priority-pill.low,
+html.gray-glass-theme body .priority-tag-pill.priority-low,
+html.gray-glass-theme body .priority-badge.low,
+html.gray-glass-theme body .low {
+    background: rgba(219, 234, 254, 0.85) !important;
+    color: #0b2d68 !important;
+    border: 1px solid rgba(147, 197, 253, 0.6) !important;
+}
+
+html.gray-glass-theme body .status-chip i,
+html.gray-glass-theme body .awaiting-chip i,
+html.gray-glass-theme body .verified-chip i,
+html.gray-glass-theme body .pill i,
+html.gray-glass-theme body .priority-pill i {
+    color: inherit !important;
 }
 
 /* Chat & Discussion Updates in Gray Glass Mode */
