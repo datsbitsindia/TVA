@@ -59,7 +59,13 @@
         <a href="/tasks" class="back-link" style="display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:#475569; text-decoration:none; margin-bottom:8px;"><i class="fa-solid fa-arrow-left"></i> Back to Tasks</a>
         <div class="task-title-group">
             <h2><%= task.title %></h2>
-            <span class="project-tag" style="font-size:13px; color:#3b68b7; font-weight:600;"><i class="fa-solid fa-folder-open"></i> <%= task.project_name||'No project' %></span>
+            <% 
+              const isPureSelfTask = task.is_self_task || String(task.project_name || '').toLowerCase() === 'self task' || (Number(task.created_by) === Number(user.id) && String(task.assigned_to || '').split(',').length === 1 && Number(task.assigned_to) === Number(user.id));
+              const hasProjectDetail = task.project_name && !['no project', 'self task', 'none', ''].includes(String(task.project_name).toLowerCase().trim()) && !isPureSelfTask && !task.is_self_task;
+            %>
+            <% if (hasProjectDetail) { %>
+                <span class="project-tag" style="font-size:13px; color:#3b68b7; font-weight:600;"><i class="fa-solid fa-folder-open"></i> <%= task.project_name %></span>
+            <% } %>
         </div>
         <div class="task-action-row">
             <% if (task.is_forwarded) { %>

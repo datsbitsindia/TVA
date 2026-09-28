@@ -1007,6 +1007,10 @@ document.addEventListener('submit', async function(e) {
                         article.dataset.priority = String(t.priority || 'medium').toLowerCase();
                         article.dataset.completedAt = t.completed_at ? new Date(t.completed_at).getTime() : 0;
                         article.dataset.createdAt = t.created_at ? new Date(t.created_at).getTime() : 0;
+                        const assignedIds = String(t.assigned_to || '').split(',').map(x => Number(x.trim()));
+                        const isPureSelf = t.is_self_task || String(t.project_name || '').toLowerCase() === 'self task' || (Number(t.created_by) === myUserId && assignedIds.length === 1 && assignedIds[0] === myUserId);
+                        const hasProject = t.project_name && !['no project', 'self task', 'none', ''].includes(String(t.project_name).toLowerCase().trim()) && !isPureSelf && !t.is_self_task;
+
                         article.dataset.id = t.id;
                         article.dataset.cardLink = `/tasks/${t.id}`;
                         article.style.animation = 'highlightTaskPulse 2.5s ease';
@@ -1026,7 +1030,7 @@ document.addEventListener('submit', async function(e) {
                                         #${t.task_number || t.id} ${t.title}
                                     </a>
                                     ${t.is_routine ? '<span class="routine-badge" style="flex:0 0 auto; margin:0!important;"><i class="fa-solid fa-repeat"></i> Routine</span>' : ''}
-                                    ${t.isPureSelf ? `
+                                    ${isPureSelf ? `
                                         <span class="status-chip self-task" style="background:#e0e7ff;color:#4338ca;border:1px solid #c7d2fe;padding:2px 6px;font-size:9px;font-weight:700;display:inline-flex;align-items:center;gap:3px;flex:0 0 auto;margin:0!important;">
                                             <i class="fa-solid fa-user-check"></i> Self Task
                                         </span>
@@ -1054,9 +1058,11 @@ document.addEventListener('submit', async function(e) {
                                         `
                                     ) : ''}
                                 </div>
-                                <small style="display: block; color: #3b68b7; font-weight: 600; margin-top: 2px; font-size: 11px;">
-                                    <i class="fa-solid fa-folder-open" style="margin-right: 3px;"></i>${t.project_name || 'No project'}
-                                </small>
+                                ${hasProject ? `
+                                    <small style="display: block; color: #3b68b7; font-weight: 600; margin-top: 2px; font-size: 11px;">
+                                        <i class="fa-solid fa-folder-open" style="margin-right: 3px;"></i>${t.project_name}
+                                    </small>
+                                ` : ''}
                             </div>
                             <div class="entity-meta">
                                 <small>Assigned By</small>
