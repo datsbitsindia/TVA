@@ -106,7 +106,7 @@ html body .entity-card.task-card .entity-action {
         margin-top: 2px !important;
     }
 }
-.overdue-alert{display:flex;align-items:center;gap:11px;margin:0 0 11px;padding:11px 14px;border:1px solid #fecaca;border-radius:13px;background:#fff1f2;color:#b91c1c;box-shadow:0 5px 16px rgba(185,28,28,.07)}.overdue-alert i{display:grid;place-items:center;width:32px;height:32px;flex:none;border-radius:9px;background:#dc2626;color:#fff}.overdue-alert b,.overdue-alert span{display:block}.overdue-alert b{font-size:12px}.overdue-alert span{margin-top:2px;font-size:10px}.overdue-card{border-color:#fecaca!important;background:linear-gradient(90deg,#fff7f7,#fff)!important}.overdue-card:before{background:#dc2626!important}
+.overdue-alert{display:flex;align-items:center;gap:11px;margin:0 0 11px;padding:11px 14px;border:1px solid #fecaca;border-radius:13px;background:#fff1f2;color:#b91c1c;box-shadow:0 5px 16px rgba(185,28,28,.07)}.overdue-alert i{display:grid;place-items:center;width:32px;height:32px;flex:none;border-radius:9px;background:#dc2626;color:#fff}.overdue-alert b,.overdue-alert span{display:block}.overdue-alert b{font-size:12px}.overdue-alert span{margin-top:2px;font-size:10px}.overdue-card{border-color:#fecaca!important;background:linear-gradient(90deg,#fff7f7,#fff)!important}.overdue-card:before{box-shadow:inset 4px 0 0 0 #dc2626!important;background:transparent!important}
 @media(max-width:500px){.overdue-alert{padding:9px 10px}.overdue-alert i{width:28px;height:28px}.overdue-alert b{font-size:10px}.overdue-alert span{font-size:8px}}
 
 /* Formal manager reports */
