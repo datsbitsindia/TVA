@@ -1921,6 +1921,51 @@ html.gray-glass-theme .tva-theme-opt.active .tva-opt-tick {
     color: inherit !important;
 }
 
+/* Dark Theme & Gray Glass Theme - Clean Task Detail Panels (Task Description, Task Info Grid, Change My Status) */
+html.dark-theme .task-desc-box,
+html.dark-theme .task-info-grid,
+html.dark-theme .status-update-form,
+html.gray-glass-theme body .task-desc-box,
+html.gray-glass-theme body .task-info-grid,
+html.gray-glass-theme body .status-update-form {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+html.dark-theme .task-desc-box small,
+html.dark-theme .task-info-grid small,
+html.dark-theme .task-info-grid div small,
+html.dark-theme .status-update-form label {
+    color: #AAAAAA !important;
+}
+
+html.dark-theme .task-desc-box .task-description-content,
+html.dark-theme .task-desc-box p,
+html.dark-theme .task-info-grid b,
+html.dark-theme .task-info-grid div b {
+    color: #EEEEEE !important;
+}
+
+html.gray-glass-theme body .task-desc-box small,
+html.gray-glass-theme body .task-info-grid small,
+html.gray-glass-theme body .task-info-grid div small,
+html.gray-glass-theme body .status-update-form label {
+    color: #475569 !important;
+}
+
+html.gray-glass-theme body .task-desc-box .task-description-content,
+html.gray-glass-theme body .task-desc-box p,
+html.gray-glass-theme body .task-info-grid b,
+html.gray-glass-theme body .task-info-grid div b {
+    color: #0F172A !important;
+}
+
+
 
 
 
