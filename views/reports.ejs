@@ -25,4 +25,69 @@
 <div class="report-summary"><div><span>Completion Rate</span><b><%= rate %>%</b><small><%= completed %> of <%= total %> tasks</small></div><div><span>Active Employees</span><b><%= activeEmployees %></b><small>With assigned work</small></div><div><span>Due in 3 Days</span><b><%= dueSoon %></b><small>Needs planning</small></div><div class="<%= overdue?'risk':'' %>"><span>Overdue</span><b><%= overdue %></b><small><%= overdue?'Needs attention':'All on schedule' %></small></div></div>
 <section class="report-insight"><div><i class="fa-solid fa-bullseye"></i><div><b>Manager Summary</b><p><% if(rate>=75){ %>Delivery is healthy with a <%= rate %>% completion rate.<% } else if(rate>=40){ %>Delivery is progressing; focus on pending and overdue tasks.<% } else { %>Completion is currently low. Review workload and blockers with the team.<% } %></p></div></div><div><i class="fa-solid fa-user-check"></i><div><b>Highest Workload</b><p><%= busiest&&Number(busiest.value)?`${busiest.label} has ${busiest.value} assigned tasks.`:'No employee workload available.' %></p></div></div></section>
 <div class="report-layout"><section class="ui-panel chart-panel report-chart"><div class="ui-panel-head"><h2>Task Status</h2><span><%= total %> total</span></div><canvas id="statusChart" data-values='<%- JSON.stringify(byStatus) %>'></canvas></section><section class="ui-panel"><div class="ui-panel-head"><h2>Employee Workload</h2><span>Assigned / Completed</span></div><div class="formal-bars"><% const empMax=Math.max(1,...byEmployee.map(x=>Number(x.value))); byEmployee.forEach(x=>{ const done=Number(x.completed||0),value=Number(x.value); %><div class="formal-row"><div><b><%= x.label %></b><small><%= done %> completed</small></div><div class="progress-track"><i style="width:<%= Math.round(value/empMax*100) %>%"></i></div><strong><%= value %></strong></div><% }) %></div></section></div>
-<section class="ui-panel project-performance"><div class="ui-panel-head"><h2>Project Performance</h2><span>Task completion by project</span></div><div class="project-report-list"><% byProject.forEach(x=>{ const value=Number(x.value),done=Number(x.completed||0),pct=value?Math.round(done/value*100):0; %><article><div><b><%= x.label %></b><small><%= done %>/<%= value %> tasks completed</small></div><div class="progress-track"><i style="width:<%= pct %>%"></i></div><strong><%= pct %>%</strong><span class="status-chip <%= pct===100?'completed':pct?'in-progress':'pending' %>"><%= pct===100?'Completed':pct?'In progress':'Not started' %></span></article><% }) %><% if(!byProject.length){ %><p class="empty">No project data available.</p><% } %></div></section><%- include('partials/foot') %>
+<section class="ui-panel project-performance"><div class="ui-panel-head"><h2>Project Performance</h2><span>Task completion by project</span></div><div class="project-report-list"><% byProject.forEach(x=>{ const value=Number(x.value),done=Number(x.completed||0),pct=value?Math.round(done/value*100):0; %><article><div><b><%= x.label %></b><small><%= done %>/<%= value %> tasks completed</small></div><div class="progress-track"><i style="width:<%= pct %>%"></i></div><strong><%= pct %>%</strong><span class="status-chip <%= pct===100?'completed':pct?'in-progress':'pending' %>"><%= pct===100?'Completed':pct?'In progress':'Not started' %></span></article><% }) %><% if(!byProject.length){ %><p class="empty">No project data available.</p><% } %></div></section>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const canvas = document.getElementById('statusChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+    
+    let rawData = [];
+    try {
+        rawData = JSON.parse(canvas.getAttribute('data-values') || '[]');
+    } catch(e) {}
+
+    const labelMap = {
+        'pending': 'Pending',
+        'in progress': 'In Progress',
+        'completed': 'Completed',
+        'cancelled': 'Cancelled'
+    };
+
+    const statusCounts = {
+        'Completed': 0,
+        'In Progress': 0,
+        'Pending': 0,
+        'Cancelled': 0
+    };
+
+    rawData.forEach(item => {
+        const key = labelMap[String(item.label).toLowerCase()] || item.label;
+        if (statusCounts[key] !== undefined) {
+            statusCounts[key] += Number(item.value || 0);
+        }
+    });
+
+    const labels = ['Completed', 'In Progress', 'Pending', 'Cancelled'];
+    const data = labels.map(l => statusCounts[l]);
+    const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
+
+    new Chart(canvas.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: colors,
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                        padding: 10,
+                        font: { size: 11, family: "'Inter', sans-serif" }
+                    }
+                }
+            },
+            cutout: '68%'
+        }
+    });
+});
+</script>
+<%- include('partials/foot') %>

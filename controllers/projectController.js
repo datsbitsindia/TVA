@@ -45,8 +45,8 @@ exports.list = async (req, res) => {
     let params = [orgId];
 
     if (u.role !== 'admin') {
-        whereConditions.push('FIND_IN_SET(?, p.manager_id) > 0');
-        params.push(u.id);
+        whereConditions.push("(FIND_IN_SET(?, REPLACE(p.manager_id, ' ', '')) > 0 OR p.created_by=? OR p.id IN (SELECT project_id FROM project_assignees WHERE user_id=?))");
+        params.push(u.id, u.id, u.id);
     }
 
     if (req.query.status) {

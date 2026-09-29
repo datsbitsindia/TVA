@@ -63,9 +63,9 @@ exports.index = async (req, res) => {
     
     const today = new Date().toISOString().slice(0, 10);
     const rawProjects = u.role === 'admin'
-        ? await db.prepare(`SELECT p.*,m.name manager_name,(SELECT COUNT(*) FROM tasks t WHERE t.project_id=p.id) task_count,CASE WHEN p.end_date<CURDATE() AND p.status NOT IN (2,3) AND p.status NOT IN ('Completed','Cancelled') THEN 1 ELSE 0 END is_overdue FROM projects p JOIN users m ON m.id=p.manager_id WHERE p.organization_id=? ORDER BY p.created_at DESC`).all(orgId)
+        ? await db.prepare(`SELECT p.*, (SELECT COUNT(*) FROM tasks t WHERE t.project_id=p.id) task_count, CASE WHEN p.end_date<CURDATE() AND p.status NOT IN (2,3) AND p.status NOT IN ('Completed','Cancelled') THEN 1 ELSE 0 END is_overdue FROM projects p WHERE p.organization_id=? ORDER BY p.created_at DESC`).all(orgId)
         : u.role === 'manager'
-        ? await db.prepare(`SELECT p.*,m.name manager_name,(SELECT COUNT(*) FROM tasks t WHERE t.project_id=p.id) task_count,CASE WHEN p.end_date<CURDATE() AND p.status NOT IN (2,3) AND p.status NOT IN ('Completed','Cancelled') THEN 1 ELSE 0 END is_overdue FROM projects p JOIN users m ON m.id=p.manager_id WHERE p.organization_id=? AND FIND_IN_SET(?, p.manager_id) > 0 ORDER BY p.created_at DESC`).all(orgId, u.id)
+        ? await db.prepare(`SELECT p.*, (SELECT COUNT(*) FROM tasks t WHERE t.project_id=p.id) task_count, CASE WHEN p.end_date<CURDATE() AND p.status NOT IN (2,3) AND p.status NOT IN ('Completed','Cancelled') THEN 1 ELSE 0 END is_overdue FROM projects p WHERE p.organization_id=? AND (FIND_IN_SET(?, REPLACE(p.manager_id, ' ', '')) > 0 OR p.created_by=? OR p.id IN (SELECT project_id FROM project_assignees WHERE user_id=?)) ORDER BY p.created_at DESC`).all(orgId, u.id, u.id, u.id)
         : [];
 
     // Resolve status from numeric ID to human-readable name
