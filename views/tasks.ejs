@@ -164,10 +164,10 @@
 <section class="ui-panel">
 
     <div class="task-type-tabs-container" style="display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; margin-bottom: 12px !important;">
-        <button type="button" class="btn task-tab-btn active" data-task-tab="assigned-to-me" onclick="filterTaskType('assigned-to-me', this)">
+        <button type="button" class="btn task-tab-btn" data-task-tab="assigned-to-me" onclick="filterTaskType('assigned-to-me', this)" id="tab-btn-assigned-to-me">
             <i class="fa-solid fa-inbox"></i> To Do
         </button>
-        <button type="button" class="btn task-tab-btn" data-task-tab="assigned-by-me" onclick="filterTaskType('assigned-by-me', this)">
+        <button type="button" class="btn task-tab-btn" data-task-tab="assigned-by-me" onclick="filterTaskType('assigned-by-me', this)" id="tab-btn-assigned-by-me">
             <i class="fa-solid fa-paper-plane"></i> Assigned
         </button>
     </div>
@@ -325,7 +325,7 @@ const myUserId = <%= user.id %>;
 // Initialize KPI filter from URL query param if available, otherwise default to empty string (all tasks)
 const initialUrlParams = new URLSearchParams(window.location.search);
 if (window.currentKpiFilter === undefined) {
-    window.currentKpiFilter = initialUrlParams.has('status') ? initialUrlParams.get('status').trim() : '';
+    window.currentKpiFilter = initialUrlParams.has('status') ? initialUrlParams.get('status').trim() : 'pending';
 }
 
 function createTaskCardNode(t) {
@@ -442,7 +442,7 @@ async function fetchNextTaskBatch(isReset = false) {
     const spinner = document.getElementById('task-infinite-spinner');
     if (spinner) spinner.style.display = 'block';
 
-    const activeKpi = window.currentKpiFilter !== undefined && window.currentKpiFilter !== null ? window.currentKpiFilter : '';
+    const activeKpi = window.currentKpiFilter !== undefined && window.currentKpiFilter !== null ? window.currentKpiFilter : 'pending';
     const bar = document.querySelector('.compact-filter');
     const searchInput = bar ? bar.querySelector('input[type="search"]') : null;
     const queryVal = searchInput ? searchInput.value.trim() : '';
@@ -450,6 +450,24 @@ async function fetchNextTaskBatch(isReset = false) {
     const projectVal = projectSelect ? projectSelect.value.trim() : '';
     const activeTabBtn = document.querySelector('.task-tab-btn.active');
     const tabVal = activeTabBtn ? activeTabBtn.getAttribute('data-task-tab') : 'assigned-to-me';
+
+    // Update browser URL query string so history.back() restores the exact filter and tab
+    try {
+        const currentUrl = new URL(window.location.href);
+        if (activeKpi) currentUrl.searchParams.set('status', activeKpi);
+        else currentUrl.searchParams.delete('status');
+
+        if (tabVal && tabVal !== 'assigned-to-me') currentUrl.searchParams.set('task_tab', tabVal);
+        else if (tabVal === 'assigned-to-me') currentUrl.searchParams.delete('task_tab');
+
+        if (queryVal) currentUrl.searchParams.set('q', queryVal);
+        else currentUrl.searchParams.delete('q');
+
+        if (projectVal && projectVal.toLowerCase() !== 'all projects') currentUrl.searchParams.set('project', projectVal);
+        else currentUrl.searchParams.delete('project');
+
+        window.history.replaceState(null, '', currentUrl.pathname + currentUrl.search);
+    } catch(e) {}
 
     const params = new URLSearchParams({
         page: currentTaskPage,
@@ -577,6 +595,43 @@ window.addEventListener('scroll', function() {
 
 document.addEventListener('DOMContentLoaded', function() {
     const params = new URLSearchParams(window.location.search);
+
+    // --- Restore tab & KPI state from URL on page load (e.g. after browser Back) ---
+    const tabParam = params.has('task_tab') ? params.get('task_tab').trim() : 'assigned-to-me';
+    const statusParam = params.has('status') ? params.get('status').trim() : 'pending';
+
+    // Set correct tab active
+    document.querySelectorAll('.task-tab-btn').forEach(b => {
+        if (b.getAttribute('data-task-tab') === tabParam) b.classList.add('active');
+        else b.classList.remove('active');
+    });
+
+    // Set correct KPI card active
+    window.currentKpiFilter = statusParam;
+    document.querySelectorAll('.metric-card').forEach(card => {
+        card.classList.remove('active-kpi-filter');
+        const onclickAttr = (card.getAttribute('onclick') || '').toLowerCase();
+        const sl = statusParam.toLowerCase();
+        // match filterByKpi('Completed') etc.
+        if (
+            onclickAttr.includes(`'${sl}'`) ||
+            onclickAttr.includes(`"${sl}"`) ||
+            (sl === 'in-progress' && onclickAttr.includes("'in progress'")) ||
+            (sl === 'in progress' && onclickAttr.includes("'in progress'"))
+        ) {
+            card.classList.add('active-kpi-filter');
+        }
+    });
+
+    // If non-default tab (assigned-by-me) or non-default status was in URL,
+    // re-fetch so the tasks list matches the URL state (server renders assigned-to-me by default)
+    if (tabParam !== 'assigned-to-me') {
+        // Need to re-fetch with the correct tab
+        fetchNextTaskBatch(true);
+    }
+    // If only status differs from what server rendered, server already rendered correctly,
+    // no extra fetch needed.
+
     if (params.get('error') === 'deleted') {
         const cancelBtn = document.getElementById('confirm-modal-cancel-btn');
         if (cancelBtn) cancelBtn.style.display = 'none';
@@ -595,16 +650,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
         window.history.replaceState({path: cleanUrl}, '', cleanUrl);
-    }
-
-    // Auto check if initial load needs auto-filling for high resolution screens
-    if (hasMoreTaskBatch && document.documentElement.scrollHeight <= window.innerHeight + 150) {
-        setTimeout(() => {
-            if (!isLoadingTaskBatch && hasMoreTaskBatch) {
-                // Remove immediate page 2 fetch on load to prevent racing with KPI initial clicks
-                // fetchNextTaskBatch(false);
-            }
-        }, 300);
     }
 });
 </script>
