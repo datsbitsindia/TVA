@@ -172,9 +172,18 @@ const getTasksWithPaginationAndCounts = async (req) => {
     }
 
     if (req.query.q) {
-        filters.push('(t.title LIKE ? OR t.description LIKE ? OR CAST(t.id AS CHAR) LIKE ? OR CAST(t.task_number AS CHAR) LIKE ?)');
+        filters.push(`(
+            t.title LIKE ? 
+            OR t.description LIKE ? 
+            OR CAST(t.id AS CHAR) LIKE ? 
+            OR CAST(t.task_number AS CHAR) LIKE ? 
+            OR p.name LIKE ? 
+            OR c.name LIKE ? 
+            OR a.name LIKE ? 
+            OR t.id IN (SELECT ta3.task_id FROM task_assignees ta3 JOIN users u3 ON u3.id=ta3.user_id WHERE u3.name LIKE ?)
+        )`);
         const qVal = `%${req.query.q.trim()}%`;
-        queryParams.push(qVal, qVal, qVal, qVal);
+        queryParams.push(qVal, qVal, qVal, qVal, qVal, qVal, qVal, qVal);
     }
 
     // Filtered Total Count for Pagination
@@ -183,6 +192,8 @@ const getTasksWithPaginationAndCounts = async (req) => {
         FROM tasks t
         LEFT JOIN task_assignees ta_sub ON ta_sub.task_id = t.id AND ta_sub.user_id = ?
         LEFT JOIN projects p ON p.id = t.project_id
+        LEFT JOIN users c ON c.id = t.created_by
+        LEFT JOIN users a ON a.id = t.assigned_to
         WHERE ` + filters.join(' AND ')
     ).get(...queryParams)) || {};
 
