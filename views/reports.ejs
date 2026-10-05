@@ -1,8 +1,8 @@
 <%- include('partials/head',{title:'Reports'}) %>
 <%- include('partials/nav',{page:'reports'}) %>
 
-<div class="toolbar-ui filter-bar" style="margin-bottom: 1rem;">
-    <form method="GET" action="/reports" style="display: flex; gap: 10px; align-items: center; width: 100%; flex-wrap: wrap;">
+<div class="toolbar-ui filter-bar" style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+    <form method="GET" action="/reports" style="display: flex; gap: 10px; align-items: center; flex: 1; min-width: 280px; flex-wrap: wrap;">
         <i class="fa-solid fa-filter" style="color: #5b5fc7; font-size: 15px;"></i>
         <span style="font-weight: 700; font-size: 13px;">Filter by Project:</span>
         <select name="project_id" onchange="this.form.submit()" style="max-width: 250px; flex: 1;">
@@ -19,6 +19,9 @@
             </a>
         <% } %>
     </form>
+    <a href="/reports/export<%= selectedProject ? '?project_id=' + selectedProject : '' %>" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; background: #15803d; border-color: #166534; color: #ffffff; padding: 8px 16px; font-weight: 700; border-radius: 8px; text-decoration: none; font-size: 13px; white-space: nowrap; box-shadow: 0 2px 4px rgba(21,128,61,0.25);">
+        <i class="fa-solid fa-file-excel" style="font-size: 16px;"></i> Export Excel Report
+    </a>
 </div>
 
 <% const total=byStatus.reduce((s,x)=>s+Number(x.value),0), status=(n)=>Number((byStatus.find(x=>String(x.label).toLowerCase()===n)||{}).value||0), completed=status('completed'), rate=total?Math.round(completed/total*100):0, activeEmployees=byEmployee.filter(x=>Number(x.value)>0).length, busiest=byEmployee[0]; %>

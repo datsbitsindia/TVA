@@ -24,6 +24,9 @@ router.get('/api/designations',requireAuth,master.getDesignationsAPI);
 router.post('/api/departments',requireAuth,requireManager,master.createDepartmentAPI);
 router.post('/api/designations',requireAuth,requireManager,master.createDesignationAPI);
 
+const reportsController=require('../controllers/reportsController');
+router.get('/reports/export',requireAuth,requireOnlyManager,reportsController.exportExcel);
+
 module.exports=router;
 
 
