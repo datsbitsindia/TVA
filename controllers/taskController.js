@@ -201,17 +201,23 @@ const getTasksWithPaginationAndCounts = async (req) => {
             WHEN 'cancelled' THEN 5 WHEN '3' THEN 5
             ELSE 6
         END ASC,
-        CASE LOWER(COALESCE(
-            (SELECT name FROM priorities WHERE id = t.priority_id LIMIT 1),
-            t.priority, 'medium'
-        ))
-            WHEN 'critical' THEN 1 WHEN '3' THEN 1
-            WHEN 'high' THEN 2 WHEN '2' THEN 2
-            WHEN 'medium' THEN 3 WHEN '1' THEN 3
-            WHEN 'low' THEN 4 WHEN '0' THEN 4
-            ELSE 5
+        CASE 
+            WHEN LOWER(${taskStatusSql}) IN ('completed', '2') THEN 0
+            ELSE CASE LOWER(COALESCE(
+                (SELECT name FROM priorities WHERE id = t.priority_id LIMIT 1),
+                t.priority, 'medium'
+            ))
+                WHEN 'critical' THEN 1 WHEN '3' THEN 1
+                WHEN 'high' THEN 2 WHEN '2' THEN 2
+                WHEN 'medium' THEN 3 WHEN '1' THEN 3
+                WHEN 'low' THEN 4 WHEN '0' THEN 4
+                ELSE 5
+            END
         END ASC,
-        t.created_at DESC LIMIT ${limit} OFFSET ${offset}`;
+        CASE 
+            WHEN LOWER(${taskStatusSql}) IN ('completed', '2') THEN COALESCE(ta_sub.completed_at, t.completed_at, t.created_at)
+            ELSE t.created_at
+        END DESC LIMIT ${limit} OFFSET ${offset}`;
 
     const sql = baseQuery + " WHERE " + filters.join(' AND ') + orderSql;
     const tasks = await db.prepare(sql).all(...queryParams);
