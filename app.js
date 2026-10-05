@@ -100,10 +100,19 @@ async function start() {
     webApp.use(require('./routes/audit'));
     webApp.use('/api/chat', require('./routes/aiRoutes'));
     
-    // Prevent aggressive caching of EJS/HTML pages in WebViews/browsers
+    // Prevent aggressive caching of HTML pages & JSON APIs in WebViews/browsers
     webApp.use((req, res, next) => {
-        if (req.method === 'GET' && (!req.xhr && req.headers.accept?.includes('text/html'))) {
+        if (
+            req.path.includes('/api/') ||
+            req.path.includes('/tasks/api/') ||
+            req.xhr ||
+            req.headers['x-requested-with'] === 'XMLHttpRequest' ||
+            req.headers.accept?.includes('application/json') ||
+            (req.method === 'GET' && req.headers.accept?.includes('text/html'))
+        ) {
             res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
         }
         next();
     });

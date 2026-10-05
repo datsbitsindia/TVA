@@ -9,7 +9,7 @@ const routineService = require('../services/routineService');
 const config = require('../config');
 
 const baseQuery = `
-    SELECT DISTINCT t.*,
+    SELECT t.*,
         COALESCE(
             (SELECT name FROM priorities WHERE id = t.priority_id LIMIT 1),
             (SELECT name FROM priorities WHERE normalized_name = LOWER(t.priority) COLLATE utf8mb4_unicode_ci LIMIT 1),
@@ -192,29 +192,29 @@ const getTasksWithPaginationAndCounts = async (req) => {
     const limit = Math.max(1, parseInt(req.query.limit) || 20);
     const offset = (page - 1) * limit;
 
-    const sql = baseQuery + " WHERE " + filters.join(' AND ') + " ORDER BY t.created_at DESC LIMIT " + limit + " OFFSET " + offset;
+    const orderSql = ` ORDER BY 
+        CASE LOWER(${taskStatusSql})
+            WHEN 'planned' THEN 1 WHEN '4' THEN 1
+            WHEN 'pending' THEN 2 WHEN '0' THEN 2
+            WHEN 'in progress' THEN 3 WHEN '1' THEN 3
+            WHEN 'completed' THEN 4 WHEN '2' THEN 4
+            WHEN 'cancelled' THEN 5 WHEN '3' THEN 5
+            ELSE 6
+        END ASC,
+        CASE LOWER(COALESCE(
+            (SELECT name FROM priorities WHERE id = t.priority_id LIMIT 1),
+            t.priority, 'medium'
+        ))
+            WHEN 'critical' THEN 1 WHEN '3' THEN 1
+            WHEN 'high' THEN 2 WHEN '2' THEN 2
+            WHEN 'medium' THEN 3 WHEN '1' THEN 3
+            WHEN 'low' THEN 4 WHEN '0' THEN 4
+            ELSE 5
+        END ASC,
+        t.created_at DESC LIMIT ${limit} OFFSET ${offset}`;
+
+    const sql = baseQuery + " WHERE " + filters.join(' AND ') + orderSql;
     const tasks = await db.prepare(sql).all(...queryParams);
-
-    // Apply exact ordering logic expected
-    tasks.sort((a, b) => {
-        const sA = String(a.status || a.user_status || '').toLowerCase().trim();
-        const sB = String(b.status || b.user_status || '').toLowerCase().trim();
-        const rA = statusRank(sA);
-        const rB = statusRank(sB);
-        if (rA !== rB) return rA - rB;
-
-        if (sA === 'completed' || sA === '2') {
-            const compA = a.completed_at ? new Date(a.completed_at).getTime() : 0;
-            const compB = b.completed_at ? new Date(b.completed_at).getTime() : 0;
-            if (compA !== compB) return compB - compA;
-        } else {
-            const pA = priorityRank(a.priority);
-            const pB = priorityRank(b.priority);
-            if (pA !== pB) return pA - pB;
-        }
-
-        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
-    });
 
     const hasMore = (page * limit) < totalFiltered;
 
@@ -245,44 +245,49 @@ exports.listApi = async (req, res) => {
     }
 };
 
-exports.list = async (req, res) => {
-    const u = req.session.user;
-    const orgId = u.organization_id || 1;
-    
-    // Auto sync daily routine tasks for today
-    routineService.syncDailyRoutines().catch(e => console.error('syncDailyRoutines bg error:', e));
+exports.list = async (req, res, next) => {
+    try {
+        const u = req.session.user;
+        const orgId = u.organization_id || 1;
+        
+        // Auto sync daily routine tasks for today
+        routineService.syncDailyRoutines().catch(e => console.error('syncDailyRoutines bg error:', e));
 
-    const { tasks, kpiCounts, pagination } = await getTasksWithPaginationAndCounts(req);
+        const { tasks, kpiCounts, pagination } = await getTasksWithPaginationAndCounts(req);
 
-    const employees = await db.prepare("SELECT id,name,designation FROM users WHERE role='employee' AND active=1 AND (organization_id=? OR id IN (SELECT user_id FROM user_organizations WHERE organization_id=?)) ORDER BY name").all(orgId, orgId);
-    const managers = await db.prepare("SELECT id,name,designation FROM users WHERE role='manager' AND active=1 AND (organization_id=? OR id IN (SELECT user_id FROM user_organizations WHERE organization_id=?)) ORDER BY name").all(orgId, orgId);
+        const employees = await db.prepare("SELECT id,name,designation FROM users WHERE role='employee' AND active=1 AND (organization_id=? OR id IN (SELECT user_id FROM user_organizations WHERE organization_id=?)) ORDER BY name").all(orgId, orgId);
+        const managers = await db.prepare("SELECT id,name,designation FROM users WHERE role='manager' AND active=1 AND (organization_id=? OR id IN (SELECT user_id FROM user_organizations WHERE organization_id=?)) ORDER BY name").all(orgId, orgId);
 
-    const reportingUsers = await db.prepare("SELECT id,name,role,designation FROM users WHERE role IN ('manager','admin') AND active=1 AND (organization_id=? OR id IN (SELECT user_id FROM user_organizations WHERE organization_id=?)) ORDER BY role, name").all(orgId, orgId);
-    const projects = await db.prepare("SELECT id,name FROM projects WHERE organization_id=? AND ((status NOT IN (2, 3, '2', '3', 'Completed', 'Cancelled') AND status_id NOT IN (2, 3)) OR name='Self Task') ORDER BY CASE WHEN name='Self Task' THEN 0 ELSE 1 END, name").all(orgId);
-    
-    let dailyRoutines = [];
-    if (u.role === 'manager') {
-        dailyRoutines = await db.prepare(`
-            SELECT r.*, p.name project_name, u.name assigned_name 
-            FROM daily_routines r 
-            JOIN projects p ON p.id=r.project_id 
-            JOIN users u ON u.id=r.assigned_to 
-            WHERE r.created_by=? AND r.organization_id=?
-            ORDER BY r.created_at DESC
-        `).all(u.id, orgId);
+        const reportingUsers = await db.prepare("SELECT id,name,role,designation FROM users WHERE role IN ('manager','admin') AND active=1 AND (organization_id=? OR id IN (SELECT user_id FROM user_organizations WHERE organization_id=?)) ORDER BY role, name").all(orgId, orgId);
+        const projects = await db.prepare("SELECT id,name FROM projects WHERE organization_id=? AND ((status NOT IN (2, 3, '2', '3', 'Completed', 'Cancelled') AND status_id NOT IN (2, 3)) OR name='Self Task') ORDER BY CASE WHEN name='Self Task' THEN 0 ELSE 1 END, name").all(orgId);
+        
+        let dailyRoutines = [];
+        if (u.role === 'manager') {
+            dailyRoutines = await db.prepare(`
+                SELECT r.*, p.name project_name, u.name assigned_name 
+                FROM daily_routines r 
+                JOIN projects p ON p.id=r.project_id 
+                JOIN users u ON u.id=r.assigned_to 
+                WHERE r.created_by=? AND r.organization_id=?
+                ORDER BY r.created_at DESC
+            `).all(u.id, orgId);
+        }
+
+        res.render('tasks', {
+            tasks,
+            kpiCounts,
+            pagination,
+            employees,
+            managers,
+            reportingUsers,
+            projects,
+            dailyRoutines,
+            filters: req.query
+        });
+    } catch (err) {
+        if (typeof next === 'function') next(err);
+        else res.status(500).render('error', { message: err.message });
     }
-
-    res.render('tasks', {
-        tasks,
-        kpiCounts,
-        pagination,
-        employees,
-        managers,
-        reportingUsers,
-        projects,
-        dailyRoutines,
-        filters: req.query
-    });
 };
 
 exports.detail = async (req, res) => {

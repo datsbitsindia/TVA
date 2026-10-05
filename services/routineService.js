@@ -1,8 +1,15 @@
-const { db } = require('../database/init');
+const { db, createTaskAtomic } = require('../database/init');
 const notifications = require('./notificationService');
+
+let lastRoutineSyncDay = '';
 
 async function syncDailyRoutines() {
     try {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        // Avoid re-running sync on every single HTTP request if already done today
+        if (lastRoutineSyncDay === todayStr) return;
+        lastRoutineSyncDay = todayStr;
+
         const activeRoutines = await db.prepare(`
             SELECT * FROM daily_routines 
             WHERE active = 1 
@@ -18,22 +25,31 @@ async function syncDailyRoutines() {
             `).get(routine.id);
 
             if (!existingTask) {
-                const res = await db.prepare(`
-                    INSERT INTO tasks 
-                    (project_id, title, description, priority, priority_id, status, status_id, due_date, created_by, assigned_to, estimated_hours, routine_id, is_routine)
-                    VALUES (?, ?, ?, ?, 2, 'Pending', 0, CURDATE(), ?, ?, ?, ?, 1)
-                `).run(
-                    routine.project_id,
-                    routine.title,
-                    routine.description || 'Daily Routine Task',
-                    routine.priority || 'High',
-                    routine.created_by,
-                    routine.assigned_to,
-                    routine.estimated_hours || 0,
-                    routine.id
-                );
+                const orgId = routine.organization_id || 1;
+                const taskCreationResult = await createTaskAtomic({
+                    organization_id: orgId,
+                    project_id: routine.project_id,
+                    title: routine.title,
+                    description: routine.description || 'Daily Routine Task',
+                    priority: routine.priority || 'High',
+                    priority_id: 2,
+                    status: 'Pending',
+                    status_id: 0,
+                    due_date: todayStr,
+                    created_by: routine.created_by,
+                    assigned_to: routine.assigned_to,
+                    estimated_hours: routine.estimated_hours || 0,
+                    is_self_task: 0
+                });
 
-                const taskId = res.lastInsertRowid;
+                const taskId = taskCreationResult.id;
+
+                // Mark task as routine
+                await db.prepare('UPDATE tasks SET routine_id=?, is_routine=1 WHERE id=?').run(routine.id, taskId);
+
+                // Insert into task_assignees so queries checking assignees pick it up instantly
+                await db.prepare('INSERT IGNORE INTO task_assignees(task_id, user_id, status, status_id) VALUES(?,?,?,?)')
+                    .run(taskId, routine.assigned_to, 0, 0);
 
                 // Log execution event in database
                 await db.prepare(`
