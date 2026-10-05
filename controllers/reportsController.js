@@ -60,18 +60,17 @@ exports.exportExcel = async (req, res, next) => {
         const empSql = `
             SELECT u.name AS label, u.designation,
                    COUNT(DISTINCT t.id) AS total_assigned,
-                   COUNT(DISTINCT CASE WHEN ${taskStatusSql} IN ('Completed', '2') THEN t.id END) AS completed,
-                   COUNT(DISTINCT CASE WHEN ${taskStatusSql} IN ('In Progress', '1') THEN t.id END) AS in_progress,
-                   COUNT(DISTINCT CASE WHEN ${taskStatusSql} IN ('Pending', 'Planned', '0', '4') THEN t.id END) AS pending,
-                   COUNT(DISTINCT CASE WHEN t.due_date < CURDATE() AND ${taskStatusSql} NOT IN ('Completed', 'Cancelled', '2', '3') THEN t.id END) AS overdue
+                   COUNT(DISTINCT CASE WHEN (t.status IN ('Completed','2') OR t.status_id=2) THEN t.id END) AS completed,
+                   COUNT(DISTINCT CASE WHEN (t.status IN ('In Progress','1') OR t.status_id=1) THEN t.id END) AS in_progress,
+                   COUNT(DISTINCT CASE WHEN (t.status IN ('Pending','Planned','0','4') OR t.status_id IN (0,4) OR COALESCE(t.status_id,0)=0) THEN t.id END) AS pending,
+                   COUNT(DISTINCT CASE WHEN (t.due_date < CURDATE() AND t.status NOT IN ('Completed','Cancelled','2','3') AND COALESCE(t.status_id,0) NOT IN (2,3)) THEN t.id END) AS overdue
             FROM users u
-            LEFT JOIN task_assignees ta_sub ON ta_sub.user_id = u.id
             LEFT JOIN tasks t ON ((FIND_IN_SET(u.id, REPLACE(t.assigned_to, ' ', '')) > 0 OR t.id IN (SELECT task_id FROM task_assignees WHERE user_id=u.id)) AND t.organization_id=? ${empTaskWhere})
             WHERE u.active=1 AND (u.role IN ('employee','manager','admin')) AND (u.organization_id=? OR u.id IN (SELECT user_id FROM user_organizations WHERE organization_id=?))
             GROUP BY u.id, u.name, u.designation
             ORDER BY total_assigned DESC, label ASC
         `;
-        const employees = await db.prepare(empSql).all(u.id, ...empTaskArgs, orgId, orgId);
+        const employees = await db.prepare(empSql).all(...empTaskArgs, orgId, orgId);
 
         // 3. Fetch Project Performance
         const projSql = `
@@ -346,8 +345,18 @@ exports.exportExcel = async (req, res, next) => {
         ];
 
 
-        // Send Excel File Stream
-        const filename = `TVA_Report_${new Date().toISOString().slice(0,10)}.xlsx`;
+        // Dynamic & Unique Filename Construction (Project Name + Date + Exact Time)
+        let scopeName = 'All_Projects';
+        if (selectedProject && projects.length > 0) {
+            scopeName = String(projects[0].label || 'Project').trim().replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '');
+        }
+
+        const now = new Date();
+        const dateStr = now.toISOString().slice(0, 10);
+        const timeStr = `${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
+
+        const filename = `TVA_Report_${scopeName}_${dateStr}_${timeStr}.xlsx`;
+
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
