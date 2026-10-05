@@ -626,10 +626,23 @@ window.addEventListener('scroll', function() {
     }
 });
 
-// Refetch on browser bfcache restoration (e.g. hitting back button)
+// Refetch on browser back navigation / returning from task detail page
 window.addEventListener('pageshow', function(event) {
-    if (event.persisted) {
+    const needsRefresh = sessionStorage.getItem('tasks_need_refresh') === '1';
+    const cameFromTaskDetail = document.referrer && document.referrer.includes('/tasks/');
+    if (event.persisted || needsRefresh || cameFromTaskDetail) {
+        try { sessionStorage.removeItem('tasks_need_refresh'); } catch(e) {}
         fetchNextTaskBatch(true);
+    }
+});
+
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+        const needsRefresh = sessionStorage.getItem('tasks_need_refresh') === '1';
+        if (needsRefresh) {
+            try { sessionStorage.removeItem('tasks_need_refresh'); } catch(e) {}
+            fetchNextTaskBatch(true);
+        }
     }
 });
 

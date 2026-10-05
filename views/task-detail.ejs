@@ -52,11 +52,12 @@
         <i class="fa-solid fa-circle-check"></i>
         <span><b>Update successful</b><small><%= success==='forwarded' ? 'Task has been forwarded successfully!' : (success==='status'?'Task status has been updated.':'Your update has been posted.') %></small></span>
     </div>
+    <script>sessionStorage.setItem('tasks_need_refresh', '1');</script>
 <% } %>
 
 <section class="panel task-detail-card">
     <div class="task-detail-header">
-        <button type="button" onclick="history.back()" class="back-link" style="display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:#475569; text-decoration:none; margin-bottom:8px; background:none; border:none; cursor:pointer; padding:0;"><i class="fa-solid fa-arrow-left"></i> Back</button>
+        <button type="button" onclick="if (document.referrer && document.referrer.includes('/tasks')) { history.back(); } else { location.href = '/tasks'; }" class="back-link" style="display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:#475569; text-decoration:none; margin-bottom:8px; background:none; border:none; cursor:pointer; padding:0;"><i class="fa-solid fa-arrow-left"></i> Back</button>
         <div class="task-title-group">
             <h2><%= task.title %></h2>
             <span class="project-tag" style="font-size:13px; color:#3b68b7; font-weight:600;"><i class="fa-solid fa-folder-open"></i> <%= task.project_name || 'No project' %></span>
@@ -423,6 +424,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 const data = await res.json();
                 if (data.success) {
+                    try { sessionStorage.setItem('tasks_need_refresh', '1'); } catch(e) {}
                     const overallChip = document.querySelector('.task-info-grid .status-chip');
                     if (overallChip && data.overallStatus) {
                         overallChip.textContent = data.overallStatus;
