@@ -1,6 +1,6 @@
-﻿{
-  "versionCode": 2,
-  "versionName": "1.1",
+{
+  "versionCode": 3,
+  "versionName": "1.2",
   "apkUrl": "http://43.205.188.68:3001/downloads/TVA.apk",
-  "releaseNotes": "TVA App update v1.1 is available with latest features."
+  "releaseNotes": "TVA App update v1.2 is available with latest performance and bug fixes."
 }
