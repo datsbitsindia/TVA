@@ -296,17 +296,7 @@
 
         <% }) %>
 
-        <% if (!tasks.length) { %>
-            <p class="empty">No tasks found.</p>
-        <% } %>
-
-    </div>
-
-</section>
-
-        <% if (!tasks.length) { %>
-            <p class="empty filter-empty">No tasks found.</p>
-        <% } %>
+        <p class="empty filter-empty" style="<%= tasks.length ? 'display: none;' : '' %>">No tasks found.</p>
 
     </div>
 
