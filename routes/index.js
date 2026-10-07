@@ -26,6 +26,7 @@ router.post('/api/designations',requireAuth,requireManager,master.createDesignat
 
 const reportsController=require('../controllers/reportsController');
 router.get('/reports/export',requireAuth,requireOnlyManager,reportsController.exportExcel);
+router.get('/reports/export-custom',requireAuth,requireAdmin,reportsController.exportCustomExcel);
 
 module.exports=router;
 

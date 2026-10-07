@@ -370,3 +370,393 @@ exports.exportExcel = async (req, res, next) => {
         else res.status(500).send('Failed to generate report Excel: ' + err.message);
     }
 };
+
+exports.exportCustomExcel = async (req, res, next) => {
+    try {
+        const u = req.session.user;
+        const orgId = u.organization_id || 1;
+
+        const {
+            project_id = 'all',
+            user_id = 'all',
+            date_filter = 'all',
+            start_date = '',
+            end_date = '',
+            status = 'all',
+            priority = 'all'
+        } = req.query;
+
+        // Get Organization Name
+        const orgRow = await db.prepare('SELECT name FROM organizations WHERE id=?').get(orgId);
+        const orgName = orgRow?.name || 'TVA';
+
+        // 1. Build Dynamic WHERE Clause
+        let taskWhere = `WHERE t.organization_id = ?`;
+        let taskArgs = [orgId];
+        let scopeLabels = [];
+
+        // Project filter
+        let selectedProjectName = 'All Projects';
+        if (project_id && project_id !== 'all') {
+            if (project_id === 'self') {
+                taskWhere += ` AND (t.project_id IS NULL OR LOWER(p.name) = 'self task')`;
+                selectedProjectName = 'Self Tasks Only';
+                scopeLabels.push('Self_Tasks');
+            } else {
+                taskWhere += ` AND t.project_id = ?`;
+                taskArgs.push(Number(project_id));
+                const pRow = await db.prepare('SELECT name FROM projects WHERE id=?').get(Number(project_id));
+                if (pRow) {
+                    selectedProjectName = pRow.name;
+                    scopeLabels.push(pRow.name.replace(/\s+/g, '_'));
+                } else {
+                    selectedProjectName = `Project #${project_id}`;
+                }
+            }
+        }
+
+        // User filter
+        let selectedUserName = 'All Users';
+        if (user_id && user_id !== 'all') {
+            taskWhere += ` AND (FIND_IN_SET(?, REPLACE(t.assigned_to, ' ', '')) > 0 OR t.assigned_to = ? OR t.id IN (SELECT task_id FROM task_assignees WHERE user_id = ?))`;
+            taskArgs.push(user_id, user_id, Number(user_id));
+            const uRow = await db.prepare('SELECT name FROM users WHERE id=?').get(Number(user_id));
+            if (uRow) {
+                selectedUserName = uRow.name;
+                scopeLabels.push(uRow.name.replace(/\s+/g, '_'));
+            } else {
+                selectedUserName = `User #${user_id}`;
+            }
+        }
+
+        // Date filter
+        let datePeriodStr = 'All Time';
+        if (date_filter === 'today') {
+            taskWhere += ` AND (DATE(t.created_at) = CURDATE() OR DATE(t.due_date) = CURDATE())`;
+            datePeriodStr = 'Today';
+            scopeLabels.push('Today');
+        } else if (date_filter === 'yesterday') {
+            taskWhere += ` AND (DATE(t.created_at) = SUBDATE(CURDATE(), INTERVAL 1 DAY) OR DATE(t.due_date) = SUBDATE(CURDATE(), INTERVAL 1 DAY))`;
+            datePeriodStr = 'Yesterday';
+            scopeLabels.push('Yesterday');
+        } else if (date_filter === 'last_week') {
+            taskWhere += ` AND t.created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
+            datePeriodStr = 'Last 7 Days';
+            scopeLabels.push('Last7Days');
+        } else if (date_filter === 'this_month') {
+            taskWhere += ` AND YEAR(t.created_at) = YEAR(CURDATE()) AND MONTH(t.created_at) = MONTH(CURDATE())`;
+            datePeriodStr = 'This Month';
+            scopeLabels.push('ThisMonth');
+        } else if (date_filter === 'custom' && start_date && end_date) {
+            taskWhere += ` AND (DATE(t.created_at) BETWEEN ? AND ? OR DATE(t.due_date) BETWEEN ? AND ?)`;
+            taskArgs.push(start_date, end_date, start_date, end_date);
+            datePeriodStr = `${start_date} to ${end_date}`;
+            scopeLabels.push(`From_${start_date}_To_${end_date}`);
+        }
+
+        // Status filter
+        if (status && status !== 'all') {
+            const cleanStatus = status.trim().toLowerCase();
+            if (cleanStatus === 'overdue') {
+                taskWhere += ` AND t.due_date < CURDATE() AND t.status NOT IN ('Completed', 'Cancelled', '2', '3')`;
+                scopeLabels.push('Overdue');
+            } else if (cleanStatus === 'pending') {
+                taskWhere += ` AND LOWER(CAST(t.status AS CHAR)) IN ('pending', 'planned', '0', '4')`;
+                scopeLabels.push('Pending');
+            } else {
+                taskWhere += ` AND LOWER(CAST(t.status AS CHAR)) = ?`;
+                taskArgs.push(cleanStatus);
+                scopeLabels.push(status.replace(/\s+/g, '_'));
+            }
+        }
+
+        // Priority filter
+        if (priority && priority !== 'all') {
+            taskWhere += ` AND LOWER(t.priority) = ?`;
+            taskArgs.push(priority.trim().toLowerCase());
+            scopeLabels.push(`${priority}_Priority`);
+        }
+
+        const taskStatusSql = `COALESCE(
+            (SELECT name FROM statuses WHERE id = ta_sub.status_id LIMIT 1),
+            (SELECT name FROM statuses WHERE normalized_name = LOWER(CAST(ta_sub.status AS CHAR)) COLLATE utf8mb4_unicode_ci LIMIT 1),
+            (SELECT name FROM statuses WHERE id = t.status_id LIMIT 1),
+            CAST(t.status AS CHAR) COLLATE utf8mb4_unicode_ci, 'Pending'
+        )`;
+
+        const tasksSql = `
+            SELECT t.id, t.task_number, t.title, t.description, t.due_date, t.created_at, t.completed_at,
+                   t.priority, t.created_by, t.assigned_to, t.is_verified,
+                   COALESCE(
+                       (SELECT name FROM priorities WHERE id = t.priority_id LIMIT 1),
+                       t.priority, 'Medium'
+                   ) AS priority_name,
+                   ${taskStatusSql} AS status_name,
+                   COALESCE(
+                       (SELECT GROUP_CONCAT(u.name ORDER BY u.name SEPARATOR ', ') FROM task_assignees ta2 JOIN users u ON u.id=ta2.user_id WHERE ta2.task_id=t.id),
+                       (SELECT GROUP_CONCAT(u.name ORDER BY u.id SEPARATOR ', ') FROM users u WHERE FIND_IN_SET(u.id, t.assigned_to) > 0),
+                       a.name
+                   ) AS assigned_name,
+                   c.name AS creator_name,
+                   p.name AS project_name,
+                   v.name AS verifier_name,
+                   CASE WHEN t.due_date < CURDATE() AND ${taskStatusSql} NOT IN ('Completed', 'Cancelled', '2', '3') THEN 1 ELSE 0 END AS is_overdue
+            FROM tasks t
+            LEFT JOIN task_assignees ta_sub ON ta_sub.task_id = t.id AND ta_sub.user_id = ?
+            LEFT JOIN users a ON a.id = t.assigned_to
+            LEFT JOIN users c ON c.id = t.created_by
+            LEFT JOIN projects p ON p.id = t.project_id
+            LEFT JOIN users v ON v.id = t.verified_by
+            ${taskWhere}
+            ORDER BY t.created_at DESC
+        `;
+
+        const tasks = await db.prepare(tasksSql).all(u.id, ...taskArgs);
+
+        // Fetch Employee Workload for matching tasks
+        const empSql = `
+            SELECT u.name AS label, u.designation,
+                   COUNT(DISTINCT t.id) AS total_assigned,
+                   COUNT(DISTINCT CASE WHEN (t.status IN ('Completed','2') OR t.status_id=2) THEN t.id END) AS completed,
+                   COUNT(DISTINCT CASE WHEN (t.status IN ('In Progress','1') OR t.status_id=1) THEN t.id END) AS in_progress,
+                   COUNT(DISTINCT CASE WHEN (t.status IN ('Pending','Planned','0','4') OR t.status_id IN (0,4) OR COALESCE(t.status_id,0)=0) THEN t.id END) AS pending,
+                   COUNT(DISTINCT CASE WHEN (t.due_date < CURDATE() AND t.status NOT IN ('Completed','Cancelled','2','3') AND COALESCE(t.status_id,0) NOT IN (2,3)) THEN t.id END) AS overdue
+            FROM users u
+            LEFT JOIN tasks t ON ((FIND_IN_SET(u.id, REPLACE(t.assigned_to, ' ', '')) > 0 OR t.id IN (SELECT task_id FROM task_assignees WHERE user_id=u.id)))
+            LEFT JOIN projects p ON p.id = t.project_id
+            ${taskWhere.replace('WHERE t.organization_id = ?', 'WHERE u.active=1 AND (u.organization_id=? OR u.id IN (SELECT user_id FROM user_organizations WHERE organization_id=?))')}
+            GROUP BY u.id, u.name, u.designation
+            HAVING total_assigned > 0
+            ORDER BY total_assigned DESC, label ASC
+        `;
+        const employees = await db.prepare(empSql).all(orgId, orgId, ...taskArgs.slice(1));
+
+        // Create Excel Workbook
+        const workbook = new ExcelJS.Workbook();
+        workbook.creator = 'TVA Task Manager Admin';
+        workbook.created = new Date();
+
+        const applyHeaderStyle = (row, fillColorHex = '1E40AF') => {
+            row.height = 26;
+            row.eachCell((cell) => {
+                cell.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFF' } };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: fillColorHex } };
+                cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+                cell.border = {
+                    top: { style: 'thin', color: { argb: 'CBD5E1' } },
+                    left: { style: 'thin', color: { argb: 'CBD5E1' } },
+                    bottom: { style: 'medium', color: { argb: '0F172A' } },
+                    right: { style: 'thin', color: { argb: 'CBD5E1' } }
+                };
+            });
+        };
+
+        const applyDataStyle = (row, isEven = false) => {
+            row.height = 22;
+            row.eachCell((cell) => {
+                cell.font = { name: 'Arial', size: 10, color: { argb: '1E293B' } };
+                cell.alignment = { vertical: 'middle' };
+                cell.border = {
+                    top: { style: 'thin', color: { argb: 'E2E8F0' } },
+                    left: { style: 'thin', color: { argb: 'E2E8F0' } },
+                    bottom: { style: 'thin', color: { argb: 'E2E8F0' } },
+                    right: { style: 'thin', color: { argb: 'E2E8F0' } }
+                };
+                if (isEven) {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'F8FAFC' } };
+                }
+            });
+        };
+
+        // ─── SHEET 1: Overview & Summary ────────────────────────────────────────
+        const wsSummary = workbook.addWorksheet('Report Overview');
+        wsSummary.views = [{ showGridLines: true }];
+
+        wsSummary.mergeCells('A1:C1');
+        const titleCell = wsSummary.getCell('A1');
+        titleCell.value = `${orgName.toUpperCase()} — ADMIN CUSTOM REPORT`;
+        titleCell.font = { name: 'Arial', size: 13, bold: true, color: { argb: 'FFFFFF' } };
+        titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '0F172A' } };
+        titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+        wsSummary.getRow(1).height = 32;
+
+        wsSummary.addRow([]);
+        wsSummary.addRow(['Report Exported:', new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })]);
+        wsSummary.addRow(['Exported By:', `${u.name} (${u.role})`]);
+        wsSummary.addRow(['Date Period Filter:', datePeriodStr]);
+        wsSummary.addRow(['Project Filter:', selectedProjectName]);
+        wsSummary.addRow(['User Filter:', selectedUserName]);
+        wsSummary.addRow(['Status Filter:', status && status !== 'all' ? status : 'All Statuses']);
+
+        for (let r = 3; r <= 8; r++) wsSummary.getRow(r).font = { bold: true };
+        wsSummary.addRow([]);
+
+        const totalTasks = tasks.length;
+        const completedTasks = tasks.filter(t => ['completed', '2'].includes(String(t.status_name).toLowerCase())).length;
+        const inProgressTasks = tasks.filter(t => ['in progress', '1'].includes(String(t.status_name).toLowerCase())).length;
+        const pendingTasks = tasks.filter(t => ['pending', 'planned', '0', '4'].includes(String(t.status_name).toLowerCase())).length;
+        const overdueTasks = tasks.filter(t => t.is_overdue).length;
+        const completionRate = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+        const kpiHeaderRow = wsSummary.addRow(['Metric Name', 'Matching Count / Value', 'Percentage']);
+        applyHeaderStyle(kpiHeaderRow, '0284C7');
+
+        const kpiRows = [
+            ['Total Filtered Tasks', totalTasks, '100%'],
+            ['Completed Tasks', completedTasks, `${completionRate}%`],
+            ['In Progress Tasks', inProgressTasks, totalTasks ? `${Math.round((inProgressTasks / totalTasks) * 100)}%` : '0%'],
+            ['Pending Tasks', pendingTasks, totalTasks ? `${Math.round((pendingTasks / totalTasks) * 100)}%` : '0%'],
+            ['Overdue Tasks', overdueTasks, overdueTasks > 0 ? 'Action Required' : '0%'],
+            ['Completion Rate', `${completionRate}%`, completionRate >= 75 ? 'Optimal' : 'Needs Attention']
+        ];
+
+        kpiRows.forEach((r, idx) => {
+            const row = wsSummary.addRow(r);
+            applyDataStyle(row, idx % 2 === 1);
+            row.getCell(2).alignment = { vertical: 'middle', horizontal: 'center' };
+            row.getCell(3).alignment = { vertical: 'middle', horizontal: 'center' };
+        });
+
+        wsSummary.getColumn(1).width = 28;
+        wsSummary.getColumn(2).width = 24;
+        wsSummary.getColumn(3).width = 24;
+
+        // ─── SHEET 2: Filtered Tasks List ──────────────────────────────────────
+        const wsTasks = workbook.addWorksheet('Tasks List');
+        wsTasks.views = [{ showGridLines: true }];
+
+        const taskHeaders = [
+            'Task #', 'Title', 'Description', 'Project', 'Priority', 'Status',
+            'Assigned To', 'Created By', 'Created Date', 'Due Date',
+            'Completed Date', 'Overdue?', 'Verification'
+        ];
+        const taskHeaderRow = wsTasks.addRow(taskHeaders);
+        applyHeaderStyle(taskHeaderRow, '1E40AF');
+
+        const formatDate = (dStr) => {
+            if (!dStr) return '';
+            const d = new Date(dStr);
+            return isNaN(d.getTime()) ? dStr : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        };
+
+        tasks.forEach((t, idx) => {
+            const statusStr = t.status_name || 'Pending';
+            const isCompleted = ['completed', '2'].includes(String(statusStr).toLowerCase());
+            const verificationStr = isCompleted ? (t.is_verified ? `Verified by ${t.verifier_name || 'Manager'}` : 'Awaiting Verification') : 'N/A';
+            const cleanDesc = (t.description || '').replace(/<[^>]*>?/gm, '').trim();
+
+            const row = wsTasks.addRow([
+                `#${t.task_number || t.id}`,
+                t.title,
+                cleanDesc,
+                t.project_name || 'Self Task',
+                t.priority_name || 'Medium',
+                statusStr,
+                t.assigned_name || 'Unassigned',
+                t.creator_name || 'System',
+                formatDate(t.created_at),
+                formatDate(t.due_date),
+                formatDate(t.completed_at),
+                t.is_overdue ? 'YES' : 'No',
+                verificationStr
+            ]);
+
+            applyDataStyle(row, idx % 2 === 1);
+
+            row.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+            row.getCell(5).alignment = { vertical: 'middle', horizontal: 'center' };
+            row.getCell(6).alignment = { vertical: 'middle', horizontal: 'center' };
+            row.getCell(9).alignment = { vertical: 'middle', horizontal: 'center' };
+            row.getCell(10).alignment = { vertical: 'middle', horizontal: 'center' };
+            row.getCell(11).alignment = { vertical: 'middle', horizontal: 'center' };
+            row.getCell(12).alignment = { vertical: 'middle', horizontal: 'center' };
+
+            const statusCell = row.getCell(6);
+            const statusLower = String(statusStr).toLowerCase();
+            if (statusLower === 'completed') {
+                statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'DCFCE7' } };
+                statusCell.font = { name: 'Arial', size: 10, bold: true, color: { argb: '15803D' } };
+            } else if (statusLower === 'in progress') {
+                statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'E0F2FE' } };
+                statusCell.font = { name: 'Arial', size: 10, bold: true, color: { argb: '0369A1' } };
+            } else if (statusLower === 'pending') {
+                statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FEF9C3' } };
+                statusCell.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'B45309' } };
+            }
+
+            if (t.is_overdue) {
+                const overdueCell = row.getCell(12);
+                overdueCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FEE2E2' } };
+                overdueCell.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'B91C1C' } };
+            }
+        });
+
+        wsTasks.columns = [
+            { width: 12 }, { width: 32 }, { width: 35 }, { width: 22 },
+            { width: 14 }, { width: 16 }, { width: 24 }, { width: 20 },
+            { width: 15 }, { width: 15 }, { width: 16 }, { width: 12 }, { width: 24 }
+        ];
+
+        // ─── SHEET 3: Employee Workload Summary ─────────────────────────────────
+        if (employees.length > 0) {
+            const wsEmp = workbook.addWorksheet('Employee Workload');
+            wsEmp.views = [{ showGridLines: true }];
+
+            const empHeaderRow = wsEmp.addRow([
+                'Employee Name', 'Designation', 'Total Filtered Tasks',
+                'Completed', 'In Progress', 'Pending', 'Overdue', 'Completion Rate (%)'
+            ]);
+            applyHeaderStyle(empHeaderRow, '0D9488');
+
+            employees.forEach((e, idx) => {
+                const total = Number(e.total_assigned || 0);
+                const done = Number(e.completed || 0);
+                const rate = total ? Math.round((done / total) * 100) : 0;
+
+                const row = wsEmp.addRow([
+                    e.label,
+                    e.designation || 'N/A',
+                    total,
+                    done,
+                    Number(e.in_progress || 0),
+                    Number(e.pending || 0),
+                    Number(e.overdue || 0),
+                    `${rate}%`
+                ]);
+                applyDataStyle(row, idx % 2 === 1);
+
+                row.getCell(3).alignment = { vertical: 'middle', horizontal: 'center' };
+                row.getCell(4).alignment = { vertical: 'middle', horizontal: 'center' };
+                row.getCell(5).alignment = { vertical: 'middle', horizontal: 'center' };
+                row.getCell(6).alignment = { vertical: 'middle', horizontal: 'center' };
+                row.getCell(7).alignment = { vertical: 'middle', horizontal: 'center' };
+                row.getCell(8).alignment = { vertical: 'middle', horizontal: 'center' };
+            });
+
+            wsEmp.columns = [
+                { width: 25 }, { width: 20 }, { width: 22 },
+                { width: 16 }, { width: 16 }, { width: 16 },
+                { width: 16 }, { width: 22 }
+            ];
+        }
+
+        // Construct Filename
+        const scopeStr = scopeLabels.length > 0 ? scopeLabels.join('_').replace(/[^a-zA-Z0-9_-]/g, '') : 'Full_Data';
+        const now = new Date();
+        const dateStr = now.toISOString().slice(0, 10);
+        const timeStr = `${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}`;
+        const filename = `TVA_Custom_Report_${scopeStr}_${dateStr}_${timeStr}.xlsx`;
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+
+        await workbook.xlsx.write(res);
+        res.end();
+
+    } catch (err) {
+        console.error('Export Custom Excel Error:', err);
+        if (typeof next === 'function') next(err);
+        else res.status(500).send('Failed to generate custom report Excel: ' + err.message);
+    }
+};

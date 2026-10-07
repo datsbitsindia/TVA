@@ -74,10 +74,12 @@ exports.list = async (req, res) => {
 
     const tasks = await db.prepare(sql).all(...params);
     const projects = await db.prepare("SELECT id, name FROM projects WHERE organization_id=? ORDER BY CASE WHEN name='Self Task' THEN 0 ELSE 1 END, name").all(orgId);
+    const users = await db.prepare("SELECT id, name, role, designation FROM users WHERE active=1 AND (organization_id=? OR id IN (SELECT user_id FROM user_organizations WHERE organization_id=?)) ORDER BY name ASC").all(orgId, orgId);
 
     res.render('updates', {
         tasks,
         projects,
+        users,
         date_filter,
         start_date,
         end_date,

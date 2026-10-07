@@ -74,6 +74,52 @@
     color: #065f46;
     border: 1px solid #a7f3d0;
 }
+.btn-export-excel {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(16,185,129,0.25);
+    transition: all 0.2s ease;
+}
+.btn-export-excel:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(16,185,129,0.35);
+}
+.report-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+.report-modal-card {
+    background: #ffffff;
+    border-radius: 20px;
+    max-width: 520px;
+    width: 100%;
+    padding: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: modalPop 0.2s ease-out;
+}
+@keyframes modalPop {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
 </style>
 
 <div class="updates-filter-card">
@@ -134,9 +180,15 @@
 </div>
 
 <section class="ui-panel">
-    <div class="ui-panel-head">
-        <h2>Manager & Employee Task Updates</h2>
-        <span style="font-weight:700; color:#3b68b7; font-size:13px;"><%= tasks.length %> Task<%= tasks.length === 1 ? '' : 's' %> Found</span>
+    <div class="ui-panel-head" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <h2>Manager & Employee Task Updates</h2>
+            <span style="font-weight:700; color:#3b68b7; font-size:13px;"><%= tasks.length %> Task<%= tasks.length === 1 ? '' : 's' %> Found</span>
+        </div>
+
+        <button type="button" class="btn-export-excel" onclick="openReportModal()">
+            <i class="fa-solid fa-file-excel"></i> Export Custom Excel
+        </button>
     </div>
 
     <div class="entity-list">
@@ -185,10 +237,138 @@
     </div>
 </section>
 
+<!-- Custom Excel Report Modal (Admin Only) -->
+<div id="reportModal" class="report-modal-overlay" onclick="if(event.target===this) closeReportModal()">
+    <div class="report-modal-card">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; border-bottom:1px solid #f1f5f9; padding-bottom:12px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:38px; height:38px; border-radius:10px; background:#ecfdf5; color:#059669; display:flex; align-items:center; justify-content:center; font-size:18px;">
+                    <i class="fa-solid fa-file-excel"></i>
+                </div>
+                <div>
+                    <h3 style="margin:0; font-size:16px; font-weight:800; color:#0f172a;">Export Custom Excel Report</h3>
+                    <p style="margin:0; font-size:11px; color:#64748b;">Select filters below (leave empty / 'All' for full dataset)</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeReportModal()" style="background:none; border:none; font-size:20px; color:#94a3b8; cursor:pointer; padding:2px 6px;">&times;</button>
+        </div>
+
+        <form action="/reports/export-custom" method="GET" target="_blank" onsubmit="setTimeout(closeReportModal, 800)">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+                
+                <!-- Filter 1: Project -->
+                <div style="grid-column:1 / -1;">
+                    <label style="display:block; font-size:11px; font-weight:700; color:#334155; margin-bottom:4px;">
+                        <i class="fa-solid fa-folder" style="color:#3b68b7;"></i> Select Project:
+                    </label>
+                    <select name="project_id" style="width:100%; padding:9px 12px; border-radius:10px; border:1px solid #cbd5e1; font-size:12px; background:#f8fafc;">
+                        <option value="all">All Projects (No Filter)</option>
+                        <option value="self">Self Tasks Only</option>
+                        <% (projects || []).forEach(p => { %>
+                            <option value="<%= p.id %>"><%= p.name %></option>
+                        <% }) %>
+                    </select>
+                </div>
+
+                <!-- Filter 2: Employee / User -->
+                <div style="grid-column:1 / -1;">
+                    <label style="display:block; font-size:11px; font-weight:700; color:#334155; margin-bottom:4px;">
+                        <i class="fa-solid fa-user" style="color:#3b68b7;"></i> Select User / Employee:
+                    </label>
+                    <select name="user_id" style="width:100%; padding:9px 12px; border-radius:10px; border:1px solid #cbd5e1; font-size:12px; background:#f8fafc;">
+                        <option value="all">All Users (Managers & Employees)</option>
+                        <% (users || []).forEach(u => { %>
+                            <option value="<%= u.id %>"><%= u.name %> (<%= u.role %> - <%= u.designation || 'Staff' %>)</option>
+                        <% }) %>
+                    </select>
+                </div>
+
+                <!-- Filter 3: Date Period -->
+                <div>
+                    <label style="display:block; font-size:11px; font-weight:700; color:#334155; margin-bottom:4px;">
+                        <i class="fa-solid fa-calendar" style="color:#3b68b7;"></i> Date Period:
+                    </label>
+                    <select name="date_filter" id="modal_date_filter" onchange="toggleModalCustomDates(this.value)" style="width:100%; padding:9px 12px; border-radius:10px; border:1px solid #cbd5e1; font-size:12px; background:#f8fafc;">
+                        <option value="all">All Time (Full History)</option>
+                        <option value="today">Today Tasks</option>
+                        <option value="yesterday">Yesterday Tasks</option>
+                        <option value="last_week">Last 7 Days</option>
+                        <option value="this_month">This Month</option>
+                        <option value="custom">Custom Date Range...</option>
+                    </select>
+                </div>
+
+                <!-- Filter 4: Status -->
+                <div>
+                    <label style="display:block; font-size:11px; font-weight:700; color:#334155; margin-bottom:4px;">
+                        <i class="fa-solid fa-list-check" style="color:#3b68b7;"></i> Task Status:
+                    </label>
+                    <select name="status" style="width:100%; padding:9px 12px; border-radius:10px; border:1px solid #cbd5e1; font-size:12px; background:#f8fafc;">
+                        <option value="all">All Statuses</option>
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Overdue">Overdue</option>
+                    </select>
+                </div>
+
+                <!-- Filter 5: Priority -->
+                <div style="grid-column:1 / -1;">
+                    <label style="display:block; font-size:11px; font-weight:700; color:#334155; margin-bottom:4px;">
+                        <i class="fa-solid fa-flag" style="color:#3b68b7;"></i> Priority (Optional):
+                    </label>
+                    <select name="priority" style="width:100%; padding:9px 12px; border-radius:10px; border:1px solid #cbd5e1; font-size:12px; background:#f8fafc;">
+                        <option value="all">All Priorities</option>
+                        <option value="High">High Priority</option>
+                        <option value="Medium">Medium Priority</option>
+                        <option value="Low">Low Priority</option>
+                    </select>
+                </div>
+
+                <!-- Custom Dates Inputs (hidden by default) -->
+                <div id="modal_custom_dates_div" style="display:none; grid-column:1 / -1; background:#f1f5f9; padding:10px 12px; border-radius:10px; gap:10px; align-items:center;">
+                    <div style="flex:1;">
+                        <label style="display:block; font-size:10px; font-weight:700; color:#475569;">From Date:</label>
+                        <input type="date" name="start_date" style="width:100%; padding:5px 8px; border-radius:6px; border:1px solid #cbd5e1; font-size:11px;">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="display:block; font-size:10px; font-weight:700; color:#475569;">To Date:</label>
+                        <input type="date" name="end_date" style="width:100%; padding:5px 8px; border-radius:6px; border:1px solid #cbd5e1; font-size:11px;">
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex; align-items:center; justify-content:flex-end; gap:10px; margin-top:16px; border-top:1px solid #f1f5f9; padding-top:14px;">
+                <button type="button" onclick="closeReportModal()" style="padding:9px 16px; border-radius:10px; border:1px solid #cbd5e1; background:#f8fafc; font-size:12px; font-weight:700; color:#475569; cursor:pointer;">Cancel</button>
+                <button type="submit" style="padding:9px 18px; border-radius:10px; border:none; background:linear-gradient(135deg, #10b981 0%, #059669 100%); font-size:12px; font-weight:700; color:#ffffff; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 4px 12px rgba(16,185,129,0.3);">
+                    <i class="fa-solid fa-download"></i> Download Excel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 function setDateFilter(val) {
     document.getElementById('date_filter_input').value = val;
     document.getElementById('updates-filter-form').submit();
+}
+
+function openReportModal() {
+    const modal = document.getElementById('reportModal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeReportModal() {
+    const modal = document.getElementById('reportModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function toggleModalCustomDates(val) {
+    const div = document.getElementById('modal_custom_dates_div');
+    if (div) {
+        div.style.display = (val === 'custom') ? 'flex' : 'none';
+    }
 }
 </script>
 
