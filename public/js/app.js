@@ -41,6 +41,21 @@ document.addEventListener('click', (e) => {
             modal.classList.remove('active');
         }
     }
+
+    if (e.target.classList.contains('modal')) {
+        e.target.classList.remove('open');
+        e.target.classList.remove('active');
+    }
+});
+
+// Close open modals on Escape key press
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' || e.key === 'Esc' || e.keyCode === 27) {
+        document.querySelectorAll('.modal.open, .modal.active').forEach(modal => {
+            modal.classList.remove('open');
+            modal.classList.remove('active');
+        });
+    }
 });
 
 function initMasterAutocomplete() {
