@@ -4,7 +4,7 @@ const config = require('../config');
 let pool;
 
 const prefix = config.tablePrefix || 'tva_';
-const names = ['organizations', 'organization_task_counters', 'user_organizations', 'users', 'projects', 'project_updates', 'tasks', 'task_assignees', 'task_forward_logs', 'comments', 'attachments', 'notifications', 'activity_logs', 'sessions', 'daily_routines', 'daily_routine_logs', 'notes', 'departments', 'designations', 'project_assignees', 'priorities', 'statuses', 'audit_events'];
+const names = ['organizations', 'organization_task_counters', 'user_organizations', 'users', 'projects', 'project_updates', 'tasks', 'task_assignees', 'task_forward_logs', 'comments', 'attachments', 'notifications', 'activity_logs', 'sessions', 'daily_routines', 'daily_routine_logs', 'notes', 'departments', 'designations', 'project_assignees', 'priorities', 'statuses', 'audit_events', 'task_time_logs'];
 
 function sqlName(sql) {
     let value = sql;
@@ -233,6 +233,22 @@ CREATE TABLE IF NOT EXISTS ${prefix}project_assignees (id INT AUTO_INCREMENT PRI
     await addColumn(`${prefix}projects`, 'completed_at', 'DATETIME NULL AFTER started_at');
     await fixTasksAssignedToColumn();
     await addStandardAuditColumns();
+
+    // --- Task Time Logs table ---
+    try {
+        await pool.query(`CREATE TABLE IF NOT EXISTS ${prefix}task_time_logs (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            task_id INT NOT NULL,
+            user_id INT NOT NULL,
+            action ENUM('start','pause','stop') NOT NULL,
+            logged_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            note VARCHAR(255) DEFAULT '',
+            FOREIGN KEY(task_id) REFERENCES ${prefix}tasks(id) ON DELETE CASCADE,
+            FOREIGN KEY(user_id) REFERENCES ${prefix}users(id) ON DELETE CASCADE,
+            INDEX idx_ttl_task(task_id),
+            INDEX idx_ttl_user(user_id, task_id)
+        ) ENGINE=InnoDB`);
+    } catch(e) { console.error('task_time_logs table migration note:', e.message); }
 
     // --- Multi-org migration (Unomok as org 1) ---
     await migrateMultiOrg();

@@ -126,6 +126,32 @@
                     <% } %>
                 <% } %>
             <% } %>
+
+            <%# ─── Compact Timer (top-right) ─── %>
+            <% 
+                const isAssignedTopCheck = String(task.assigned_to || '').split(',').includes(String(user.id)) || (typeof taskAssignees !== 'undefined' && taskAssignees.some(a => Number(a.user_id) === Number(user.id)));
+                const myAssigneeTop = (typeof taskAssignees !== 'undefined' && taskAssignees.find(a => Number(a.user_id) === Number(user.id))) || null;
+                const myTopStatus = myAssigneeTop ? myAssigneeTop.status : task.status;
+                const isCompletedOrCancelled = ['completed', 'cancelled', '2', '3'].includes(String(myTopStatus).toLowerCase().trim()) || ['completed', 'cancelled', '2', '3'].includes(String(task.status).toLowerCase().trim());
+            %>
+            <div id="task-timer-widget" data-is-completed="<%= isCompletedOrCancelled ? '1' : '0' %>" data-is-assigned="<%= isAssignedTopCheck ? '1' : '0' %>" style="display:inline-flex; align-items:center; gap:8px; background:<%= isCompletedOrCancelled ? '#f0fdf4' : 'linear-gradient(135deg,#f0f4ff,#f8fafc)' %>; border:1.5px solid <%= isCompletedOrCancelled ? '#bbf7d0' : '#c7d7fe' %>; border-radius:10px; padding:5px 12px; margin-left:6px;">
+                <span id="timer-dot" style="width:8px; height:8px; border-radius:50%; background:<%= isCompletedOrCancelled ? '#16a34a' : '#94a3b8' %>; flex-shrink:0; display:<%= isCompletedOrCancelled ? 'none' : 'inline-block' %>;"></span>
+                <span id="timer-icon-completed" style="display:<%= isCompletedOrCancelled ? 'inline-flex' : 'none' %>; align-items:center; color:#16a34a; font-size:14px;"><i class="fa-solid fa-circle-check"></i></span>
+                <span id="timer-label-prefix" style="font-size:12px; font-weight:700; color:<%= isCompletedOrCancelled ? '#15803d' : '#64748b' %>; display:<%= (isCompletedOrCancelled || !isAssignedTopCheck) ? 'inline-block' : 'none' %>;"><%= isCompletedOrCancelled ? 'Completed in:' : 'Total Logged:' %></span>
+                <span id="timer-display" style="font-size:14px; font-weight:800; color:<%= isCompletedOrCancelled ? '#166534' : '#1e293b' %>; font-variant-numeric:tabular-nums; letter-spacing:-0.5px; min-width:64px;">00:00:00</span>
+                <% if (isAssignedTopCheck) { %>
+                <button type="button" id="btn-timer-start" title="Start Timer" style="display:<%= isCompletedOrCancelled ? 'none' : 'flex' %>; align-items:center; gap:4px; padding:4px 10px; border-radius:7px; border:none; cursor:pointer; font-size:12px; font-weight:700; background:#16a34a; color:#fff;">
+                    <i class="fa-solid fa-play"></i> Start
+                </button>
+                <button type="button" id="btn-timer-pause" title="Pause Timer" style="display:none; align-items:center; gap:4px; padding:4px 10px; border-radius:7px; border:none; cursor:pointer; font-size:12px; font-weight:700; background:#f59e0b; color:#fff;">
+                    <i class="fa-solid fa-pause"></i> Pause
+                </button>
+                <button type="button" id="btn-timer-stop" title="Stop Timer" style="display:none; align-items:center; gap:4px; padding:4px 10px; border-radius:7px; border:none; cursor:pointer; font-size:12px; font-weight:700; background:#ef4444; color:#fff;">
+                    <i class="fa-solid fa-stop"></i> Stop
+                </button>
+                <% } %>
+            </div>
+
         </div>
     </div>
 
@@ -414,6 +440,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
             try {
                 const formData = new FormData(statusForm);
+                const selectedStatus = formData.get('status') || '';
+
                 const res = await fetch(statusForm.action, {
                     method: 'POST',
                     body: new URLSearchParams(formData),
@@ -442,6 +470,24 @@ window.addEventListener('DOMContentLoaded', () => {
                     if (window.showToast) {
                         const updatedStatusStr = data.myStatus || data.overallStatus || 'updated';
                         window.showToast('Update successful', `Task status updated to "${updatedStatusStr}".`, 3500);
+                    }
+
+                    // --- Auto-sync timer with status change ---
+                    const sl = selectedStatus.toLowerCase();
+                    if (sl === 'completed' || sl === 'cancelled') {
+                        if (window.timerCtrl) {
+                            if (window.timerCtrl.isRunning()) await window.timerCtrl.stop();
+                            window.timerCtrl.setCompletedMode(true);
+                        }
+                    } else if (sl === 'in progress') {
+                        if (window.timerCtrl) {
+                            window.timerCtrl.setCompletedMode(false);
+                            if (!window.timerCtrl.isRunning()) window.timerCtrl.start();
+                        }
+                    } else {
+                        if (window.timerCtrl) {
+                            window.timerCtrl.setCompletedMode(false);
+                        }
                     }
                 } else {
                     btn.disabled = false;
@@ -693,6 +739,212 @@ function initTaskMentionSystem(chatForm, textarea) {
         }
     });
 }
+</script>
+
+<script>
+// ─── Task Timer Controller ───────────────────────────────────────────────────
+(function() {
+    const TASK_ID = '<%= task.id %>';
+    const API_BASE = '/tasks/' + TASK_ID;
+
+    let _isRunning = false;
+    let _sessionStartMs = null;   // when this browser session started the timer
+    let _baseSeconds = 0;         // seconds already logged before this session
+    let _interval = null;
+
+    const widget = document.getElementById('task-timer-widget');
+    let _isCompleted = widget ? widget.dataset.isCompleted === '1' : false;
+
+    const elDisplay = document.getElementById('timer-display');
+    const elDot = document.getElementById('timer-dot');
+    const elIconCompleted = document.getElementById('timer-icon-completed');
+    const elLabelPrefix = document.getElementById('timer-label-prefix');
+    const elStatusLabel = document.getElementById('timer-status-label');
+    const elTotal = document.getElementById('timer-total-label');
+    const btnStart = document.getElementById('btn-timer-start');
+    const btnPause = document.getElementById('btn-timer-pause');
+    const btnStop  = document.getElementById('btn-timer-stop');
+
+    function formatSecs(s) {
+        s = Math.max(0, Math.floor(s));
+        const h = Math.floor(s / 3600);
+        const m = Math.floor((s % 3600) / 60);
+        const sec = s % 60;
+        return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+    }
+
+    function updateDisplay() {
+        let totalSecs = _baseSeconds;
+        if (_isRunning && _sessionStartMs !== null) {
+            totalSecs += Math.floor((Date.now() - _sessionStartMs) / 1000);
+        }
+        if (elDisplay) elDisplay.textContent = formatSecs(totalSecs);
+    }
+
+    function applyCompletedUI(completed) {
+        _isCompleted = completed;
+        if (completed) {
+            if (_isRunning) {
+                _isRunning = false;
+                _sessionStartMs = null;
+                if (_interval) { clearInterval(_interval); _interval = null; }
+            }
+            if (widget) {
+                widget.style.background = '#f0fdf4';
+                widget.style.borderColor = '#bbf7d0';
+            }
+            if (elDot) elDot.style.display = 'none';
+            if (elIconCompleted) elIconCompleted.style.display = 'inline-flex';
+            if (elLabelPrefix) {
+                elLabelPrefix.textContent = 'Completed in:';
+                elLabelPrefix.style.color = '#15803d';
+                elLabelPrefix.style.display = 'inline-block';
+            }
+            if (elDisplay) elDisplay.style.color = '#166534';
+            if (btnStart) btnStart.style.display = 'none';
+            if (btnPause) btnPause.style.display = 'none';
+            if (btnStop) btnStop.style.display = 'none';
+        } else {
+            if (widget) {
+                widget.style.background = 'linear-gradient(135deg,#f0f4ff,#f8fafc)';
+                widget.style.borderColor = '#c7d7fe';
+            }
+            if (elDot) elDot.style.display = 'inline-block';
+            if (elIconCompleted) elIconCompleted.style.display = 'none';
+            if (elLabelPrefix) elLabelPrefix.style.display = 'none';
+            if (elDisplay) elDisplay.style.color = '#1e293b';
+            setRunningState(_isRunning);
+        }
+    }
+
+    function setRunningState(running) {
+        _isRunning = running;
+        if (_isCompleted) {
+            applyCompletedUI(true);
+            return;
+        }
+        if (running) {
+            _sessionStartMs = _sessionStartMs || Date.now();
+            if (!_interval) _interval = setInterval(updateDisplay, 1000);
+            if (elDot) { elDot.style.background = '#16a34a'; elDot.style.boxShadow = '0 0 0 3px #bbf7d040'; }
+            if (elStatusLabel) elStatusLabel.textContent = 'Running';
+            if (btnStart) btnStart.style.display = 'none';
+            if (btnPause) btnPause.style.display = 'flex';
+            if (btnStop) btnStop.style.display = 'flex';
+        } else {
+            _sessionStartMs = null;
+            if (_interval) { clearInterval(_interval); _interval = null; }
+            if (elDot) { elDot.style.background = '#94a3b8'; elDot.style.boxShadow = 'none'; }
+            if (elStatusLabel) elStatusLabel.textContent = 'Paused / Stopped';
+            if (btnStart) btnStart.style.display = 'flex';
+            if (btnPause) btnPause.style.display = 'none';
+            if (btnStop) btnStop.style.display = 'none';
+        }
+    }
+
+    async function apiCall(action) {
+        try {
+            const res = await fetch(`${API_BASE}/timer`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                body: `action=${action}`
+            });
+            const data = await res.json();
+            if (!data.success) console.error('Timer API error:', data.error);
+            return data;
+        } catch(err) {
+            console.error('Timer API fetch error:', err);
+            return { success: false };
+        }
+    }
+
+    async function loadSummary() {
+        try {
+            const res = await fetch(`${API_BASE}/timer/summary`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await res.json();
+            if (!data.success) return;
+
+            const isAssigned = widget && widget.dataset.isAssigned === '1';
+            _baseSeconds = isAssigned ? (data.myNetSeconds || 0) : (data.totalNetSeconds || 0);
+
+            if (_isCompleted) {
+                applyCompletedUI(true);
+            } else {
+                if (data.isRunning && isAssigned) {
+                    _sessionStartMs = Date.now();
+                }
+                setRunningState(data.isRunning && isAssigned);
+            }
+            updateDisplay();
+
+            if (elTotal) {
+                const totalS = data.totalNetSeconds || 0;
+                elTotal.textContent = formatSecs(totalS);
+            }
+        } catch(err) { console.error('Timer summary fetch error:', err); }
+    }
+
+    // Button handlers
+    if (btnStart) {
+        btnStart.addEventListener('click', async () => {
+            btnStart.disabled = true;
+            const data = await apiCall('start');
+            if (data.success) {
+                _sessionStartMs = Date.now();
+                setRunningState(true);
+                updateDisplay();
+            }
+            btnStart.disabled = false;
+        });
+    }
+
+    if (btnPause) {
+        btnPause.addEventListener('click', async () => {
+            btnPause.disabled = true;
+            if (_isRunning && _sessionStartMs !== null) {
+                _baseSeconds += Math.floor((Date.now() - _sessionStartMs) / 1000);
+            }
+            const data = await apiCall('pause');
+            if (data.success) { setRunningState(false); updateDisplay(); }
+            btnPause.disabled = false;
+        });
+    }
+
+    if (btnStop) {
+        btnStop.addEventListener('click', async () => {
+            btnStop.disabled = true;
+            if (_isRunning && _sessionStartMs !== null) {
+                _baseSeconds += Math.floor((Date.now() - _sessionStartMs) / 1000);
+            }
+            const data = await apiCall('stop');
+            if (data.success) {
+                setRunningState(false);
+                updateDisplay();
+                const sumRes = await fetch(`${API_BASE}/timer/summary`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                const sumData = await sumRes.json();
+                if (sumData.success && elTotal) elTotal.textContent = formatSecs(sumData.totalNetSeconds || 0);
+            }
+            btnStop.disabled = false;
+        });
+    }
+
+    // Expose controller so status form can call it
+    window.timerCtrl = {
+        isRunning: () => _isRunning,
+        start: () => btnStart && btnStart.click(),
+        stop:  () => btnStop  && btnStop.click(),
+        pause: () => btnPause && btnPause.click(),
+        setCompletedMode: (isComp) => {
+            applyCompletedUI(isComp);
+            updateDisplay();
+        }
+    };
+
+    // Initial load
+    loadSummary();
+})();
 </script>
 <%- include('partials/task-modal') %>
 <%- include('partials/foot') %>

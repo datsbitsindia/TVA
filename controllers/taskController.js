@@ -873,6 +873,7 @@ exports.remove = async (req, res) => {
     await db.prepare('DELETE FROM task_assignees WHERE task_id=?').run(taskId);
     await db.prepare('DELETE FROM comments WHERE task_id=?').run(taskId);
     await db.prepare('DELETE FROM attachments WHERE task_id=?').run(taskId);
+    await db.prepare('DELETE FROM task_time_logs WHERE task_id=?').run(taskId);
     await db.prepare('DELETE FROM tasks WHERE id=?').run(taskId);
 
     await activity.log(req.session.user.id, 'Task Deleted', task.title);
@@ -887,4 +888,126 @@ exports.remove = async (req, res) => {
     }
 
     res.redirect('/tasks');
+};
+
+// ─── Timer: start / pause / stop ───────────────────────────────────────────
+exports.timerAction = async (req, res) => {
+    try {
+        const taskId = Number(req.params.id);
+        const userId = Number(req.session.user.id);
+        const action = String(req.body.action || '').toLowerCase().trim(); // start | pause | stop
+
+        if (!['start', 'pause', 'stop'].includes(action)) {
+            return res.status(400).json({ success: false, error: 'Invalid action. Use start, pause, or stop.' });
+        }
+
+        const task = await db.prepare('SELECT * FROM tasks WHERE id=?').get(taskId);
+        if (!task || !(await canView(req.session.user, task))) {
+            return res.status(403).json({ success: false, error: 'Access denied or task not found.' });
+        }
+
+        // Insert the log row using NOW() for accurate MySQL timestamp
+        await db.prepare('INSERT INTO task_time_logs (task_id, user_id, action, logged_at) VALUES (?, ?, ?, NOW())')
+            .run(taskId, userId, action);
+
+        // --- Sync task status based on timer action ---
+        if (action === 'start') {
+            // If task is Pending (status_id=0), move it to In Progress (status_id=1)
+            const currentStatusId = Number(task.status_id);
+            if (currentStatusId === 0 /* Pending */ || currentStatusId === 4 /* Planned */) {
+                await db.prepare("UPDATE tasks SET status='In Progress', status_id=1, started_at=COALESCE(started_at, NOW()), updated_by=? WHERE id=?")
+                    .run(userId, taskId);
+                // Update assignee row too
+                await db.prepare("INSERT INTO task_assignees(task_id, user_id, status, status_id) VALUES(?,?,1,1) ON DUPLICATE KEY UPDATE status=1, status_id=1")
+                    .run(taskId, userId);
+            }
+        }
+        // pause and stop do NOT change task status — user controls that manually
+
+        return res.json({
+            success: true,
+            action
+        });
+    } catch (err) {
+        console.error('Timer action error:', err);
+        return res.status(500).json({ success: false, error: err.message });
+    }
+};
+
+// ─── Timer: get net time summary for this user on this task ────────────────
+exports.timerSummary = async (req, res) => {
+    try {
+        const taskId = Number(req.params.id);
+        const userId = Number(req.session.user.id);
+
+        const task = await db.prepare('SELECT * FROM tasks WHERE id=?').get(taskId);
+        if (!task || !(await canView(req.session.user, task))) {
+            return res.status(403).json({ success: false, error: 'Access denied or task not found.' });
+        }
+
+        // Fetch logs with UNIX_TIMESTAMP to eliminate timezone drift
+        const logs = await db.prepare(
+            'SELECT action, UNIX_TIMESTAMP(logged_at) AS logged_ts, logged_at FROM task_time_logs WHERE task_id=? AND user_id=? ORDER BY id ASC'
+        ).all(taskId, userId);
+
+        let netSeconds = 0;
+        let lastStartAt = null;
+
+        for (const log of logs) {
+            const t = Number(log.logged_ts) * 1000;
+            if (log.action === 'start') {
+                lastStartAt = t;
+            } else if ((log.action === 'pause' || log.action === 'stop') && lastStartAt !== null) {
+                netSeconds += Math.max(0, Math.floor((t - lastStartAt) / 1000));
+                lastStartAt = null;
+            }
+        }
+
+        const isRunning = logs.length > 0 && logs[logs.length - 1].action === 'start';
+        if (isRunning && lastStartAt !== null) {
+            netSeconds += Math.max(0, Math.floor((Date.now() - lastStartAt) / 1000));
+        }
+
+        // Fetch all-user logs with UNIX_TIMESTAMP
+        const allLogs = await db.prepare(
+            'SELECT user_id, action, UNIX_TIMESTAMP(logged_at) AS logged_ts, logged_at FROM task_time_logs WHERE task_id=? ORDER BY user_id ASC, id ASC'
+        ).all(taskId);
+
+        const userMap = {};
+        for (const log of allLogs) {
+            if (!userMap[log.user_id]) userMap[log.user_id] = { logs: [], netSeconds: 0, isRunning: false };
+            userMap[log.user_id].logs.push(log);
+        }
+        for (const uid of Object.keys(userMap)) {
+            let ls = null;
+            let ns = 0;
+            for (const log of userMap[uid].logs) {
+                const t = Number(log.logged_ts) * 1000;
+                if (log.action === 'start') { ls = t; }
+                else if ((log.action === 'pause' || log.action === 'stop') && ls !== null) {
+                    ns += Math.max(0, Math.floor((t - ls) / 1000));
+                    ls = null;
+                }
+            }
+            const lastLog = userMap[uid].logs[userMap[uid].logs.length - 1];
+            if (lastLog && lastLog.action === 'start' && ls !== null) {
+                ns += Math.max(0, Math.floor((Date.now() - ls) / 1000));
+                userMap[uid].isRunning = true;
+            }
+            userMap[uid].netSeconds = ns;
+        }
+        const totalNetSeconds = Object.values(userMap).reduce((a, b) => a + b.netSeconds, 0);
+
+        return res.json({
+            success: true,
+            myNetSeconds: netSeconds,
+            isRunning,
+            totalNetSeconds,
+            lastLog: logs.length > 0 ? logs[logs.length - 1] : null,
+            logs
+        });
+    } catch (err) {
+        console.error('Timer summary error:', err);
+        return res.status(500).json({ success: false, error: err.message });
+    }
 };
