@@ -2,13 +2,29 @@
 @media(max-width:1050px){.stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:760px){.sidebar{transform:translateX(-100%);transition:.2s}.sidebar.open{transform:none}.main{margin-left:0}.menu-btn{display:block;margin-right:auto}.content{padding:18px}.grid-2{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.filters{flex-wrap:wrap}.filters>*{flex:1;min-width:140px!important}.form-grid{grid-template-columns:1fr}.full{grid-column:1/-1}.page-head{align-items:flex-start;gap:12px}.topbar{padding:0 16px}}@media(max-width:430px){.stats{grid-template-columns:1fr}.page-head{flex-direction:column}.panel{padding:14px}}
 
 /* CKEditor Custom Minimal Toolbar Styling */
-.ck-editor { width: 100% !important; margin-top: 4px; }
-.ck-editor__editable_inline { min-height: 120px !important; max-height: 350px !important; font-size: 14px !important; line-height: 1.6 !important; color: #334155 !important; }
+.ck-editor { width: 100% !important; margin-top: 4px; font-weight: 400 !important; }
+.ck-editor__editable_inline, .ck-editor__editable, .ck-content { min-height: 120px !important; max-height: 350px !important; font-size: 14px !important; line-height: 1.6 !important; color: #334155 !important; font-weight: 400 !important; }
 .ck-toolbar { background: #f8fafc !important; border-color: #cbd5e1 !important; border-radius: 8px 8px 0 0 !important; }
 .ck.ck-editor__main>.ck-editor__editable:not(.ck-focused) { border-color: #cbd5e1 !important; }
 .ck.ck-editor__main>.ck-editor__editable.ck-focused { border-color: #3b68b7 !important; box-shadow: 0 0 0 3px rgba(59, 104, 183, 0.15) !important; }
 .ck-content ul, .ck-content ol { padding-left: 24px !important; margin: 6px 0 !important; }
 .ck-content p { margin: 3px 0 !important; }
+.ck-content strong, .ck-content b { font-weight: 700 !important; }
+
+/* Hide and disable CKEditor Powered By link / attribution */
+.ck-powered-by,
+.ck.ck-powered-by,
+a.ck-powered-by,
+.ck-powered-by-balloon,
+.ck .ck-powered-by {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+}
 
 /* Multi-Assignee Selection Widget */
 .multi-assignee-picker { display: flex; flex-direction: column; gap: 6px; width: 100%; }

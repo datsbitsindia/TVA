@@ -447,6 +447,21 @@ window.initCKEditor = function(elementOrSelector) {
                 }
             } catch(e) {}
 
+            const purgePoweredBy = () => {
+                try {
+                    const uiElem = editor.ui && editor.ui.view && editor.ui.view.element;
+                    if (uiElem) {
+                        uiElem.querySelectorAll('.ck-powered-by, .ck-powered-by-balloon, a[href*="ckeditor.com"]').forEach(p => p.remove());
+                    }
+                    if (el.parentNode) {
+                        el.parentNode.querySelectorAll('.ck-powered-by, .ck-powered-by-balloon, a[href*="ckeditor.com"]').forEach(p => p.remove());
+                    }
+                } catch(e) {}
+            };
+            purgePoweredBy();
+            setTimeout(purgePoweredBy, 50);
+            setTimeout(purgePoweredBy, 300);
+
             el._ckeditor = editor;
             return editor;
         })
@@ -457,6 +472,8 @@ window.initCKEditor = function(elementOrSelector) {
 };
 
 window.removeDescriptionHyperlinks = function() {
+    document.querySelectorAll('.ck-powered-by, .ck-powered-by-balloon, a[href*="ckeditor.com"]').forEach(p => p.remove());
+
     const selectors = [
         '.ck-content a',
         '.description-content a',
@@ -468,6 +485,10 @@ window.removeDescriptionHyperlinks = function() {
         '.task-card a[href^="https"]'
     ];
     document.querySelectorAll(selectors.join(', ')).forEach(link => {
+        if (link.classList.contains('ck-powered-by')) {
+            link.remove();
+            return;
+        }
         link.style.pointerEvents = 'none';
         link.style.cursor = 'text';
         link.style.textDecoration = 'none';
@@ -492,6 +513,11 @@ window.initAllCKEditors = function() {
 document.addEventListener('DOMContentLoaded', () => {
     window.initAllCKEditors();
     window.removeDescriptionHyperlinks();
+
+    // Periodically remove any CKEditor powered-by badge if dynamically rendered
+    setInterval(() => {
+        document.querySelectorAll('.ck-powered-by, .ck-powered-by-balloon, a[href*="ckeditor.com"]').forEach(p => p.remove());
+    }, 1000);
 });
 
 document.addEventListener('keydown', (e) => {
