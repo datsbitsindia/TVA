@@ -11,6 +11,64 @@
 .ck-content p { margin: 3px 0 !important; }
 .ck-content strong, .ck-content b { font-weight: 700 !important; }
 
+/* CKEditor & Description Table Styling */
+.ck-content figure.table,
+.ck-content table,
+.task-description-content table,
+.description-content table,
+.task-desc-box table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin: 10px 0 !important;
+    font-size: 13px !important;
+    background: #ffffff !important;
+    border-radius: 6px !important;
+}
+
+.ck-content figure.table table {
+    margin: 0 !important;
+}
+
+.ck-content th, .ck-content td,
+.task-description-content th, .task-description-content td,
+.description-content th, .description-content td,
+.task-desc-box th, .task-desc-box td {
+    border: 1px solid #cbd5e1 !important;
+    padding: 8px 12px !important;
+    text-align: left !important;
+    vertical-align: top !important;
+}
+
+.ck-content th,
+.task-description-content th,
+.description-content th,
+.task-desc-box th {
+    background-color: #f1f5f9 !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+}
+
+html.dark-theme .ck-content figure.table,
+html.dark-theme .ck-content table,
+html.dark-theme .task-description-content table,
+html.dark-theme .description-content table {
+    background: #1e293b !important;
+}
+
+html.dark-theme .ck-content th, html.dark-theme .ck-content td,
+html.dark-theme .task-description-content th, html.dark-theme .task-description-content td,
+html.dark-theme .description-content th, html.dark-theme .description-content td {
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+html.dark-theme .ck-content th,
+html.dark-theme .task-description-content th,
+html.dark-theme .description-content th {
+    background-color: #0f172a !important;
+    color: #f8fafc !important;
+}
+
 /* Hide and disable CKEditor Powered By link / attribution */
 .ck-powered-by,
 .ck.ck-powered-by,

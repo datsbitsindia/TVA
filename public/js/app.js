@@ -417,7 +417,10 @@ window.initCKEditor = function(elementOrSelector) {
 
     return ClassicEditor
         .create(el, {
-            toolbar: [ 'bold', 'numberedList', 'bulletedList' ]
+            toolbar: [ 'bold', 'italic', 'numberedList', 'bulletedList', 'insertTable' ],
+            table: {
+                contentToolbar: [ 'tableColumn', 'tableRow', 'mergeTableCells' ]
+            }
         })
         .then(editor => {
             editor.model.document.on('change:data', () => {
@@ -439,7 +442,12 @@ window.initCKEditor = function(elementOrSelector) {
                 if (clipboardPipeline) {
                     clipboardPipeline.on('inputTransformation', (evt, data) => {
                         if (data.dataTransfer) {
-                            let html = data.dataTransfer.getData('text/html') || data.dataTransfer.getData('text/plain');
+                            let html = data.dataTransfer.getData('text/html');
+                            // If pasted content contains an Excel / HTML table, allow CKEditor native table pipeline to handle it cleanly!
+                            if (html && (/<table\b/i.test(html) || /<tr\b/i.test(html) || /<td\b/i.test(html))) {
+                                return;
+                            }
+                            html = html || data.dataTransfer.getData('text/plain');
                             if (html) {
                                 let hasLink = /<a\b[^>]*>/i.test(html) || html.includes('mso-') || html.includes('<style');
                                 html = html.replace(/<a\b[^>]*>([\s\S]*?)<\/a>/gi, '$1');
