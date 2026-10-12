@@ -3,13 +3,47 @@
 
 /* CKEditor Custom Minimal Toolbar Styling */
 .ck-editor { width: 100% !important; margin-top: 4px; font-weight: 400 !important; }
-.ck-editor__editable_inline, .ck-editor__editable, .ck-content { min-height: 120px !important; max-height: 350px !important; font-size: 14px !important; line-height: 1.6 !important; color: #334155 !important; font-weight: 400 !important; }
+.ck-editor__editable_inline, .ck-editor__editable { min-height: 120px !important; max-height: 350px !important; overflow-y: auto !important; font-size: 14px !important; line-height: 1.6 !important; color: #334155 !important; font-weight: 400 !important; }
+.ck-content { font-size: 14px !important; line-height: 1.6 !important; color: #334155 !important; font-weight: 400 !important; word-break: break-word; }
 .ck-toolbar { background: #f8fafc !important; border-color: #cbd5e1 !important; border-radius: 8px 8px 0 0 !important; }
 .ck.ck-editor__main>.ck-editor__editable:not(.ck-focused) { border-color: #cbd5e1 !important; }
 .ck.ck-editor__main>.ck-editor__editable.ck-focused { border-color: #3b68b7 !important; box-shadow: 0 0 0 3px rgba(59, 104, 183, 0.15) !important; }
 .ck-content ul, .ck-content ol { padding-left: 24px !important; margin: 6px 0 !important; }
 .ck-content p { margin: 3px 0 !important; }
 .ck-content strong, .ck-content b { font-weight: 700 !important; }
+
+/* Task Description Box Scrollable Container */
+.task-desc-box {
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.task-desc-box .task-description-content {
+    max-height: 300px !important;
+    min-height: unset !important;
+    overflow-y: auto !important;
+    overflow-x: auto !important;
+    padding-right: 6px !important;
+    word-break: break-word !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: #cbd5e1 transparent !important;
+}
+
+.task-desc-box .task-description-content::-webkit-scrollbar {
+    width: 6px !important;
+    height: 6px !important;
+}
+.task-desc-box .task-description-content::-webkit-scrollbar-track {
+    background: #f1f5f9 !important;
+    border-radius: 4px !important;
+}
+.task-desc-box .task-description-content::-webkit-scrollbar-thumb {
+    background: #cbd5e1 !important;
+    border-radius: 4px !important;
+}
+.task-desc-box .task-description-content::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8 !important;
+}
 
 /* CKEditor & Description Table Styling */
 .ck-content figure.table,
@@ -23,6 +57,13 @@
     font-size: 13px !important;
     background: #ffffff !important;
     border-radius: 6px !important;
+}
+
+.ck-content figure.table,
+.task-desc-box figure.table {
+    margin: 8px 0 !important;
+    overflow-x: auto !important;
+    max-width: 100% !important;
 }
 
 .ck-content figure.table table {

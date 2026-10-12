@@ -156,9 +156,11 @@
     </div>
 
     <% if(task.description){ %>
-        <div class="task-desc-box">
-            <small style="font-size:12px; font-weight:700; text-transform:uppercase;">Task Description</small>
-            <div class="task-description-content ck-content"><%- task.description %></div>
+        <div class="task-desc-box" style="position:relative; overflow:hidden;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <small style="font-size:12px; font-weight:700; text-transform:uppercase; color:#64748b;"><i class="fa-solid fa-align-left" style="margin-right:4px;"></i> Task Description</small>
+            </div>
+            <div class="task-description-content ck-content" style="max-height:280px; overflow-y:auto; overflow-x:auto; padding-right:6px; word-break:break-word;"><%- task.description %></div>
         </div>
     <% } %>
 
