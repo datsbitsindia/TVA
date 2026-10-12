@@ -1,4 +1,86 @@
 
+window.resetTaskModal = function() {
+    const modal = document.getElementById('task-modal');
+    if (!modal) return;
+
+    // 1. Reset Regular Task Form
+    const singleForm = document.getElementById('single-task-form');
+    if (singleForm) {
+        singleForm.reset();
+        const idInput = document.getElementById('task-id-input');
+        if (idInput) idInput.value = '';
+        const h = document.getElementById('task-form-heading');
+        if (h) h.textContent = 'Assign employee task';
+
+        // Clear all text/number/date inputs explicitly
+        singleForm.querySelectorAll('input:not([type="hidden"]), textarea').forEach(input => {
+            input.value = '';
+        });
+
+        // Reset project select to 'Self Task' if available, otherwise first option
+        const projSelect = singleForm.querySelector('select[name="project_id"]');
+        if (projSelect) {
+            const selfOpt = Array.from(projSelect.options).find(o => o.text.trim() === 'Self Task');
+            if (selfOpt) projSelect.value = selfOpt.value;
+            else if (projSelect.options.length) projSelect.selectedIndex = 0;
+        }
+
+        // Reset priority to Medium
+        const prioSelect = singleForm.querySelector('select[name="priority"]');
+        if (prioSelect) prioSelect.value = 'Medium';
+
+        // Clear CKEditor in singleForm
+        singleForm.querySelectorAll('textarea.ck-editor-target').forEach(ta => {
+            ta.value = '';
+            if (ta._ckeditor) {
+                try { ta._ckeditor.setData(''); } catch(e) {}
+            }
+        });
+
+        // Clear dynamic assignee chips
+        const chipContainer = document.getElementById('single-task-assignee-chips');
+        if (chipContainer) chipContainer.innerHTML = '';
+        const assigneeSelect = singleForm.querySelector('.assignee-select-dropdown');
+        if (assigneeSelect) assigneeSelect.value = '';
+    }
+
+    // 2. Reset Daily Routine Form
+    const routineForm = modal.querySelector('form[action="/tasks/routine/save"]');
+    if (routineForm) {
+        routineForm.reset();
+        routineForm.querySelectorAll('input:not([type="hidden"]):not([type="checkbox"]), textarea').forEach(input => {
+            input.value = '';
+        });
+        const mandatoryCheckbox = routineForm.querySelector('input[name="mandatory"]');
+        if (mandatoryCheckbox) mandatoryCheckbox.checked = true;
+        const dailyTimeInput = routineForm.querySelector('input[name="daily_time"]');
+        if (dailyTimeInput) dailyTimeInput.value = '09:00';
+        const routinePriority = routineForm.querySelector('select[name="priority"]');
+        if (routinePriority) routinePriority.value = 'High';
+
+        // Clear CKEditor in routineForm
+        routineForm.querySelectorAll('textarea.ck-editor-target').forEach(ta => {
+            ta.value = '';
+            if (ta._ckeditor) {
+                try { ta._ckeditor.setData(''); } catch(e) {}
+            }
+        });
+    }
+
+    // 3. Reset active tab to Regular Task
+    const tabs = modal.querySelectorAll('.modal-tab');
+    if (tabs.length) {
+        tabs.forEach(t => t.classList.remove('active'));
+        modal.querySelectorAll('.modal-tab-content').forEach(c => c.classList.remove('active'));
+        const firstTab = modal.querySelector('.modal-tab[data-tab="single-task-tab"]') || tabs[0];
+        if (firstTab) {
+            firstTab.classList.add('active');
+            const targetContent = document.getElementById(firstTab.dataset.tab);
+            if (targetContent) targetContent.classList.add('active');
+        }
+    }
+};
+
 document.addEventListener('click', (e) => {
     const openBtn = e.target.closest('[data-open]');
     if (openBtn) {
@@ -6,14 +88,7 @@ document.addEventListener('click', (e) => {
         const m = document.getElementById(id);
         if (m) {
             if (id === 'task-modal') {
-                const f = document.getElementById('single-task-form');
-                if (f) {
-                    f.reset();
-                    const inp = document.getElementById('task-id-input');
-                    if (inp) inp.value = '';
-                    const h = document.getElementById('task-form-heading');
-                    if (h) h.textContent = 'Assign employee task';
-                }
+                if (window.resetTaskModal) window.resetTaskModal();
             }
             if (id === 'employee-modal') {
                 const f = document.getElementById('employee-form');
@@ -39,12 +114,18 @@ document.addEventListener('click', (e) => {
         if (modal) {
             modal.classList.remove('open');
             modal.classList.remove('active');
+            if (modal.id === 'task-modal' && window.resetTaskModal) {
+                window.resetTaskModal();
+            }
         }
     }
 
     if (e.target.classList.contains('modal')) {
         e.target.classList.remove('open');
         e.target.classList.remove('active');
+        if (e.target.id === 'task-modal' && window.resetTaskModal) {
+            window.resetTaskModal();
+        }
     }
 });
 
@@ -54,6 +135,9 @@ document.addEventListener('keydown', (e) => {
         document.querySelectorAll('.modal.open, .modal.active').forEach(modal => {
             modal.classList.remove('open');
             modal.classList.remove('active');
+            if (modal.id === 'task-modal' && window.resetTaskModal) {
+                window.resetTaskModal();
+            }
         });
     }
 });
