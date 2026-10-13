@@ -170,10 +170,23 @@ document.addEventListener('DOMContentLoaded', () => {
     let audioChunks = [];
     let isRecording = false;
 
+    // Detect if running inside Windows Desktop app wrapper (.exe / WebView2 / Electron)
+    const isDesktopApp = !!(
+        (window.chrome && window.chrome.webview) ||
+        navigator.userAgent.includes('Electron') ||
+        navigator.userAgent.includes('TVA-TASK') ||
+        window.location.protocol === 'file:'
+    );
+
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
     // Smart Phonetic Auto-Corrector for Indian Names & TVA Vocabulary
     function cleanAndCorrectSpeechText(rawText) {
         if (!rawText) return '';
         let cleaned = String(rawText);
+
+        // Deduplicate immediately repeated words / tokens (e.g. "create create" -> "create")
+        cleaned = cleaned.replace(/\b(\w+)(?:\s+\1\b)+/gi, '$1');
 
         const corrections = [
             [/\b(candy|can u|can you)\s+show\s+(me\s+)?folder\s+task\b/gi, 'show me all tasks'],
@@ -205,11 +218,45 @@ document.addEventListener('DOMContentLoaded', () => {
         return cleaned;
     }
 
-    // 1. Primary: Real-Time Live Word-by-Word Typing in Textarea
-    if (SpeechRecognition) {
+    // Extracts clean transcript from SpeechRecognition results, eliminating mobile/Android cumulative word duplication
+    function extractTranscriptFromResults(results) {
+        if (!results || results.length === 0) return '';
+
+        let combined = '';
+        for (let i = 0; i < results.length; i++) {
+            const item = results[i][0];
+            if (!item || !item.transcript) continue;
+            const current = item.transcript.trim();
+            if (!current) continue;
+
+            const currentLower = current.toLowerCase();
+            const combinedLower = combined.toLowerCase();
+
+            // On Android / mobile, SpeechRecognition returns cumulative phrases in new indices
+            // e.g. results[0] = "create", results[1] = "create a", results[2] = "create a new task"
+            if (combined && (currentLower.startsWith(combinedLower) || currentLower.includes(combinedLower))) {
+                combined = current; // Replace with the longer updated phrase!
+            } else if (combined && combinedLower.startsWith(currentLower)) {
+                // Current is an older substring, keep combined
+                continue;
+            } else {
+                // Distinct phrase or clause, append cleanly
+                combined = combined ? (combined + ' ' + current) : current;
+            }
+        }
+
+        // Final safety cleanup: remove any adjacent duplicated words
+        return combined.replace(/\b(\w+)(?:\s+\1\b)+/gi, '$1').trim();
+    }
+
+    // 1. Primary: Real-Time Live Word-by-Word Typing in Textarea (For standard browsers)
+    // Note: WebView2 desktop app wrappers do not support webkitSpeechRecognition (Google cloud auth blocked),
+    // so in desktop app we route directly to MediaRecorder + Groq Whisper
+    if (SpeechRecognition && !isDesktopApp) {
         try {
             liveRecognition = new SpeechRecognition();
-            liveRecognition.continuous = true;
+            // On mobile devices, continuous=false prevents Android's speech recognizer duplicate accumulation bug
+            liveRecognition.continuous = !isMobileDevice;
             liveRecognition.interimResults = true;
             liveRecognition.lang = 'en-IN'; // Indian English / Hinglish (Latin letters only)
 
@@ -223,11 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             liveRecognition.onresult = (event) => {
-                let transcript = '';
-                for (let i = 0; i < event.results.length; i++) {
-                    transcript += event.results[i][0].transcript;
-                }
-                // LIVE REAL-TIME WORD BY WORD TYPING IN INPUT TEXT AREA WITH PHONETIC AUTO-CORRECTOR!
+                const transcript = extractTranscriptFromResults(event.results);
                 if (transcript) {
                     chatInput.value = cleanAndCorrectSpeechText(transcript);
                     adjustInputHeight();
@@ -236,9 +279,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             liveRecognition.onerror = (event) => {
                 console.warn('SpeechRecognition live error:', event.error);
-                if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                // On any fatal error (network, not-allowed, service-not-allowed, audio-capture):
+                if (event.error !== 'no-speech' && event.error !== 'aborted') {
                     stopLiveListening();
-                    // Fallback to MediaRecorder + Groq Whisper Audio Transcription
+                    // Disable liveRecognition for remainder of session and immediately switch to MediaRecorder
+                    liveRecognition = null;
                     startMediaRecorderFallback();
                 }
             };
@@ -256,22 +301,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
             function stopLiveListening() {
                 isLiveListening = false;
-                if (micBtn) micBtn.classList.remove('listening');
+                if (micBtn) {
+                    micBtn.classList.remove('listening');
+                    micBtn.title = "Voice Input (Speech-to-Text)";
+                }
                 if (chatInput) chatInput.placeholder = "Type or speak a message...";
             }
         } catch (e) {
             console.warn("Live SpeechRecognition setup error:", e);
+            liveRecognition = null;
         }
     }
 
-    // 2. Fallback: MediaRecorder Audio Capture + Groq Whisper Transcription into Text Area
+    // 2. High-Accuracy Audio Capture + Groq Whisper AI Transcription (for Desktop .exe & SpeechRecognition Fallback)
     async function startMediaRecorderFallback() {
         const isSecure = window.isSecureContext || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             if (!isSecure) {
                 alert(
-                    '🎙️ Microphone Access Blocked by Browser Security Policy:\n\n' +
+                    '🎙️ Microphone Access Blocked:\n\n' +
                     'You are accessing over plain HTTP (' + location.origin + '). Chrome/Edge disables speech API on HTTP.\n\n' +
                     'Fix: Open chrome://flags/#unsafely-treat-insecure-origin-as-secure, add "' + location.origin + '", set to Enabled, and Relaunch browser.'
                 );
@@ -284,8 +333,21 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             audioChunks = [];
-            
-            const options = MediaRecorder.isTypeSupported('audio/webm') ? { mimeType: 'audio/webm' } : {};
+
+            let mimeType = 'audio/webm';
+            if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+                mimeType = 'audio/webm;codecs=opus';
+            } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+                mimeType = 'audio/webm';
+            } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                mimeType = 'audio/mp4';
+            } else if (MediaRecorder.isTypeSupported('audio/ogg')) {
+                mimeType = 'audio/ogg';
+            } else {
+                mimeType = '';
+            }
+
+            const options = mimeType ? { mimeType } : {};
             mediaRecorder = new MediaRecorder(stream, options);
 
             mediaRecorder.ondataavailable = (event) => {
@@ -300,7 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
                 if (audioBlob.size < 100) return;
 
-                chatInput.placeholder = "Converting voice to text... ⏳";
+                chatInput.placeholder = "Converting voice to text with AI... ⏳";
                 chatInput.disabled = true;
 
                 try {
@@ -318,11 +380,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (data.success && data.transcription) {
                         // Populate converted words directly into text area with phonetic auto-correct!
-                        chatInput.value = cleanAndCorrectSpeechText(data.transcription);
+                        const cleaned = cleanAndCorrectSpeechText(data.transcription);
+                        chatInput.value = chatInput.value ? (chatInput.value.trim() + ' ' + cleaned) : cleaned;
                         adjustInputHeight();
                         chatInput.focus();
                     } else {
-                        alert('🎙️ ' + (data.error || 'Could not convert voice to text. Please try again.'));
+                        alert('🎙️ ' + (data.error || 'Could not convert voice to text. Please try speaking again.'));
                     }
                 } catch (err) {
                     chatInput.disabled = false;
@@ -333,13 +396,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             mediaRecorder.start(200);
             isRecording = true;
-            if (micBtn) micBtn.classList.add('listening');
+            if (micBtn) {
+                micBtn.classList.add('listening');
+                micBtn.title = "Recording... Click mic when done speaking 🎙️";
+            }
             chatInput.placeholder = "🔴 Recording voice... Click mic when done speaking 🎙️";
 
         } catch (err) {
             console.error('Mic access error:', err);
             stopRecordingUI();
-            alert('🎙️ Microphone Permission Required:\n\nPlease allow Microphone access in browser settings (click Lock/Tune 🔒 icon in address bar).');
+            alert('🎙️ Microphone Permission Required:\n\nPlease allow Microphone access in Windows/browser settings.');
         }
     }
 
@@ -359,7 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
         micBtn.addEventListener('click', (e) => {
             e.preventDefault();
 
-            // If currently listening in live or mediaRecorder mode -> Stop!
+            // If currently listening in live mode -> Stop!
             if (isLiveListening) {
                 if (liveRecognition) liveRecognition.stop();
                 isLiveListening = false;
@@ -367,19 +433,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 chatInput.placeholder = "Type or speak a message...";
                 return;
             }
+
+            // If currently recording via MediaRecorder -> Stop & Transcribe!
             if (isRecording) {
                 if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
                 isRecording = false;
                 return;
             }
 
-            // Start Live Real-Time Word-by-Word Typing as you speak!
-            if (liveRecognition) {
+            // Start Live or MediaRecorder recording
+            if (liveRecognition && !isDesktopApp) {
                 chatInput.value = '';
                 try {
                     liveRecognition.start();
                 } catch (err) {
                     console.warn("liveRecognition start error, switching fallback:", err);
+                    liveRecognition = null;
                     startMediaRecorderFallback();
                 }
             } else {

@@ -674,11 +674,13 @@ OPERATIONAL PROJECT & TASK RULES:
 // Groq Whisper Speech-to-Text Transcription Service (0.1s Ultra-fast Hindi/English AI Transcriber)
 async function transcribeAudioWithGroq(audioBuffer, filename = 'speech.webm') {
     const groqKey = process.env.GROQ_API_KEY || config.groqApiKey || '';
-    if (!groqKey) return null;
+    if (!groqKey) {
+        return await transcribeAudioWithGemini(audioBuffer);
+    }
 
     try {
         let teamContext = 'Bhavin, Jemini, Chintan, Chetan';
-        let projectContext = 'AdwaitShakti';
+        let projectContext = '';
         try {
             const teamRes = await executeTool('get_team_members', {}, { id: 1, role: 'admin' });
             if (teamRes && teamRes.members && Array.isArray(teamRes.members)) {
@@ -708,13 +710,40 @@ async function transcribeAudioWithGroq(audioBuffer, filename = 'speech.webm') {
         if (!res.ok) {
             const errText = await res.text();
             console.error('Groq Whisper API Error:', res.status, errText);
-            return null;
+            return await transcribeAudioWithGemini(audioBuffer);
         }
 
         const data = await res.json();
         return data.text ? data.text.trim() : null;
     } catch (err) {
         console.error('transcribeAudioWithGroq Error:', err);
+        return await transcribeAudioWithGemini(audioBuffer);
+    }
+}
+
+// Fallback: Gemini Audio Transcription
+async function transcribeAudioWithGemini(audioBuffer) {
+    const geminiKey = process.env.GEMINI_API_KEY || config.geminiApiKey || '';
+    if (!geminiKey) return null;
+    try {
+        const client = new GoogleGenAI({ apiKey: geminiKey });
+        const base64Audio = audioBuffer.toString('base64');
+        const response = await client.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: [
+                {
+                    inlineData: {
+                        mimeType: 'audio/webm',
+                        data: base64Audio
+                    }
+                },
+                'Transcribe the spoken audio verbatim in Latin/English letters (Hinglish/English). Output ONLY the exact transcribed text without quotes, notes, or explanations.'
+            ]
+        });
+        const text = response.text ? response.text.trim() : '';
+        return text || null;
+    } catch (e) {
+        console.error('Gemini Audio Transcription Error:', e);
         return null;
     }
 }
