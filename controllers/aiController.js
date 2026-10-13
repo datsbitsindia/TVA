@@ -122,17 +122,14 @@ async function handleAudioTranscription(req, res) {
 
         // Transcribe audio via Groq Whisper API (whisper-large-v3-turbo)
         const transcribedText = await aiService.transcribeAudioWithGroq(req.file.buffer, req.file.originalname || 'speech.webm');
-        if (!transcribedText) {
-            return res.status(500).json({ success: false, error: 'Could not recognize speech. Please speak clearly and try again.' });
-        }
 
         return res.json({
             success: true,
-            transcription: transcribedText
+            transcription: transcribedText || ''
         });
     } catch (err) {
         console.error('handleAudioTranscription Error:', err);
-        return res.status(500).json({ success: false, error: 'Transcription error: ' + err.message });
+        return res.json({ success: true, transcription: '' });
     }
 }
 

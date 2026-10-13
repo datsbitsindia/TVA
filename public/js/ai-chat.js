@@ -411,7 +411,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (event.data && event.data.size > 0) audioChunks.push(event.data);
             };
 
+            // Live Real-Time Streaming Transcription (Prints word-by-word as you speak in .exe!)
+            let isStreamingTranscribing = false;
+            let lastTranscribedBlobSize = 0;
+            const streamingInterval = setInterval(async () => {
+                if (!isRecording || isStreamingTranscribing) return;
+                if (!hasSpoken || audioChunks.length === 0) return;
+
+                const currentBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+                if (currentBlob.size < 500) return;
+                if (currentBlob.size === lastTranscribedBlobSize) return;
+
+                lastTranscribedBlobSize = currentBlob.size;
+                isStreamingTranscribing = true;
+
+                try {
+                    const formData = new FormData();
+                    const ext = (mediaRecorder.mimeType && mediaRecorder.mimeType.includes('mp4')) ? 'mp4' : 'webm';
+                    formData.append('audio', currentBlob, `voice.${ext}`);
+
+                    const response = await fetch('/api/chat/transcribe', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+                    if (data.success && data.transcription && isRecording) {
+                        const cleaned = cleanAndCorrectSpeechText(data.transcription);
+                        if (cleaned) {
+                            chatInput.value = speechBaseText ? (speechBaseText + ' ' + cleaned) : cleaned;
+                            adjustInputHeight();
+                        }
+                    }
+                } catch (e) {
+                    // Ignore partial streaming errors
+                } finally {
+                    isStreamingTranscribing = false;
+                }
+            }, 750);
+
             mediaRecorder.onstop = async () => {
+                clearInterval(streamingInterval);
                 stream.getTracks().forEach(track => track.stop());
                 if (vadAudioContext && vadAudioContext.state !== 'closed') {
                     try { vadAudioContext.close(); } catch (e) {}
@@ -423,9 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
                 if (audioBlob.size < 100) return;
 
-                chatInput.placeholder = "Converting voice to text with AI... ⏳";
-                chatInput.disabled = true;
-
+                // Final pass to capture full utterance
                 try {
                     const formData = new FormData();
                     const ext = (mediaRecorder.mimeType && mediaRecorder.mimeType.includes('mp4')) ? 'mp4' : 'webm';
@@ -437,22 +475,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
 
                     const data = await response.json();
-                    chatInput.disabled = false;
-                    chatInput.placeholder = "Type or speak a message...";
-
                     if (data.success && data.transcription) {
                         const cleaned = cleanAndCorrectSpeechText(data.transcription);
-                        chatInput.value = speechBaseText ? (speechBaseText + ' ' + cleaned) : cleaned;
-                        speechBaseText = chatInput.value.trim();
-                        adjustInputHeight();
-                        chatInput.focus();
-                    } else if (hasSpoken) {
-                        alert('🎙️ ' + (data.error || 'Could not convert voice to text. Please try speaking again.'));
+                        if (cleaned) {
+                            chatInput.value = speechBaseText ? (speechBaseText + ' ' + cleaned) : cleaned;
+                            speechBaseText = chatInput.value.trim();
+                            adjustInputHeight();
+                        }
                     }
                 } catch (err) {
-                    chatInput.disabled = false;
+                    console.error("Final voice transcription error:", err);
+                } finally {
                     chatInput.placeholder = "Type or speak a message...";
-                    console.error("Voice transcription error:", err);
+                    chatInput.focus();
                 }
             };
 
