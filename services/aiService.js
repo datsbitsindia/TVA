@@ -679,25 +679,27 @@ async function transcribeAudioWithGroq(audioBuffer, filename = 'speech.webm') {
     }
 
     try {
-        let teamContext = 'Bhavin, Jemini, Chintan, Chetan';
+        let teamContext = 'Bhavin, Jemini, Chintan, Chetan, Mohit, Priya, Harinarayan';
         let projectContext = '';
         try {
-            const teamRes = await executeTool('get_team_members', {}, { id: 1, role: 'admin' });
-            if (teamRes && teamRes.members && Array.isArray(teamRes.members)) {
-                teamContext = teamRes.members.map(m => m.name).join(', ');
+            const { db } = require('../database/init');
+            const users = await db.prepare('SELECT name FROM users WHERE active = 1 LIMIT 30').all();
+            if (users && users.length) {
+                teamContext = users.map(u => u.name).filter(Boolean).join(', ');
             }
-            const projRes = await executeTool('get_active_projects', { user_id: 1, user_role: 'admin' }, { id: 1, role: 'admin' });
-            if (projRes && projRes.projects && Array.isArray(projRes.projects)) {
-                projectContext = projRes.projects.map(p => p.name).join(', ');
+            const projs = await db.prepare('SELECT name FROM projects WHERE status NOT IN ("Completed", "Cancelled") LIMIT 30').all();
+            if (projs && projs.length) {
+                projectContext = projs.map(p => p.name).filter(Boolean).join(', ');
             }
         } catch (e) {}
 
         const formData = new FormData();
-        const blob = new Blob([audioBuffer], { type: 'audio/webm' });
-        formData.append('file', blob, filename);
+        const ext = filename.endsWith('.mp4') ? 'mp4' : filename.endsWith('.ogg') ? 'ogg' : 'webm';
+        const mimeType = ext === 'mp4' ? 'audio/mp4' : ext === 'ogg' ? 'audio/ogg' : 'audio/webm';
+        const blob = new Blob([audioBuffer], { type: mimeType });
+        formData.append('file', blob, filename || `voice.${ext}`);
         formData.append('model', 'whisper-large-v3-turbo');
-        formData.append('language', 'en');
-        formData.append('prompt', `TVA Task Manager dictionary. Team members: ${teamContext}. Projects: ${projectContext}. Always transcribe team names as ${teamContext} and project names as ${projectContext}.`);
+        formData.append('prompt', `TVA Task Manager voice transcription. Names: ${teamContext}. Projects: ${projectContext}. Transcribe words accurately in English or Hinglish.`);
 
         const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
             method: 'POST',
@@ -710,7 +712,7 @@ async function transcribeAudioWithGroq(audioBuffer, filename = 'speech.webm') {
         if (!res.ok) {
             const errText = await res.text();
             console.error('Groq Whisper API Error:', res.status, errText);
-            return await transcribeAudioWithGemini(audioBuffer);
+            return await transcribeAudioWithGemini(audioBuffer, mimeType);
         }
 
         const data = await res.json();
@@ -722,30 +724,33 @@ async function transcribeAudioWithGroq(audioBuffer, filename = 'speech.webm') {
 }
 
 // Fallback: Gemini Audio Transcription
-async function transcribeAudioWithGemini(audioBuffer) {
+async function transcribeAudioWithGemini(audioBuffer, mimeType = 'audio/webm') {
     const geminiKey = process.env.GEMINI_API_KEY || config.geminiApiKey || '';
     if (!geminiKey) return null;
-    try {
-        const client = new GoogleGenAI({ apiKey: geminiKey });
-        const base64Audio = audioBuffer.toString('base64');
-        const response = await client.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: [
-                {
-                    inlineData: {
-                        mimeType: 'audio/webm',
-                        data: base64Audio
-                    }
-                },
-                'Transcribe the spoken audio verbatim in Latin/English letters (Hinglish/English). Output ONLY the exact transcribed text without quotes, notes, or explanations.'
-            ]
-        });
-        const text = response.text ? response.text.trim() : '';
-        return text || null;
-    } catch (e) {
-        console.error('Gemini Audio Transcription Error:', e);
-        return null;
+    const client = new GoogleGenAI({ apiKey: geminiKey });
+    const base64Audio = audioBuffer.toString('base64');
+    const models = ['gemini-3.8-flash', 'gemini-3.5-flash', 'gemini-2.5-flash'];
+    for (const gModel of models) {
+        try {
+            const response = await client.models.generateContent({
+                model: gModel,
+                contents: [
+                    {
+                        inlineData: {
+                            mimeType: mimeType || 'audio/webm',
+                            data: base64Audio
+                        }
+                    },
+                    'Transcribe the spoken audio verbatim in Latin/English letters (Hinglish/English). Output ONLY the exact transcribed text without quotes, notes, or explanations.'
+                ]
+            });
+            const text = response.text ? response.text.trim() : '';
+            if (text) return text;
+        } catch (e) {
+            console.error(`Gemini Audio Transcription (${gModel}) Error:`, e.message);
+        }
     }
+    return null;
 }
 
 async function generateProjectTasksFromAI({ name, description, start_date, end_date, users = [] }) {

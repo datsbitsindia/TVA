@@ -169,10 +169,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let mediaRecorder = null;
     let audioChunks = [];
     let isRecording = false;
+    let speechBaseText = '';
+    let vadAudioContext = null;
+    let vadAnimId = null;
 
-    // Detect if running inside Windows Desktop app wrapper (.exe / WebView2 / Electron)
+    // Detect if running inside Windows Desktop app wrapper (.exe / WebView2 / Electron / Standalone)
     const isDesktopApp = !!(
         (window.chrome && window.chrome.webview) ||
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone ||
         navigator.userAgent.includes('Electron') ||
         navigator.userAgent.includes('TVA-TASK') ||
         window.location.protocol === 'file:'
@@ -233,32 +238,34 @@ document.addEventListener('DOMContentLoaded', () => {
             const combinedLower = combined.toLowerCase();
 
             // On Android / mobile, SpeechRecognition returns cumulative phrases in new indices
-            // e.g. results[0] = "create", results[1] = "create a", results[2] = "create a new task"
             if (combined && (currentLower.startsWith(combinedLower) || currentLower.includes(combinedLower))) {
-                combined = current; // Replace with the longer updated phrase!
+                combined = current; // Keep latest longer revised phrase
             } else if (combined && combinedLower.startsWith(currentLower)) {
-                // Current is an older substring, keep combined
                 continue;
             } else {
-                // Distinct phrase or clause, append cleanly
                 combined = combined ? (combined + ' ' + current) : current;
             }
         }
 
-        // Final safety cleanup: remove any adjacent duplicated words
         return combined.replace(/\b(\w+)(?:\s+\1\b)+/gi, '$1').trim();
     }
 
+    // Keep speechBaseText synced if user manually edits text
+    if (chatInput) {
+        chatInput.addEventListener('input', () => {
+            if (!isLiveListening && !isRecording) {
+                speechBaseText = chatInput.value ? chatInput.value.trim() : '';
+            }
+        });
+    }
+
     // 1. Primary: Real-Time Live Word-by-Word Typing in Textarea (For standard browsers)
-    // Note: WebView2 desktop app wrappers do not support webkitSpeechRecognition (Google cloud auth blocked),
-    // so in desktop app we route directly to MediaRecorder + Groq Whisper
     if (SpeechRecognition && !isDesktopApp) {
         try {
             liveRecognition = new SpeechRecognition();
-            // On mobile devices, continuous=false prevents Android's speech recognizer duplicate accumulation bug
             liveRecognition.continuous = !isMobileDevice;
             liveRecognition.interimResults = true;
-            liveRecognition.lang = 'en-IN'; // Indian English / Hinglish (Latin letters only)
+            liveRecognition.lang = 'en-IN'; // Indian English / Hinglish
 
             liveRecognition.onstart = () => {
                 isLiveListening = true;
@@ -272,25 +279,26 @@ document.addEventListener('DOMContentLoaded', () => {
             liveRecognition.onresult = (event) => {
                 const transcript = extractTranscriptFromResults(event.results);
                 if (transcript) {
-                    chatInput.value = cleanAndCorrectSpeechText(transcript);
+                    const cleaned = cleanAndCorrectSpeechText(transcript);
+                    // Prepend existing text so previously spoken / typed text is never erased!
+                    chatInput.value = speechBaseText ? (speechBaseText + ' ' + cleaned) : cleaned;
                     adjustInputHeight();
                 }
             };
 
             liveRecognition.onerror = (event) => {
                 console.warn('SpeechRecognition live error:', event.error);
-                // On any fatal error (network, not-allowed, service-not-allowed, audio-capture):
                 if (event.error !== 'no-speech' && event.error !== 'aborted') {
                     stopLiveListening();
-                    // Disable liveRecognition for remainder of session and immediately switch to MediaRecorder
                     liveRecognition = null;
                     startMediaRecorderFallback();
                 }
             };
 
             liveRecognition.onend = () => {
-                // Keep listening continuously if user hasn't manually clicked mic to stop
                 if (isLiveListening) {
+                    // Mobile auto-restart after pause: preserve all accumulated text into speechBaseText
+                    speechBaseText = chatInput.value ? chatInput.value.trim() : '';
                     try {
                         liveRecognition.start();
                         return;
@@ -301,6 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             function stopLiveListening() {
                 isLiveListening = false;
+                speechBaseText = chatInput.value ? chatInput.value.trim() : '';
                 if (micBtn) {
                     micBtn.classList.remove('listening');
                     micBtn.title = "Voice Input (Speech-to-Text)";
@@ -333,6 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             audioChunks = [];
+            speechBaseText = chatInput.value ? chatInput.value.trim() : '';
 
             let mimeType = 'audio/webm';
             if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
@@ -350,12 +360,63 @@ document.addEventListener('DOMContentLoaded', () => {
             const options = mimeType ? { mimeType } : {};
             mediaRecorder = new MediaRecorder(stream, options);
 
+            // Voice Activity Detection (Auto-detect speech & auto-stop on silence)
+            let silenceStart = null;
+            let hasSpoken = false;
+            let recordingStartTime = Date.now();
+
+            try {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    vadAudioContext = new AudioContextClass();
+                    const source = vadAudioContext.createMediaStreamSource(stream);
+                    const analyser = vadAudioContext.createAnalyser();
+                    analyser.fftSize = 256;
+                    source.connect(analyser);
+
+                    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                    function checkAudioLevel() {
+                        if (!isRecording) return;
+                        analyser.getByteFrequencyData(dataArray);
+                        let sum = 0;
+                        for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+                        const avg = sum / dataArray.length;
+
+                        if (avg > 12) {
+                            hasSpoken = true;
+                            silenceStart = null;
+                        } else {
+                            if (hasSpoken) {
+                                if (!silenceStart) silenceStart = Date.now();
+                                else if (Date.now() - silenceStart > 1800) {
+                                    // 1.8 seconds silence after speaking -> auto-stop and transcribe!
+                                    stopAndTranscribe();
+                                    return;
+                                }
+                            } else if (Date.now() - recordingStartTime > 10000) {
+                                // 10 seconds without any speech -> auto-cancel
+                                stopAndTranscribe();
+                                return;
+                            }
+                        }
+                        vadAnimId = requestAnimationFrame(checkAudioLevel);
+                    }
+                    vadAnimId = requestAnimationFrame(checkAudioLevel);
+                }
+            } catch (e) {
+                console.warn('VAD AudioContext init warning:', e);
+            }
+
             mediaRecorder.ondataavailable = (event) => {
                 if (event.data && event.data.size > 0) audioChunks.push(event.data);
             };
 
             mediaRecorder.onstop = async () => {
                 stream.getTracks().forEach(track => track.stop());
+                if (vadAudioContext && vadAudioContext.state !== 'closed') {
+                    try { vadAudioContext.close(); } catch (e) {}
+                }
+                if (vadAnimId) cancelAnimationFrame(vadAnimId);
                 stopRecordingUI();
 
                 if (audioChunks.length === 0) return;
@@ -367,7 +428,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 try {
                     const formData = new FormData();
-                    formData.append('audio', audioBlob, 'voice.webm');
+                    const ext = (mediaRecorder.mimeType && mediaRecorder.mimeType.includes('mp4')) ? 'mp4' : 'webm';
+                    formData.append('audio', audioBlob, `voice.${ext}`);
 
                     const response = await fetch('/api/chat/transcribe', {
                         method: 'POST',
@@ -379,12 +441,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     chatInput.placeholder = "Type or speak a message...";
 
                     if (data.success && data.transcription) {
-                        // Populate converted words directly into text area with phonetic auto-correct!
                         const cleaned = cleanAndCorrectSpeechText(data.transcription);
-                        chatInput.value = chatInput.value ? (chatInput.value.trim() + ' ' + cleaned) : cleaned;
+                        chatInput.value = speechBaseText ? (speechBaseText + ' ' + cleaned) : cleaned;
+                        speechBaseText = chatInput.value.trim();
                         adjustInputHeight();
                         chatInput.focus();
-                    } else {
+                    } else if (hasSpoken) {
                         alert('🎙️ ' + (data.error || 'Could not convert voice to text. Please try speaking again.'));
                     }
                 } catch (err) {
@@ -398,9 +460,9 @@ document.addEventListener('DOMContentLoaded', () => {
             isRecording = true;
             if (micBtn) {
                 micBtn.classList.add('listening');
-                micBtn.title = "Recording... Click mic when done speaking 🎙️";
+                micBtn.title = "Listening... Click mic or pause to convert 🎙️";
             }
-            chatInput.placeholder = "🔴 Recording voice... Click mic when done speaking 🎙️";
+            chatInput.placeholder = "🔴 Listening... Speak now (auto-stops when you pause) 🎙️";
 
         } catch (err) {
             console.error('Mic access error:', err);
@@ -409,8 +471,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function stopAndTranscribe() {
+        if (isRecording && mediaRecorder && mediaRecorder.state !== 'inactive') {
+            try { mediaRecorder.stop(); } catch (e) {}
+        }
+        isRecording = false;
+    }
+
     function stopRecordingUI() {
         isRecording = false;
+        if (vadAnimId) cancelAnimationFrame(vadAnimId);
         if (micBtn) {
             micBtn.classList.remove('listening');
             micBtn.title = "Voice Input (Speech-to-Text)";
@@ -429,6 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isLiveListening) {
                 if (liveRecognition) liveRecognition.stop();
                 isLiveListening = false;
+                speechBaseText = chatInput.value ? chatInput.value.trim() : '';
                 if (micBtn) micBtn.classList.remove('listening');
                 chatInput.placeholder = "Type or speak a message...";
                 return;
@@ -436,14 +507,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // If currently recording via MediaRecorder -> Stop & Transcribe!
             if (isRecording) {
-                if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
-                isRecording = false;
+                stopAndTranscribe();
                 return;
             }
 
+            // Always lock in current text before starting recording
+            speechBaseText = chatInput.value ? chatInput.value.trim() : '';
+
             // Start Live or MediaRecorder recording
             if (liveRecognition && !isDesktopApp) {
-                chatInput.value = '';
                 try {
                     liveRecognition.start();
                 } catch (err) {
@@ -452,7 +524,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     startMediaRecorderFallback();
                 }
             } else {
-                chatInput.value = '';
                 startMediaRecorderFallback();
             }
         });
