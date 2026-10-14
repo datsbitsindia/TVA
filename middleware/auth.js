@@ -8,9 +8,11 @@ function requireOnlyManager(req,res,next){ if(req.session.user?.role!=='manager'
 async function exposeUser(req, res, next) {
     if (req.session.user) {
         try {
-            const dbUser = await db.prepare("SELECT organization_id FROM users WHERE id=?").get(req.session.user.id);
-            if (dbUser && dbUser.organization_id) {
-                req.session.user.organization_id = dbUser.organization_id;
+            if (!req.session.impersonatingOrg) {
+                const dbUser = await db.prepare("SELECT organization_id FROM users WHERE id=?").get(req.session.user.id);
+                if (dbUser && dbUser.organization_id) {
+                    req.session.user.organization_id = dbUser.organization_id;
+                }
             }
         } catch (err) {
             console.error('Error fetching user org in exposeUser:', err.message);
@@ -27,10 +29,14 @@ async function exposeUser(req, res, next) {
         }
 
         res.locals.currentOrg = currentOrg || { id: orgId, name: 'Unomok' };
+        res.locals.isSuperAdmin = !!(req.session.user && (req.session.user.id === 1 || req.session.user.email === 'admin@gmail.com' || req.session.is_superadmin));
+        res.locals.impersonatingOrg = req.session.impersonatingOrg || null;
     } else {
         res.locals.currentOrgId = 1;
         res.locals.userOrgs = [];
         res.locals.currentOrg = { id: 1, name: 'Unomok' };
+        res.locals.isSuperAdmin = false;
+        res.locals.impersonatingOrg = null;
     }
     res.locals.user = req.session.user || null;
     next();

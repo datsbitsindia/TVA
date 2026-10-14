@@ -48,10 +48,30 @@
         <a href="/profile" class="<%= page === 'profile' ? 'active' : '' %>">
             <i class="fa-solid fa-user"></i>Profile
         </a>
+
+        <% if (typeof isSuperAdmin !== 'undefined' && isSuperAdmin) { %>
+            <div style="margin: 12px 14px 6px 14px; border-top: 1px solid rgba(15,23,42,0.08); padding-top: 10px;">
+                <a href="/superadmin" target="_blank" style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: #2563eb; background: #eff6ff; padding: 8px 12px; border-radius: 8px; text-decoration: none; font-size: 13px; border: 1px solid #bfdbfe;">
+                    <i class="fa-solid fa-shield-halved"></i> Platform Admin
+                </a>
+            </div>
+        <% } %>
     </nav>
 </aside>
 
 <section class="main">
+    <% if (typeof impersonatingOrg !== 'undefined' && impersonatingOrg) { %>
+        <div style="background: linear-gradient(90deg, #1e3a8a, #2563eb); color: white; padding: 10px 20px; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-user-ninja" style="color: #93c5fd;"></i>
+                <span>Super Admin Mode: Viewing Organization <strong><%= impersonatingOrg.name %></strong></span>
+            </div>
+            <a href="/superadmin" style="background: rgba(255,255,255,0.22); color: white; padding: 4px 12px; border-radius: 6px; text-decoration: none; font-size: 12.5px; font-weight: 700; transition: background 0.15s;">
+                <i class="fa-solid fa-arrow-left"></i> Exit to Super Admin Panel
+            </a>
+        </div>
+    <% } %>
+
     <header class="topbar">
         <button class="menu-btn">
             <i class="fa-solid fa-bars"></i>
