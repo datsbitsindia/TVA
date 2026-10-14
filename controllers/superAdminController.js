@@ -10,9 +10,9 @@ function requireSuperAdmin(req, res, next) {
         return res.redirect('/superadmin/login');
     }
     const u = req.session.user;
-    const isSuperAdmin = (u.id === 1 || u.email === 'admin@gmail.com' || u.organization_id === 1 && u.role === 'admin' || req.session.is_superadmin);
+    const isSuperAdmin = (u.id === 1 || u.email === 'admin@gmail.com' || (u.organization_id === 1 && u.role === 'admin') || req.session.is_superadmin);
     if (!isSuperAdmin) {
-        return res.status(403).render('error', { message: 'Access Denied: Super Admin privileges required.' });
+        return res.redirect('/superadmin/login');
     }
     next();
 }
@@ -21,8 +21,12 @@ function requireSuperAdmin(req, res, next) {
  * GET /superadmin/login
  */
 function loginPage(req, res) {
-    if (req.session && req.session.user && (req.session.user.id === 1 || req.session.user.email === 'admin@gmail.com' || req.session.is_superadmin)) {
-        return res.redirect('/superadmin');
+    if (req.session && req.session.user) {
+        const u = req.session.user;
+        const isSuperAdmin = (u.id === 1 || u.email === 'admin@gmail.com' || (u.organization_id === 1 && u.role === 'admin') || req.session.is_superadmin);
+        if (isSuperAdmin) {
+            return res.redirect('/superadmin');
+        }
     }
     res.render('superadmin/login', { error: null });
 }
