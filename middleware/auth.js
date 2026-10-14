@@ -29,7 +29,7 @@ async function exposeUser(req, res, next) {
         }
 
         res.locals.currentOrg = currentOrg || { id: orgId, name: 'Unomok' };
-        res.locals.isSuperAdmin = !!(req.session.user && (req.session.user.id === 1 || req.session.user.email === 'admin@gmail.com' || req.session.is_superadmin));
+        res.locals.isSuperAdmin = !!(req.session.user && (req.session.user.id === 1 || req.session.user.email === 'admin@gmail.com' || req.session.user.email === 'bhavin@gmail.com' || req.session.is_superadmin));
         res.locals.impersonatingOrg = req.session.impersonatingOrg || null;
     } else {
         res.locals.currentOrgId = 1;

@@ -10,7 +10,7 @@ function requireSuperAdmin(req, res, next) {
         return res.redirect('/superadmin/login');
     }
     const u = req.session.user;
-    const isSuperAdmin = (u.id === 1 || u.email === 'admin@gmail.com' || (u.organization_id === 1 && u.role === 'admin') || req.session.is_superadmin);
+    const isSuperAdmin = (u.id === 1 || u.email === 'admin@gmail.com' || u.email === 'bhavin@gmail.com' || (u.organization_id === 1 && u.role === 'admin') || req.session.is_superadmin);
     if (!isSuperAdmin) {
         return res.redirect('/superadmin/login');
     }
@@ -23,7 +23,7 @@ function requireSuperAdmin(req, res, next) {
 function loginPage(req, res) {
     if (req.session && req.session.user) {
         const u = req.session.user;
-        const isSuperAdmin = (u.id === 1 || u.email === 'admin@gmail.com' || (u.organization_id === 1 && u.role === 'admin') || req.session.is_superadmin);
+        const isSuperAdmin = (u.id === 1 || u.email === 'admin@gmail.com' || u.email === 'bhavin@gmail.com' || (u.organization_id === 1 && u.role === 'admin') || req.session.is_superadmin);
         if (isSuperAdmin) {
             return res.redirect('/superadmin');
         }
