@@ -117,15 +117,6 @@ async function start() {
         next();
     });
 
-    // Subdomain routing for admin.tvatask.com & admin.*
-    webApp.use((req, res, next) => {
-        const host = req.headers.host || '';
-        if (host.startsWith('admin.') && (req.path === '/' || req.path === '/login')) {
-            return res.redirect('/superadmin');
-        }
-        next();
-    });
-
     // Central Platform Super Admin Panel
     webApp.use('/superadmin', require('./routes/superAdminRoutes'));
 
