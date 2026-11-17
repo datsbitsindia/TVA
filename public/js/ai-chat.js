@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!toggleBtn || !drawer) return;
 
-    const defaultGreeting = `👋 Namaste! Main aapka AI Task Assistant hoon. Main aapke tasks search, create, ya summarize kar sakta hoon. Bolie kya madad karun?`;
+    const defaultGreeting = `👋 Hello! I am your AI Task Assistant. I can search, create, update, or summarize your tasks. How can I help you today?`;
 
     // --- Text to Speech (TTS) ---
     function speakText(rawText) {

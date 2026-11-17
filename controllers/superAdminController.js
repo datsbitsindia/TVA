@@ -3,30 +3,23 @@ const { db, getPool, sqlName } = require('../database/init');
 
 /**
  * Middleware: Verify Super Admin access
- * Super admin is either user.id === 1, email === 'admin@gmail.com', or session.is_superadmin === true
+ * Strictly requires entering password on /superadmin/login (superAdminUnlocked in session)
  */
 function requireSuperAdmin(req, res, next) {
-    if (!req.session) {
+    if (!req.session || !req.session.superAdminUnlocked) {
+        if (req.originalUrl && req.originalUrl.includes('/api/')) {
+            return res.status(401).json({ success: false, message: 'Super admin session expired. Please re-login at /superadmin/login' });
+        }
         return res.redirect('/superadmin/login');
     }
-    // If already unlocked in this session
-    if (req.session.superAdminUnlocked) {
-        return next();
-    }
-    // Or if logged in as System Admin / Bhavin Admin in Org 1
-    const u = req.session.user;
-    if (u && (u.id === 1 || u.email === 'admin@gmail.com' || u.email === 'bhavin@gmail.com' || (u.organization_id === 1 && u.role === 'admin') || req.session.is_superadmin)) {
-        req.session.superAdminUnlocked = true;
-        return next();
-    }
-    return res.redirect('/superadmin/login');
+    return next();
 }
 
 /**
  * GET /superadmin/login
  */
 function loginPage(req, res) {
-    if (req.session && (req.session.superAdminUnlocked || (req.session.user && (req.session.user.id === 1 || req.session.user.email === 'admin@gmail.com' || req.session.user.email === 'bhavin@gmail.com')))) {
+    if (req.session && req.session.superAdminUnlocked) {
         return res.redirect('/superadmin');
     }
     res.render('superadmin/login', { error: null });
@@ -153,6 +146,11 @@ async function dashboard(req, res) {
                 o.id,
                 o.name,
                 COALESCE(o.active, 1) AS active,
+                COALESCE(o.plan, 'free') AS plan,
+                COALESCE(o.max_users, 10) AS max_users,
+                COALESCE(o.ai_enabled, 0) AS ai_enabled,
+                COALESCE(o.reports_enabled, 0) AS reports_enabled,
+                o.plan_expires_at,
                 o.created_at,
                 (SELECT COUNT(*) FROM users u WHERE u.organization_id = o.id OR u.id IN (SELECT user_id FROM user_organizations WHERE organization_id = o.id)) AS user_count,
                 (SELECT COUNT(*) FROM projects p WHERE p.organization_id = o.id AND p.name != 'Self Task') AS project_count,
@@ -480,6 +478,39 @@ async function switchOrg(req, res) {
     }
 }
 
+/**
+ * POST /superadmin/api/organizations/:id/plan
+ * Update Organization Subscription Plan & Limits
+ */
+async function updateOrgPlan(req, res) {
+    try {
+        const orgId = Number(req.params.id);
+        const { plan, max_users, ai_enabled, reports_enabled, plan_expires_at } = req.body;
+        if (!orgId) return res.status(400).json({ success: false, message: 'Invalid organization ID.' });
+
+        const validPlan = ['free', 'pro', 'paid', 'enterprise'].includes(plan) ? plan : 'free';
+        const defaultUsers = validPlan === 'free' ? 10 : (validPlan === 'paid' || validPlan === 'pro' ? 25 : 100);
+        const maxUsersNum = Math.max(1, parseInt(max_users, 10) || defaultUsers);
+        const aiEnabledVal = (ai_enabled === true || ai_enabled === 1 || ai_enabled === '1' || ai_enabled === 'true') ? 1 : 0;
+        const reportsEnabledVal = (reports_enabled === true || reports_enabled === 1 || reports_enabled === '1' || reports_enabled === 'true') ? 1 : 0;
+        const expiresAt = plan_expires_at && plan_expires_at.trim() ? plan_expires_at.trim() : null;
+
+        await db.prepare(`
+            UPDATE organizations 
+            SET plan = ?, max_users = ?, ai_enabled = ?, reports_enabled = ?, plan_expires_at = ?
+            WHERE id = ?
+        `).run(validPlan, maxUsersNum, aiEnabledVal, reportsEnabledVal, expiresAt, orgId);
+
+        return res.json({
+            success: true,
+            message: `Plan updated to ${validPlan.toUpperCase()} (Max: ${maxUsersNum} users, AI: ${aiEnabledVal ? 'ON' : 'OFF'}, Reports: ${reportsEnabledVal ? 'ON' : 'OFF'}).`
+        });
+    } catch (err) {
+        console.error('Update Org Plan Error:', err);
+        return res.status(500).json({ success: false, message: err.message });
+    }
+}
+
 module.exports = {
     requireSuperAdmin,
     loginPage,
@@ -488,6 +519,7 @@ module.exports = {
     dashboard,
     createOrganization,
     updateOrganization,
+    updateOrgPlan,
     getOrgUsers,
     addOrgUser,
     resetUserPassword,

@@ -91,6 +91,15 @@ CREATE TABLE IF NOT EXISTS ${prefix}project_assignees (id INT AUTO_INCREMENT PRI
         await pool.query(`ALTER TABLE ${prefix}projects ADD COLUMN ai_tasks_generated BOOLEAN DEFAULT FALSE`);
     } catch(e) {}
 
+    // --- Subscription & Plan columns for organizations ---
+    try { await pool.query(`ALTER TABLE ${prefix}organizations ADD COLUMN active BOOLEAN DEFAULT TRUE`); } catch(e) {}
+    try { await pool.query(`ALTER TABLE ${prefix}organizations ADD COLUMN plan VARCHAR(30) DEFAULT 'free'`); } catch(e) {}
+    try { await pool.query(`ALTER TABLE ${prefix}organizations ADD COLUMN max_users INT DEFAULT 10`); } catch(e) {}
+    try { await pool.query(`ALTER TABLE ${prefix}organizations ADD COLUMN ai_enabled BOOLEAN DEFAULT FALSE`); } catch(e) {}
+    try { await pool.query(`ALTER TABLE ${prefix}organizations ADD COLUMN reports_enabled BOOLEAN DEFAULT FALSE`); } catch(e) {}
+    try { await pool.query(`ALTER TABLE ${prefix}organizations ADD COLUMN plan_expires_at DATE NULL`); } catch(e) {}
+    try { await pool.query(`UPDATE ${prefix}organizations SET plan = 'enterprise', max_users = 100, ai_enabled = TRUE, reports_enabled = TRUE WHERE id = 1 AND (plan IS NULL OR plan = 'free')`); } catch(e) {}
+
     // --- Projects audit trigger ---
     try {
         await pool.query(`DROP TRIGGER IF EXISTS ${prefix}projects_audit_update`);

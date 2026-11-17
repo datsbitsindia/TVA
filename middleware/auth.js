@@ -23,18 +23,26 @@ async function exposeUser(req, res, next) {
         
         let currentOrg = null;
         try {
-            currentOrg = await db.prepare("SELECT id, name FROM organizations WHERE id=?").get(orgId);
+            currentOrg = await db.prepare("SELECT id, name, COALESCE(plan, 'free') AS plan, COALESCE(max_users, 10) AS max_users, COALESCE(ai_enabled, 0) AS ai_enabled, COALESCE(reports_enabled, 0) AS reports_enabled, plan_expires_at FROM organizations WHERE id=?").get(orgId);
         } catch (err) {
             console.error('Error fetching org in exposeUser:', err.message);
         }
 
-        res.locals.currentOrg = currentOrg || { id: orgId, name: 'Unomok' };
+        res.locals.currentOrg = currentOrg || { id: orgId, name: 'Unomok', plan: 'free', max_users: 10, ai_enabled: 0, reports_enabled: 0 };
+        res.locals.aiEnabled = !!(res.locals.currentOrg && res.locals.currentOrg.ai_enabled);
+        res.locals.reportsEnabled = !!(res.locals.currentOrg && res.locals.currentOrg.reports_enabled);
+        res.locals.orgPlan = res.locals.currentOrg.plan || 'free';
+        res.locals.maxUsers = res.locals.currentOrg.max_users || 10;
         res.locals.isSuperAdmin = !!(req.session.user && (req.session.user.id === 1 || req.session.user.email === 'admin@gmail.com' || req.session.user.email === 'bhavin@gmail.com' || req.session.is_superadmin));
         res.locals.impersonatingOrg = req.session.impersonatingOrg || null;
     } else {
         res.locals.currentOrgId = 1;
         res.locals.userOrgs = [];
-        res.locals.currentOrg = { id: 1, name: 'Unomok' };
+        res.locals.currentOrg = { id: 1, name: 'Unomok', plan: 'enterprise', max_users: 100, ai_enabled: 1, reports_enabled: 1 };
+        res.locals.aiEnabled = true;
+        res.locals.reportsEnabled = true;
+        res.locals.orgPlan = 'enterprise';
+        res.locals.maxUsers = 100;
         res.locals.isSuperAdmin = false;
         res.locals.impersonatingOrg = null;
     }

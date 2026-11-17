@@ -3,6 +3,23 @@ const { db } = require('../database/init');
 
 exports.exportExcel = async (req, res, next) => {
     try {
+        let isReportsAllowed = (res.locals && typeof res.locals.reportsEnabled !== 'undefined') ? res.locals.reportsEnabled : null;
+        if (isReportsAllowed === null) {
+            const orgRow = await db.prepare('SELECT reports_enabled FROM organizations WHERE id=?').get(req.session?.user?.organization_id || 1);
+            isReportsAllowed = !!(orgRow && orgRow.reports_enabled);
+        }
+
+        if (!isReportsAllowed) {
+            return res.status(403).send(`
+                <div style="font-family:system-ui, -apple-system, sans-serif; text-align:center; padding:60px 20px; max-width:500px; margin:40px auto; background:#fff; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+                    <div style="font-size:48px; margin-bottom:16px;">📊</div>
+                    <h2 style="color:#0f172a; margin-bottom:8px;">Excel Export Locked</h2>
+                    <p style="font-size:15px; color:#64748b; line-height:1.5;">Comprehensive Excel Report downloads are available on Paid (Pro) and Enterprise plans.</p>
+                    <a href="/reports" style="display:inline-block; margin-top:20px; padding:10px 24px; background:#4f46e5; color:#fff; text-decoration:none; border-radius:8px; font-weight:600; font-size:14px;">Return to Reports</a>
+                </div>
+            `);
+        }
+
         const u = req.session.user;
         const orgId = u.organization_id || 1;
         const selectedProject = req.query.project_id ? Number(req.query.project_id) : null;
@@ -373,6 +390,23 @@ exports.exportExcel = async (req, res, next) => {
 
 exports.exportCustomExcel = async (req, res, next) => {
     try {
+        let isReportsAllowed = (res.locals && typeof res.locals.reportsEnabled !== 'undefined') ? res.locals.reportsEnabled : null;
+        if (isReportsAllowed === null) {
+            const orgRow = await db.prepare('SELECT reports_enabled FROM organizations WHERE id=?').get(req.session?.user?.organization_id || 1);
+            isReportsAllowed = !!(orgRow && orgRow.reports_enabled);
+        }
+
+        if (!isReportsAllowed) {
+            return res.status(403).send(`
+                <div style="font-family:system-ui, -apple-system, sans-serif; text-align:center; padding:60px 20px; max-width:500px; margin:40px auto; background:#fff; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+                    <div style="font-size:48px; margin-bottom:16px;">📊</div>
+                    <h2 style="color:#0f172a; margin-bottom:8px;">Excel Export Locked</h2>
+                    <p style="font-size:15px; color:#64748b; line-height:1.5;">Comprehensive Excel Report downloads are available on Paid (Pro) and Enterprise plans.</p>
+                    <a href="/reports" style="display:inline-block; margin-top:20px; padding:10px 24px; background:#4f46e5; color:#fff; text-decoration:none; border-radius:8px; font-weight:600; font-size:14px;">Return to Reports</a>
+                </div>
+            `);
+        }
+
         const u = req.session.user;
         const orgId = u.organization_id || 1;
 

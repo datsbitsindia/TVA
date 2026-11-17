@@ -19,9 +19,15 @@
             </a>
         <% } %>
     </form>
+    <% if (locals.reportsEnabled) { %>
     <a href="/reports/export<%= selectedProject ? '?project_id=' + selectedProject : '' %>" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; background: #15803d; border-color: #166534; color: #ffffff; padding: 8px 16px; font-weight: 700; border-radius: 8px; text-decoration: none; font-size: 13px; white-space: nowrap; box-shadow: 0 2px 4px rgba(21,128,61,0.25);">
         <i class="fa-solid fa-file-excel" style="font-size: 16px;"></i> Export Excel Report
     </a>
+    <% } else { %>
+    <button type="button" onclick="alert('Excel Report Export is available on Paid (Pro) and Enterprise plans. Please upgrade your organization plan to download Excel reports.')" class="btn secondary" style="display: inline-flex; align-items: center; gap: 8px; background: #f3f4f6; color: #6b7280; padding: 8px 16px; font-weight: 700; border-radius: 8px; border: 1px dashed #d1d5db; font-size: 13px; cursor: pointer;" title="Paid feature">
+        <i class="fa-solid fa-lock" style="font-size: 14px; color: #9ca3af;"></i> Export Excel (Paid Plan)
+    </button>
+    <% } %>
 </div>
 
 <% const total=byStatus.reduce((s,x)=>s+Number(x.value),0), status=(n)=>Number((byStatus.find(x=>String(x.label).toLowerCase()===n)||{}).value||0), completed=status('completed'), rate=total?Math.round(completed/total*100):0, activeEmployees=byEmployee.filter(x=>Number(x.value)>0).length, busiest=byEmployee[0]; %>

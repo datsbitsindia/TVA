@@ -214,8 +214,8 @@ CORE DOMAIN SCOPE & STRICT TASK/PROJECT BOUNDARY:
   "I'm sorry, but I can only help with task and project-related requests such as creating, updating, or viewing tasks and projects. Let me know if you need assistance with any of your work!"
 
 CRITICAL LANGUAGE & SCRIPT RULE:
-- ALWAYS write all responses using English / Latin letters ONLY (e.g. "Abhi aapke To Do tab mein koi pending task nahi hai").
-- NEVER use Devanagari script or Hindi characters (like "अभी आपके लिए...").
+- ALWAYS write all responses in clear, professional English.
+- Do NOT use Hindi or Hinglish.
 
 OPERATIONAL PROJECT & TASK RULES:
 1. PROJECT CREATION PERMISSION RULE (STRICT ADMIN ACCESS):
@@ -240,7 +240,7 @@ OPERATIONAL PROJECT & TASK RULES:
    - NEVER invent, guess, or label a word (such as "videos", "photo", "demo", "meeting", "test", "DBMS", "adversity") as a project name unless it is explicitly in [${projectContextStr}]!
    - ONLY pass project_name to create_new_task IF the user explicitly specified a valid project name from [${projectContextStr}].
    - If the user specifies a non-existing project (e.g. "videos", "DBMS"), respond directly and politely:
-     "Aisa koi active project exist nahi karta hai. Currently active projects ye hain: [${projectContextStr}]. Kripya inme se kisi active project par task add karein!"
+     "No active project with that name exists. Currently active projects are: [${projectContextStr}]. Please assign the task to one of these active projects."
    - When asking clarifying questions for missing task details, NEVER invent a project name like "videos". Ask: "Which project would you like to assign this task to? Active projects: [${projectContextStr}]."
    - "TVA" IS THE APPLICATION SYSTEM NAME (Task & Velocity Administration), NOT A PROJECT! NEVER assume "TVA" is a project name.
    - In your final message, ONLY report the exact project name returned by create_new_task tool! NEVER display a fake project name.
@@ -378,8 +378,8 @@ CORE DOMAIN SCOPE & STRICT TASK/PROJECT BOUNDARY:
 - STRICTLY REJECT ALL GENERAL KNOWLEDGE QUESTIONS (e.g. politics, prime ministers, sports, weather, trivia, recipes, general chat).
 
 CRITICAL LANGUAGE & SCRIPT RULE:
-- ALWAYS write all responses using English / Latin letters ONLY (e.g. "Abhi aapke To Do tab mein koi pending task nahi hai").
-- NEVER use Devanagari script or Hindi characters.
+- ALWAYS write all responses in clear, professional English.
+- Do NOT use Hindi or Hinglish.
 
 OPERATIONAL PROJECT & TASK RULES:
 1. PROJECT CREATION PERMISSION RULE (STRICT ADMIN ACCESS):
@@ -402,7 +402,7 @@ OPERATIONAL PROJECT & TASK RULES:
    - NEVER invent, guess, or label a word (such as "videos", "photo", "demo", "meeting", "test", "DBMS", "adversity") as a project name unless it is explicitly in [${projectContextStr}]!
    - ONLY pass project_name to create_new_task IF the user explicitly specified a valid project name from [${projectContextStr}].
    - If the user specifies a non-existing project (e.g. "videos", "DBMS"), respond directly and politely:
-     "Aisa koi active project exist nahi karta hai. Currently active projects ye hain: [${projectContextStr}]. Kripya inme se kisi active project par task add karein!"
+     "No active project with that name exists. Currently active projects are: [${projectContextStr}]. Please assign the task to one of these active projects."
    - When asking clarifying questions for missing task details, NEVER invent a project name like "videos". Ask: "Which project would you like to assign this task to? Active projects: [${projectContextStr}]."
    - "TVA" IS THE APPLICATION SYSTEM NAME (Task & Velocity Administration), NOT A PROJECT! NEVER assume "TVA" is a project name.
    - In your final message, ONLY report the exact project name returned by create_new_task tool! NEVER display a fake project name.`
@@ -521,7 +521,7 @@ async function processUserMessage(user, message, existingHistory = []) {
 
     if (!currentKey && !groqKey && !openrouterKey) {
         return {
-            reply: `⚠️ API Key configured nahi hai! Please .env file mein GEMINI_API_KEY, GROQ_API_KEY or OPENROUTER_API_KEY add karein.`
+            reply: `⚠️ AI API Key is not configured! Please add GEMINI_API_KEY, GROQ_API_KEY or OPENROUTER_API_KEY to your environment (.env) file.`
         };
     }
 
@@ -582,8 +582,8 @@ CORE DOMAIN SCOPE & STRICT TASK/PROJECT BOUNDARY:
   "I'm sorry, but I can only help with task and project-related requests such as creating, updating, or viewing tasks and projects. Let me know if you need assistance with any of your work!"
 
 CRITICAL LANGUAGE & SCRIPT RULE:
-- ALWAYS write all responses using English / Latin letters ONLY (e.g. "Abhi aapke To Do tab mein koi pending task nahi hai").
-- NEVER use Devanagari script or Hindi characters (like "अभी आपके लिए...").
+- ALWAYS write all responses in clear, professional English.
+- Do NOT use Hindi or Hinglish.
 
 OPERATIONAL PROJECT & TASK RULES:
 1. PROJECT CREATION PERMISSION RULE (STRICT ADMIN ACCESS):
@@ -608,7 +608,7 @@ OPERATIONAL PROJECT & TASK RULES:
    - NEVER invent, guess, or hallucinate project names!
    - ONLY pass project_name to create_new_task IF the user explicitly specified a project name in their prompt.
    - If the user specifies a non-existing or completed project, respond directly and politely:
-     "Aisa koi active project exist nahi karta hai. Currently active projects ye hain: [list active projects]. Kripya inme se kisi active project ka naam batayein!"
+     "No active project with that name exists. Currently active projects are: [list active projects]. Please specify one of these active projects."
    - If a Manager/Creator asks to mark a task as Completed that is assigned to someone else (e.g. Jemini), pass user_id and user_role to update_task_status tool. If tool returns Permission Denied, explain politely that only the assigned employee (or Admin) can mark their assigned tasks as Completed.
 5. DATE RANGE FILTERING RULE:
    - Current Date context: 2026-08-20.

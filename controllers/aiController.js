@@ -9,6 +9,21 @@ async function handleChatMessage(req, res) {
             });
         }
 
+        const { db } = require('../database/init');
+        let isAiAllowed = (res.locals && typeof res.locals.aiEnabled !== 'undefined') ? res.locals.aiEnabled : null;
+        if (isAiAllowed === null) {
+            const orgId = req.session.user.organization_id || 1;
+            const org = await db.prepare("SELECT ai_enabled FROM organizations WHERE id=?").get(orgId);
+            isAiAllowed = !!(org && org.ai_enabled);
+        }
+
+        if (!isAiAllowed) {
+            return res.status(403).json({
+                success: false,
+                error: 'AI Task Assistant is available on Paid and Enterprise plans. Please upgrade your organization plan to use AI features.'
+            });
+        }
+
         const { message } = req.body;
         if (!message || typeof message !== 'string' || !message.trim()) {
             return res.status(400).json({
@@ -81,6 +96,9 @@ async function handleVoiceMessage(req, res) {
         if (!req.session || !req.session.user) {
             return res.status(401).json({ success: false, error: 'Unauthorized.' });
         }
+        if (res.locals && res.locals.aiEnabled === false) {
+            return res.status(403).json({ success: false, error: 'Voice Assistant is available on Paid and Enterprise plans.' });
+        }
         if (!req.file || !req.file.buffer) {
             return res.status(400).json({ success: false, error: 'Audio recording file is required.' });
         }
@@ -115,6 +133,9 @@ async function handleAudioTranscription(req, res) {
     try {
         if (!req.session || !req.session.user) {
             return res.status(401).json({ success: false, error: 'Unauthorized.' });
+        }
+        if (res.locals && res.locals.aiEnabled === false) {
+            return res.status(403).json({ success: false, error: 'Speech transcription is available on Paid and Enterprise plans.' });
         }
         if (!req.file || !req.file.buffer) {
             return res.status(400).json({ success: false, error: 'Audio recording file is required.' });

@@ -675,6 +675,7 @@
                             <th>Primary Administrator</th>
                             <th>Members</th>
                             <th>Projects & Tasks</th>
+                            <th>Plan & Limits</th>
                             <th>Status</th>
                             <th style="text-align: right;">Actions</th>
                         </tr>
@@ -710,6 +711,22 @@
                                         </div>
                                     </td>
                                     <td>
+                                        <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                                            <% if (org.plan === 'enterprise') { %>
+                                                <span class="badge" style="background:#dbeafe; color:#1d4ed8; border:1px solid #93c5fd; font-weight:700;"><i class="fa-solid fa-crown" style="font-size:10px;"></i> Enterprise (<%= org.max_users %>)</span>
+                                            <% } else if (org.plan === 'paid' || org.plan === 'pro') { %>
+                                                <span class="badge" style="background:#fef3c7; color:#b45309; border:1px solid #fde68a; font-weight:700;"><i class="fa-solid fa-gem" style="font-size:10px;"></i> Paid Pro (<%= org.max_users %>)</span>
+                                            <% } else { %>
+                                                <span class="badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; font-weight:700;"><i class="fa-solid fa-leaf" style="font-size:10px;"></i> Free (<%= org.max_users %>)</span>
+                                            <% } %>
+                                            <div style="display:flex; gap:6px; font-size:11px; margin-top:2px;">
+                                                <span style="color:<%= org.ai_enabled ? '#16a34a' : '#94a3b8' %>; font-weight:600;"><i class="fa-solid fa-robot"></i> <%= org.ai_enabled ? 'AI ON' : 'AI OFF' %></span>
+                                                <span style="color:#cbd5e1;">•</span>
+                                                <span style="color:<%= org.reports_enabled ? '#16a34a' : '#94a3b8' %>; font-weight:600;"><i class="fa-solid fa-file-excel"></i> <%= org.reports_enabled ? 'Reports ON' : 'Reports OFF' %></span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
                                         <% if (org.active) { %>
                                             <span class="badge badge-success"><i class="fa-solid fa-circle" style="font-size: 6px;"></i> Active</span>
                                         <% } else { %>
@@ -719,8 +736,11 @@
                                     <td style="text-align: right;">
                                         <div class="sa-actions-cell" style="justify-content: flex-end;">
                                             <a href="/superadmin/switch-org/<%= org.id %>" class="sa-act-btn enter" title="Impersonate and enter this organization workspace">
-                                                <i class="fa-solid fa-arrow-right-to-bracket"></i> Enter Org
+                                                <i class="fa-solid fa-arrow-right-to-bracket"></i> Enter
                                             </a>
+                                            <button type="button" class="sa-act-btn" data-id="<%= org.id %>" data-name="<%= org.name %>" data-plan="<%= org.plan %>" data-max-users="<%= org.max_users %>" data-ai="<%= org.ai_enabled ? 1 : 0 %>" data-reports="<%= org.reports_enabled ? 1 : 0 %>" data-expires="<%= org.plan_expires_at || '' %>" onclick="openPlanModal(this.dataset.id, this.dataset.name, this.dataset.plan, parseInt(this.dataset.maxUsers), parseInt(this.dataset.ai), parseInt(this.dataset.reports), this.dataset.expires)" title="Edit Subscription Plan & Limits">
+                                                <i class="fa-solid fa-crown" style="color: #f59e0b;"></i> Plan
+                                            </button>
                                             <button type="button" class="sa-act-btn" onclick="openOrgUsersModal(<%= org.id %>, '<%= org.name %>')" title="Manage users">
                                                 <i class="fa-solid fa-user-gear"></i> Users
                                             </button>
@@ -823,6 +843,62 @@
                 <div class="sa-modal-footer">
                     <button type="button" class="btn btn-outline" onclick="closeModal('modal-edit-org')">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Edit Subscription Plan & Limits -->
+    <div id="modal-edit-plan" class="sa-modal-overlay">
+        <div class="sa-modal">
+            <div class="sa-modal-header">
+                <h3><i class="fa-solid fa-crown" style="color: #f59e0b;"></i> Edit Plan &amp; Limits</h3>
+                <button type="button" class="sa-modal-close" onclick="closeModal('modal-edit-plan')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="edit-plan-form" onsubmit="handleEditPlan(event)">
+                <input type="hidden" id="plan-org-id">
+                <div class="sa-modal-body">
+                    <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 16px;">
+                        <span style="font-size: 12px; color: var(--text-muted);">Organization:</span>
+                        <div id="plan-org-name" style="font-size: 15px; font-weight: 700; color: #0f172a;"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Subscription Tier *</label>
+                        <select id="plan-select" class="form-control" onchange="onPlanTierChange()">
+                            <option value="free">Free Plan (10 Users, No AI, No Reports)</option>
+                            <option value="pro">Paid / Pro Plan (25 Users, AI Enabled, Reports Enabled)</option>
+                            <option value="enterprise">Enterprise Plan (Custom Users, Dedicated Setup, Full Access)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Maximum Allowed Users *</label>
+                        <input type="number" id="plan-max-users" class="form-control" min="1" max="10000" required>
+                        <small style="color: var(--text-muted); font-size: 12px;">Total user accounts allowed (Admins + Managers + Employees).</small>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 14px; padding: 14px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13.5px; font-weight: 600; color: #1e293b;">
+                            <input type="checkbox" id="plan-ai-enabled" style="width: 18px; height: 18px; accent-color: #2563eb;">
+                            <span><i class="fa-solid fa-wand-magic-sparkles" style="color: #6366f1;"></i> Enable AI Assistant &amp; Voice Typing</span>
+                        </label>
+
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13.5px; font-weight: 600; color: #1e293b;">
+                            <input type="checkbox" id="plan-reports-enabled" style="width: 18px; height: 18px; accent-color: #2563eb;">
+                            <span><i class="fa-solid fa-file-excel" style="color: #16a34a;"></i> Enable Excel Reports Export</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 14px;">
+                        <label class="form-label">Plan Expiry Date (Optional)</label>
+                        <input type="date" id="plan-expires-at" class="form-control">
+                    </div>
+                </div>
+
+                <div class="sa-modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-edit-plan')">Cancel</button>
+                    <button type="submit" id="btn-save-plan" class="btn btn-primary"><i class="fa-solid fa-check"></i> Save Plan Settings</button>
                 </div>
             </form>
         </div>
@@ -934,6 +1010,93 @@
             document.getElementById('edit-org-name').value = name;
             document.getElementById('edit-org-active').value = String(active);
             document.getElementById('modal-edit-org').classList.add('active');
+        }
+
+        function openPlanModal(id, name, plan, maxUsers, aiEnabled, reportsEnabled, expiresAt) {
+            document.getElementById('plan-org-id').value = id;
+            document.getElementById('plan-org-name').innerText = name + ` (#${id})`;
+            const normPlan = (plan === 'paid' || plan === 'pro') ? 'pro' : (plan === 'enterprise' ? 'enterprise' : 'free');
+            document.getElementById('plan-select').value = normPlan;
+            document.getElementById('plan-max-users').value = maxUsers || (normPlan === 'free' ? 10 : (normPlan === 'pro' ? 25 : 100));
+            document.getElementById('plan-ai-enabled').checked = !!aiEnabled;
+            document.getElementById('plan-reports-enabled').checked = !!reportsEnabled;
+            if (expiresAt && expiresAt.length >= 10) {
+                document.getElementById('plan-expires-at').value = expiresAt.slice(0, 10);
+            } else {
+                document.getElementById('plan-expires-at').value = '';
+            }
+            document.getElementById('modal-edit-plan').classList.add('active');
+        }
+
+        function onPlanTierChange() {
+            const tier = document.getElementById('plan-select').value;
+            if (tier === 'free') {
+                document.getElementById('plan-max-users').value = 10;
+                document.getElementById('plan-ai-enabled').checked = false;
+                document.getElementById('plan-reports-enabled').checked = false;
+            } else if (tier === 'pro') {
+                document.getElementById('plan-max-users').value = 25;
+                document.getElementById('plan-ai-enabled').checked = true;
+                document.getElementById('plan-reports-enabled').checked = true;
+            } else if (tier === 'enterprise') {
+                document.getElementById('plan-max-users').value = 100;
+                document.getElementById('plan-ai-enabled').checked = true;
+                document.getElementById('plan-reports-enabled').checked = true;
+            }
+        }
+
+        async function handleEditPlan(e) {
+            e.preventDefault();
+            const orgId = document.getElementById('plan-org-id').value;
+            const btn = document.getElementById('btn-save-plan');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving...`;
+
+            const payload = {
+                plan: document.getElementById('plan-select').value,
+                max_users: parseInt(document.getElementById('plan-max-users').value, 10) || 10,
+                ai_enabled: document.getElementById('plan-ai-enabled').checked ? 1 : 0,
+                reports_enabled: document.getElementById('plan-reports-enabled').checked ? 1 : 0,
+                plan_expires_at: document.getElementById('plan-expires-at').value || null
+            };
+
+            try {
+                const res = await fetch(`/superadmin/api/organizations/${orgId}/plan`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-check"></i> Save Plan Settings`;
+
+                const contentType = res.headers.get('content-type') || '';
+                if (!contentType.includes('application/json')) {
+                    if (res.status === 404) {
+                        alert('Error (404): Node server par naye routes load nahi hue hain. Kripya apna node server restart (Ctrl+C phir npm start) karein.');
+                        return;
+                    }
+                    if (res.status === 401) {
+                        alert('Session expired. Please login again at /superadmin/login');
+                        window.location.href = '/superadmin/login';
+                        return;
+                    }
+                    alert(`Server returned HTTP ${res.status}. Please restart Node server.`);
+                    return;
+                }
+
+                const data = await res.json();
+                if (data.success) {
+                    closeModal('modal-edit-plan');
+                    showToast(data.message);
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    alert('Error: ' + (data.message || 'Operation failed'));
+                }
+            } catch (err) {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-check"></i> Save Plan Settings`;
+                alert('Request failed: ' + err.message);
+            }
         }
 
         async function handleCreateOrg(e) {

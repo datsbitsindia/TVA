@@ -14,6 +14,7 @@ router.get('/', ctrl.requireSuperAdmin, ctrl.dashboard);
 // Organization APIs
 router.post('/api/organizations', ctrl.requireSuperAdmin, ctrl.createOrganization);
 router.post('/api/organizations/:id/update', ctrl.requireSuperAdmin, ctrl.updateOrganization);
+router.post('/api/organizations/:id/plan', ctrl.requireSuperAdmin, ctrl.updateOrgPlan);
 router.get('/api/organizations/:id/users', ctrl.requireSuperAdmin, ctrl.getOrgUsers);
 router.post('/api/organizations/:id/users', ctrl.requireSuperAdmin, ctrl.addOrgUser);
 

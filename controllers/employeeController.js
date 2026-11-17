@@ -104,11 +104,32 @@ exports.save = async (req, res) => {
             }
             await activity.log(req.session.user.id, `${targetRole === 'manager' ? 'Manager' : 'Employee'} Updated`, cleanName);
         } else {
-            if (!password) {
-                if (req.xhr || req.headers.accept?.includes('json') || req.headers['x-requested-with'] === 'XMLHttpRequest') {
-                    return res.json({ success: false, message: 'Password is required for new team member.' });
+            // Check organization plan user limit
+            const orgLimitRow = await db.prepare("SELECT COALESCE(max_users, 10) AS max_users, COALESCE(plan, 'free') AS plan FROM organizations WHERE id=?").get(orgId);
+            const maxUsers = orgLimitRow ? orgLimitRow.max_users : 10;
+            const currentUsersRow = await db.prepare(`
+                SELECT COUNT(DISTINCT u.id) AS count 
+                FROM users u 
+                WHERE u.organization_id = ? 
+                   OR u.id IN (SELECT user_id FROM user_organizations WHERE organization_id = ?)
+            `).get(orgId, orgId);
+            const currentUsers = currentUsersRow ? currentUsersRow.count : 0;
+
+            const isJsonReq = !!(req.xhr || (req.headers && req.headers.accept && req.headers.accept.includes('json')) || (req.get && req.get('accept') && req.get('accept').includes('json')) || (req.headers && req.headers['x-requested-with'] === 'XMLHttpRequest'));
+
+            if (currentUsers >= maxUsers) {
+                const limitMsg = `User limit reached for your plan (${currentUsers}/${maxUsers} members). Upgrade to Paid (25 users) or Enterprise plan to add more members.`;
+                if (isJsonReq) {
+                    return res.status(403).json({ success: false, message: limitMsg, error: limitMsg });
                 }
-                return res.render('error', { message: 'Password is required for new team member.' });
+                return res.status(403).render('error', { message: limitMsg });
+            }
+
+            if (!password) {
+                if (isJsonReq) {
+                    return res.status(400).json({ success: false, message: 'Password is required for new team member.' });
+                }
+                return res.status(400).render('error', { message: 'Password is required for new team member.' });
             }
             const result = await db.prepare("INSERT INTO users(role,name,email,password,phone,department,designation,department_id,designation_id,created_by,organization_id) VALUES(?,?,?,?,?,?,?,?,?,?,?)")
                 .run(targetRole, cleanName, cleanEmail, await bcrypt.hash(password, 12), phone, deptName, desigName, deptId, desigId, req.session.user.id, orgId);
@@ -119,17 +140,19 @@ exports.save = async (req, res) => {
             await activity.log(req.session.user.id, `${targetRole === 'manager' ? 'Manager' : 'Employee'} Created`, cleanName);
         }
         
-        if (req.xhr || req.headers.accept?.includes('json') || req.headers['x-requested-with'] === 'XMLHttpRequest') {
+        const isJsonReq = !!(req.xhr || (req.headers && req.headers.accept && req.headers.accept.includes('json')) || (req.get && req.get('accept') && req.get('accept').includes('json')) || (req.headers && req.headers['x-requested-with'] === 'XMLHttpRequest'));
+        if (isJsonReq) {
             return res.json({ success: true });
         }
         res.redirect('/employees');
     } catch (e) {
         console.error('Error saving team member:', e);
         const msg = 'Could not save team member. Please make sure name and email are unique.';
-        if (req.xhr || req.headers.accept?.includes('json') || req.headers['x-requested-with'] === 'XMLHttpRequest') {
-            return res.json({ success: false, message: msg });
+        const isJsonReq = !!(req.xhr || (req.headers && req.headers.accept && req.headers.accept.includes('json')) || (req.get && req.get('accept') && req.get('accept').includes('json')) || (req.headers && req.headers['x-requested-with'] === 'XMLHttpRequest'));
+        if (isJsonReq) {
+            return res.status(500).json({ success: false, message: msg, error: msg });
         }
-        res.render('error', { message: msg });
+        res.status(500).render('error', { message: msg });
     }
 };
 

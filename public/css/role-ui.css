@@ -2198,6 +2198,7 @@ html.gray-glass-theme body .status-update-form {
     -webkit-backdrop-filter: none !important;
     padding-left: 0 !important;
     padding-right: 0 !important;
+    border-radius: 0 !important;
 }
 
 html.dark-theme .task-desc-box small,
