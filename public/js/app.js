@@ -1531,4 +1531,281 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.key === 'Escape') closeAllPopups();
         });
     }
+
+    // Workspace / Organization Switcher Dropdown & API
+    const orgBtn = document.getElementById('tvaOrgDropdownBtn');
+    const orgPopup = document.getElementById('tvaOrgPopup');
+    if (orgBtn && orgPopup) {
+        orgBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = orgPopup.style.display === 'flex';
+            orgPopup.style.display = isOpen ? 'none' : 'flex';
+        });
+        document.addEventListener('click', (e) => {
+            if (!orgPopup.contains(e.target) && e.target !== orgBtn) {
+                orgPopup.style.display = 'none';
+            }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') orgPopup.style.display = 'none';
+        });
+    }
+
+    window.switchActiveOrg = async function(orgId) {
+        try {
+            const res = await fetch('/api/organization/switch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ organization_id: orgId })
+            });
+            const data = await res.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.message || 'Could not switch organization');
+            }
+        } catch (err) {
+            alert('Switch failed: ' + err.message);
+        }
+    };
+
+    // ==========================================
+    // Chrome / Google Style Multi-Account Profiles
+    // ==========================================
+    const TVA_PROFILES_KEY = 'tva_saved_profiles';
+
+    function getSavedProfiles() {
+        try {
+            const raw = localStorage.getItem(TVA_PROFILES_KEY);
+            return raw ? JSON.parse(raw) : [];
+        } catch(e) {
+            return [];
+        }
+    }
+
+    function saveProfiles(list) {
+        try {
+            localStorage.setItem(TVA_PROFILES_KEY, JSON.stringify(list));
+        } catch(e) {}
+    }
+
+    function syncCurrentAccount() {
+        const cur = window.TVA_CURRENT_ACCOUNT;
+        if (!cur || !cur.id) return;
+        const list = getSavedProfiles();
+        const existingIdx = list.findIndex(p => Number(p.id) === Number(cur.id));
+        const profileObj = {
+            id: cur.id,
+            name: cur.name,
+            email: cur.email,
+            role: cur.role,
+            orgId: cur.organization_id,
+            orgName: cur.organization_name || 'Workspace',
+            photo: cur.photo || '',
+            token: cur.token || ''
+        };
+        if (existingIdx >= 0) {
+            list[existingIdx] = profileObj;
+        } else {
+            list.unshift(profileObj);
+        }
+        saveProfiles(list);
+    }
+
+    function renderOtherProfiles() {
+        const container = document.getElementById('tvaOtherProfilesContainer');
+        const countSpan = document.getElementById('tvaProfilesCount');
+        if (!container) return;
+
+        const currentId = window.TVA_CURRENT_ACCOUNT ? Number(window.TVA_CURRENT_ACCOUNT.id) : null;
+        const allProfiles = getSavedProfiles();
+        const otherProfiles = allProfiles.filter(p => Number(p.id) !== currentId);
+
+        if (countSpan) {
+            countSpan.textContent = otherProfiles.length > 0 ? `(${otherProfiles.length})` : '';
+        }
+
+        if (otherProfiles.length === 0) {
+            container.innerHTML = `
+                <div style="padding: 12px 10px; text-align: center; color: #71717a; font-size: 11.5px; line-height: 1.4;">
+                    No other accounts added yet.<br>Click below to sign into another account.
+                </div>
+            `;
+            return;
+        }
+
+        const colors = [
+            'linear-gradient(135deg, #10b981, #059669)',
+            'linear-gradient(135deg, #f59e0b, #d97706)',
+            'linear-gradient(135deg, #8b5cf6, #6d28d9)',
+            'linear-gradient(135deg, #ec4899, #be185d)',
+            'linear-gradient(135deg, #06b6d4, #0e7490)'
+        ];
+
+        container.innerHTML = otherProfiles.map((p, idx) => {
+            const initial = (p.name || 'U').charAt(0).toUpperCase();
+            const grad = colors[idx % colors.length];
+            return `
+                <div class="tva-profile-item" onclick="switchTvaProfile(${p.id}, '${p.token}')" style="display:flex; align-items:center; justify-content:space-between; padding:7px 8px; border-radius:10px; cursor:pointer; transition:background 0.15s; background:transparent;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'">
+                    <div style="display:flex; align-items:center; gap:9px; overflow:hidden; flex:1;">
+                        <div style="width:30px; height:30px; border-radius:50%; background:${grad}; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; flex-shrink:0;">
+                            ${initial}
+                        </div>
+                        <div style="overflow:hidden; text-align:left;">
+                            <div style="font-size:12.5px; font-weight:600; color:#f4f4f5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</div>
+                            <div style="font-size:10.5px; color:#a1a1aa; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                ${p.email} • <span style="color:#60a5fa;">${p.orgName || 'Org'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="removeTvaProfile(${p.id}, event)" title="Remove account from list" style="border:none; background:transparent; color:#71717a; padding:4px 6px; cursor:pointer; font-size:12px; border-radius:4px; margin-left:4px;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#71717a'">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Initialize Profile Switcher
+    syncCurrentAccount();
+    renderOtherProfiles();
+
+    const profileBtn = document.getElementById('tvaProfileBtn');
+    const profileMenu = document.getElementById('tvaProfileMenu');
+    if (profileBtn && profileMenu) {
+        profileBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = profileMenu.style.display === 'block';
+            profileMenu.style.display = isOpen ? 'none' : 'block';
+            if (!isOpen) renderOtherProfiles();
+        });
+        document.addEventListener('click', (e) => {
+            if (!profileMenu.contains(e.target) && e.target !== profileBtn) {
+                profileMenu.style.display = 'none';
+            }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') profileMenu.style.display = 'none';
+        });
+    }
+
+    window.openAddAccountModal = function() {
+        if (profileMenu) profileMenu.style.display = 'none';
+        const modal = document.getElementById('tvaAddAccountModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.getElementById('tvaAddEmail').value = '';
+            document.getElementById('tvaAddPassword').value = '';
+            const alertBox = document.getElementById('tvaAddAccountAlert');
+            if (alertBox) alertBox.style.display = 'none';
+            setTimeout(() => document.getElementById('tvaAddEmail').focus(), 50);
+        }
+    };
+
+    window.closeAddAccountModal = function() {
+        const modal = document.getElementById('tvaAddAccountModal');
+        if (modal) modal.style.display = 'none';
+    };
+
+    window.submitAddAccount = async function(e) {
+        e.preventDefault();
+        const email = document.getElementById('tvaAddEmail').value.trim();
+        const password = document.getElementById('tvaAddPassword').value;
+        const btn = document.getElementById('btnSubmitAddAccount');
+        const alertBox = document.getElementById('tvaAddAccountAlert');
+
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Signing in...`;
+        if (alertBox) alertBox.style.display = 'none';
+
+        try {
+            const res = await fetch('/api/account/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (data.success && data.account) {
+                // Save new profile to localStorage
+                const list = getSavedProfiles();
+                const existingIdx = list.findIndex(p => Number(p.id) === Number(data.account.id));
+                const newProfile = {
+                    id: data.account.id,
+                    name: data.account.name,
+                    email: data.account.email,
+                    role: data.account.role,
+                    orgId: data.account.organization_id,
+                    orgName: data.account.organization_name,
+                    photo: data.account.photo || '',
+                    token: data.account.token
+                };
+                if (existingIdx >= 0) {
+                    list[existingIdx] = newProfile;
+                } else {
+                    list.unshift(newProfile);
+                }
+                saveProfiles(list);
+
+                window.location.href = data.redirectUrl || '/dashboard';
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In &amp; Add`;
+                if (alertBox) {
+                    alertBox.style.display = 'block';
+                    alertBox.style.background = '#fef2f2';
+                    alertBox.style.color = '#b91c1c';
+                    alertBox.style.border = '1px solid #fecaca';
+                    alertBox.textContent = data.message || 'Invalid email or password';
+                }
+            }
+        } catch (err) {
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In &amp; Add`;
+            if (alertBox) {
+                alertBox.style.display = 'block';
+                alertBox.style.background = '#fef2f2';
+                alertBox.style.color = '#b91c1c';
+                alertBox.style.border = '1px solid #fecaca';
+                alertBox.textContent = 'Connection error: ' + err.message;
+            }
+        }
+    };
+
+    window.switchTvaProfile = async function(userId, token) {
+        try {
+            const res = await fetch('/api/account/switch-profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ userId, token })
+            });
+            const data = await res.json();
+            if (data.success) {
+                window.location.href = data.redirectUrl || '/dashboard';
+            } else {
+                alert(data.message || 'Could not switch profile');
+            }
+        } catch (err) {
+            alert('Switch profile error: ' + err.message);
+        }
+    };
+
+    window.removeTvaProfile = function(userId, e) {
+        if (e) e.stopPropagation();
+        if (!confirm('Remove this account profile from your saved list?')) return;
+        const list = getSavedProfiles().filter(p => Number(p.id) !== Number(userId));
+        saveProfiles(list);
+        renderOtherProfiles();
+    };
+
+    window.signOutAllProfiles = function() {
+        if (!confirm('Sign out of all saved accounts?')) return;
+        try {
+            localStorage.removeItem(TVA_PROFILES_KEY);
+        } catch(e) {}
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/logout';
+        document.body.appendChild(form);
+        form.submit();
+    };
 });

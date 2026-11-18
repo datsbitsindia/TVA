@@ -341,13 +341,14 @@ async function addOrgUser(req, res) {
         if (!password || password.length < 4) return res.status(400).json({ success: false, message: 'Password must be at least 4 characters.' });
 
         const cleanEmail = email.trim().toLowerCase();
-        const existing = await db.prepare('SELECT id FROM users WHERE LOWER(TRIM(email)) = ?').get(cleanEmail);
-        if (existing) {
-            return res.status(400).json({ success: false, message: `Email "${cleanEmail}" is already registered.` });
+        const existingInOrg = await db.prepare('SELECT id, name FROM users WHERE LOWER(TRIM(email)) = ? AND organization_id = ?').get(cleanEmail, orgId);
+        if (existingInOrg) {
+            return res.status(400).json({ success: false, message: `User "${cleanEmail}" is already in this organization.` });
         }
 
         const validRole = ['admin', 'manager', 'employee'].includes(role) ? role : 'employee';
         const passwordHash = await bcrypt.hash(password.trim(), 12);
+        const pool = getPool();
 
         const result = await db.prepare(`
             INSERT INTO users (role, name, email, password, phone, department, designation, organization_id, created_by, active)
@@ -364,7 +365,6 @@ async function addOrgUser(req, res) {
         );
 
         const userId = result.lastInsertRowid;
-        const pool = getPool();
         await pool.query(sqlName('INSERT IGNORE INTO user_organizations (user_id, organization_id, role) VALUES (?, ?, ?)'), [userId, orgId, validRole]);
 
         return res.json({

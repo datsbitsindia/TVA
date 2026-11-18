@@ -54,45 +54,40 @@ exports.save = async (req, res) => {
         const deptName = deptObj ? deptObj.name : department;
         const desigName = desigObj ? desigObj.name : designation;
 
-        // Check unique name across all users
+        // Check unique name within this organization
         const nameDuplicate = id
-            ? await db.prepare("SELECT id FROM users WHERE LOWER(TRIM(name)) = LOWER(?) AND id <> ?").get(cleanName.toLowerCase(), id)
-            : await db.prepare("SELECT id FROM users WHERE LOWER(TRIM(name)) = LOWER(?)").get(cleanName.toLowerCase());
+            ? await db.prepare("SELECT id FROM users WHERE LOWER(TRIM(name)) = LOWER(?) AND organization_id = ? AND id <> ?").get(cleanName.toLowerCase(), orgId, id)
+            : await db.prepare("SELECT id FROM users WHERE LOWER(TRIM(name)) = LOWER(?) AND organization_id = ?").get(cleanName.toLowerCase(), orgId);
 
         if (nameDuplicate) {
-            const msg = `A user with the name "${cleanName}" already exists. Name must be unique.`;
+            const msg = `A user with the name "${cleanName}" already exists in this organization.`;
             if (req.xhr || req.headers.accept?.includes('json') || req.headers['x-requested-with'] === 'XMLHttpRequest') {
                 return res.json({ success: false, message: msg });
             }
             return res.render('error', { message: msg });
         }
 
-        // Check unique email across all users
+        // Check if user with this email already exists in this organization
         const emailDuplicate = id
-            ? await db.prepare("SELECT id FROM users WHERE LOWER(TRIM(email)) = LOWER(?) AND id <> ?").get(cleanEmail, id)
-            : await db.prepare("SELECT id FROM users WHERE LOWER(TRIM(email)) = LOWER(?)").get(cleanEmail);
+            ? await db.prepare("SELECT id, name, email, role FROM users WHERE LOWER(TRIM(email)) = LOWER(?) AND organization_id = ? AND id <> ?").get(cleanEmail, orgId, id)
+            : await db.prepare("SELECT id, name, email, role FROM users WHERE LOWER(TRIM(email)) = LOWER(?) AND organization_id = ?").get(cleanEmail, orgId);
 
-        if (emailDuplicate) {
-            const msg = `A user with the email "${cleanEmail}" already exists. Email must be unique.`;
-            if (req.xhr || req.headers.accept?.includes('json') || req.headers['x-requested-with'] === 'XMLHttpRequest') {
-                return res.json({ success: false, message: msg });
-            }
-            return res.render('error', { message: msg });
-        }
+        const isJsonReq = !!(req.xhr || (req.headers && req.headers.accept && req.headers.accept.includes('json')) || (req.get && req.get('accept') && req.get('accept').includes('json')) || (req.headers && req.headers['x-requested-with'] === 'XMLHttpRequest'));
 
         if (id) {
+            if (emailDuplicate) {
+                const msg = `Another user with email "${cleanEmail}" already exists in this organization.`;
+                return isJsonReq ? res.json({ success: false, message: msg }) : res.render('error', { message: msg });
+            }
+
             const existing = await db.prepare("SELECT * FROM users WHERE id=?").get(id);
             if (!existing) {
-                if (req.xhr || req.headers.accept?.includes('json') || req.headers['x-requested-with'] === 'XMLHttpRequest') {
-                    return res.json({ success: false, message: 'User not found' });
-                }
-                return res.render('error', { message: 'User not found' });
+                const msg = 'User not found';
+                return isJsonReq ? res.json({ success: false, message: msg }) : res.render('error', { message: msg });
             }
             if (creatorRole !== 'admin' && existing.role !== 'employee') {
-                if (req.xhr || req.headers.accept?.includes('json') || req.headers['x-requested-with'] === 'XMLHttpRequest') {
-                    return res.json({ success: false, message: 'Access denied.' });
-                }
-                return res.render('error', { message: 'Access denied.' });
+                const msg = 'Access denied.';
+                return isJsonReq ? res.json({ success: false, message: msg }) : res.render('error', { message: msg });
             }
 
             if (password) {
@@ -115,8 +110,6 @@ exports.save = async (req, res) => {
             `).get(orgId, orgId);
             const currentUsers = currentUsersRow ? currentUsersRow.count : 0;
 
-            const isJsonReq = !!(req.xhr || (req.headers && req.headers.accept && req.headers.accept.includes('json')) || (req.get && req.get('accept') && req.get('accept').includes('json')) || (req.headers && req.headers['x-requested-with'] === 'XMLHttpRequest'));
-
             if (currentUsers >= maxUsers) {
                 const limitMsg = `User limit reached for your plan (${currentUsers}/${maxUsers} members). Upgrade to Paid (25 users) or Enterprise plan to add more members.`;
                 if (isJsonReq) {
@@ -125,6 +118,13 @@ exports.save = async (req, res) => {
                 return res.status(403).render('error', { message: limitMsg });
             }
 
+            // Check if user already exists in this organization
+            if (emailDuplicate) {
+                const msg = `User with email "${cleanEmail}" already exists in this organization.`;
+                return isJsonReq ? res.json({ success: false, message: msg }) : res.render('error', { message: msg });
+            }
+
+            // Create new team member in this organization with its own password
             if (!password) {
                 if (isJsonReq) {
                     return res.status(400).json({ success: false, message: 'Password is required for new team member.' });
@@ -135,12 +135,12 @@ exports.save = async (req, res) => {
                 .run(targetRole, cleanName, cleanEmail, await bcrypt.hash(password, 12), phone, deptName, desigName, deptId, desigId, req.session.user.id, orgId);
             const newUserId = result.lastInsertRowid;
             try {
-                await db.prepare("INSERT IGNORE INTO user_organizations (user_id, organization_id, role) VALUES (?, ?, ?)").run(newUserId, orgId, targetRole);
+                const pool = getPool();
+                await pool.query(sqlName('INSERT IGNORE INTO user_organizations (user_id, organization_id, role) VALUES (?, ?, ?)'), [newUserId, orgId, targetRole]);
             } catch (e) {}
             await activity.log(req.session.user.id, `${targetRole === 'manager' ? 'Manager' : 'Employee'} Created`, cleanName);
         }
         
-        const isJsonReq = !!(req.xhr || (req.headers && req.headers.accept && req.headers.accept.includes('json')) || (req.get && req.get('accept') && req.get('accept').includes('json')) || (req.headers && req.headers['x-requested-with'] === 'XMLHttpRequest'));
         if (isJsonReq) {
             return res.json({ success: true });
         }
@@ -148,7 +148,6 @@ exports.save = async (req, res) => {
     } catch (e) {
         console.error('Error saving team member:', e);
         const msg = 'Could not save team member. Please make sure name and email are unique.';
-        const isJsonReq = !!(req.xhr || (req.headers && req.headers.accept && req.headers.accept.includes('json')) || (req.get && req.get('accept') && req.get('accept').includes('json')) || (req.headers && req.headers['x-requested-with'] === 'XMLHttpRequest'));
         if (isJsonReq) {
             return res.status(500).json({ success: false, message: msg, error: msg });
         }

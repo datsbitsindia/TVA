@@ -121,11 +121,21 @@ async function start() {
     webApp.use('/superadmin', require('./routes/superAdminRoutes'));
 
     webApp.use(require('./routes'));
-    webApp.use((req, res) => res.status(404).render('error', {
-        message: 'Page not found'
-    }));
+    webApp.use((req, res) => {
+        const isApi = req.xhr || (req.headers && req.headers.accept && req.headers.accept.includes('json')) || req.path.includes('/api/') || req.path.startsWith('/api');
+        if (isApi) {
+            return res.status(404).json({ success: false, message: `Route not found: ${req.method} ${req.originalUrl || req.url}` });
+        }
+        return res.status(404).render('error', {
+            message: 'Page not found'
+        });
+    });
     webApp.use((err, req, res, next) => {
         console.error(err);
+        const isApi = req.xhr || (req.headers && req.headers.accept && req.headers.accept.includes('json')) || (req.path && req.path.includes('/api/')) || (req.originalUrl && req.originalUrl.includes('/api/'));
+        if (isApi) {
+            return res.status(500).json({ success: false, message: err.message || 'Internal server error' });
+        }
         res.status(500).render('error', {
             message: err.message || 'Something went wrong'
         });

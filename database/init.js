@@ -55,7 +55,7 @@ async function init() {
     await pool.query(`
 CREATE TABLE IF NOT EXISTS ${prefix}organizations (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(150) NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP) ENGINE=InnoDB;
 CREATE TABLE IF NOT EXISTS ${prefix}organization_task_counters (organization_id INT PRIMARY KEY, last_task_number INT NOT NULL DEFAULT 0, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, FOREIGN KEY(organization_id) REFERENCES ${prefix}organizations(id) ON DELETE CASCADE) ENGINE=InnoDB;
-CREATE TABLE IF NOT EXISTS ${prefix}users (id INT AUTO_INCREMENT PRIMARY KEY,role ENUM('admin','manager','employee') NOT NULL,name VARCHAR(120) NOT NULL,email VARCHAR(190) UNIQUE NOT NULL,password VARCHAR(255) NOT NULL,phone VARCHAR(30) DEFAULT '',department VARCHAR(100) DEFAULT '',designation VARCHAR(100) DEFAULT '',photo VARCHAR(255) DEFAULT '',active BOOLEAN DEFAULT TRUE,organization_id INT NULL,created_at DATETIME DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS ${prefix}users (id INT AUTO_INCREMENT PRIMARY KEY,role ENUM('admin','manager','employee') NOT NULL,name VARCHAR(120) NOT NULL,email VARCHAR(190) NOT NULL,password VARCHAR(255) NOT NULL,phone VARCHAR(30) DEFAULT '',department VARCHAR(100) DEFAULT '',designation VARCHAR(100) DEFAULT '',photo VARCHAR(255) DEFAULT '',active BOOLEAN DEFAULT TRUE,organization_id INT NULL,created_at DATETIME DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB;
 CREATE TABLE IF NOT EXISTS ${prefix}user_organizations (id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, organization_id INT NOT NULL, role VARCHAR(50) DEFAULT 'member', created_at DATETIME DEFAULT CURRENT_TIMESTAMP, UNIQUE KEY uk_user_org (user_id, organization_id), FOREIGN KEY(user_id) REFERENCES ${prefix}users(id) ON DELETE CASCADE, FOREIGN KEY(organization_id) REFERENCES ${prefix}organizations(id) ON DELETE CASCADE) ENGINE=InnoDB;
 CREATE TABLE IF NOT EXISTS ${prefix}projects (id INT AUTO_INCREMENT PRIMARY KEY,name VARCHAR(150) NOT NULL,description TEXT,start_date DATE NULL,end_date DATE NULL,status ENUM('Planned','In Progress','Completed','Cancelled') DEFAULT 'Planned',created_by INT NOT NULL,manager_id INT NOT NULL,organization_id INT NOT NULL DEFAULT 1,ai_tasks_generated BOOLEAN DEFAULT FALSE,created_at DATETIME DEFAULT CURRENT_TIMESTAMP,started_at DATETIME NULL,completed_at DATETIME NULL,FOREIGN KEY(created_by) REFERENCES ${prefix}users(id),FOREIGN KEY(manager_id) REFERENCES ${prefix}users(id)) ENGINE=InnoDB;
 CREATE TABLE IF NOT EXISTS ${prefix}project_updates (id INT AUTO_INCREMENT PRIMARY KEY,project_id INT NOT NULL,manager_id INT NOT NULL,message TEXT NOT NULL,progress_percent INT DEFAULT 0,created_at DATETIME DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(project_id) REFERENCES ${prefix}projects(id) ON DELETE CASCADE,FOREIGN KEY(manager_id) REFERENCES ${prefix}users(id)) ENGINE=InnoDB;
@@ -283,14 +283,16 @@ async function migrateMultiOrg() {
         await pool.query(`INSERT IGNORE INTO ${prefix}organizations (id, name) VALUES (1, 'Unomok')`);
         await pool.query(`UPDATE ${prefix}organizations SET name = 'Unomok' WHERE id = 1 AND (name = 'Default Organization' OR name IS NULL OR name = '')`);
 
-        // Ensure email unique constraint exists
-        try { await pool.query(`ALTER TABLE ${prefix}users DROP INDEX uk_email_org`); } catch(e) {}
-        const [ukEmailRows] = await pool.query(
-            `SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND CONSTRAINT_NAME='email'`,
+        // Ensure email uniqueness is scoped per-organization (email, organization_id)
+        try { await pool.query(`ALTER TABLE ${prefix}users DROP INDEX email`); } catch(e) {}
+        try { await pool.query(`ALTER TABLE ${prefix}users DROP INDEX uk_email`); } catch(e) {}
+        try { await pool.query(`ALTER TABLE ${prefix}users DROP CONSTRAINT email`); } catch(e) {}
+        const [ukEmailOrgRows] = await pool.query(
+            `SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND CONSTRAINT_NAME='uk_email_org'`,
             [config.mysql.database, `${prefix}users`]
         );
-        if (!ukEmailRows.length) {
-            try { await pool.query(`ALTER TABLE ${prefix}users ADD CONSTRAINT email UNIQUE (email)`); } catch (e) {}
+        if (!ukEmailOrgRows.length) {
+            try { await pool.query(`ALTER TABLE ${prefix}users ADD CONSTRAINT uk_email_org UNIQUE (email, organization_id)`); } catch (e) {}
         }
 
         // Add organization_id to tables that need it
