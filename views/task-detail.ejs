@@ -165,8 +165,8 @@
     <% } %>
 
     <div class="task-info-grid">
-        <div><small>Assigned By</small><b><%= task.creator_name %></b></div>
-        <div><small>Assigned To</small><b><%= task.assigned_name %></b></div>
+        <div><small>Assigned By</small><b><%= formatShortName(task.creator_name) %></b></div>
+        <div><small>Assigned To</small><b><%= formatShortName(task.assigned_name) %></b></div>
         <div><small>Due Date</small><b><%= formatDate(task.due_date) %></b></div>
         <div>
             <small>Priority</small>

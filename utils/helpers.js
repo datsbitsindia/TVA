@@ -59,4 +59,17 @@ function stripHyperlinks(htmlOrText) {
     return cleaned;
 }
 
-module.exports = { formatDate, formatDateTime, safeReturn, stripHyperlinks };
+function formatShortName(nameStr) {
+    if (!nameStr) return '';
+    const str = String(nameStr).trim();
+    if (!str) return '';
+    return str.split(',').map(part => {
+        const item = part.trim();
+        if (!item || item.toLowerCase() === 'you') return item;
+        const words = item.split(/\s+/).filter(Boolean);
+        if (words.length <= 1) return item;
+        return words[0] + ' ' + words[1].charAt(0);
+    }).join(', ');
+}
+
+module.exports = { formatDate, formatDateTime, safeReturn, stripHyperlinks, formatShortName };

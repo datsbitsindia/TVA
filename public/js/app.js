@@ -1,4 +1,18 @@
 
+function formatShortName(nameStr) {
+    if (!nameStr) return '';
+    const str = String(nameStr).trim();
+    if (!str) return '';
+    return str.split(',').map(part => {
+        const item = part.trim();
+        if (!item || item.toLowerCase() === 'you') return item;
+        const words = item.split(/\s+/).filter(Boolean);
+        if (words.length <= 1) return item;
+        return words[0] + ' ' + words[1].charAt(0);
+    }).join(', ');
+}
+window.formatShortName = formatShortName;
+
 window.resetTaskModal = function() {
     const modal = document.getElementById('task-modal');
     if (!modal) return;
@@ -1160,7 +1174,7 @@ document.addEventListener('submit', async function(e) {
                             <div class="entity-title">
                                 <div class="task-title-row" style="display: flex; align-items: center; gap: 5px; flex-wrap: nowrap; overflow: hidden; width: 100%;">
                                     <a href="/tasks/${t.id}" style="font-weight: 800; font-size: 14px; color: #0f172a; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 auto; min-width: 40px;">
-                                        #${t.task_number || t.id} ${t.title}
+                                        ${t.title}
                                     </a>
                                     ${t.is_routine ? '<span class="routine-badge" style="flex:0 0 auto; margin:0!important;"><i class="fa-solid fa-repeat"></i> Routine</span>' : ''}
                                     ${isPureSelf ? `
@@ -1191,17 +1205,18 @@ document.addEventListener('submit', async function(e) {
                                         `
                                     ) : ''}
                                 </div>
-                                <small style="display: block; color: #3b68b7; font-weight: 600; margin-top: 2px; font-size: 11px;">
-                                    <i class="fa-solid fa-folder-open" style="margin-right: 3px;"></i>${t.project_name || 'No project'}
+                                <small style="display: flex; align-items: center; gap: 6px; color: #3b68b7; font-weight: 600; margin-top: 2px; font-size: 11px; flex-wrap: wrap;">
+                                    <span><i class="fa-solid fa-folder-open" style="margin-right: 3px;"></i>${t.project_name || 'No project'}</span>
+                                    <span style="color: #64748b; font-weight: 700;">#${t.task_number || t.id}</span>
                                 </small>
                             </div>
                             <div class="entity-meta">
                                 <small>Assigned By</small>
-                                <b>${t.creator_name || 'You'}</b>
+                                <b>${formatShortName(t.creator_name || 'You')}</b>
                             </div>
                             <div class="entity-meta">
                                 <small>Assigned To</small>
-                                <b>${t.assigned_name || 'You'}</b>
+                                <b>${formatShortName(t.assigned_name || 'You')}</b>
                             </div>
                             <div class="entity-meta">
                                 <small>Assigned on</small>

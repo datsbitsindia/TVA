@@ -218,7 +218,7 @@
                     <div class="task-title-row" style="display: flex; align-items: center; gap: 5px; flex-wrap: nowrap; overflow: hidden; width: 100%;">
 
                         <a href="/tasks/<%= t.id %>" style="font-weight: 800; font-size: 14px; color: #0f172a; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 auto; min-width: 40px;">
-                            #<%= t.task_number || t.id %> <%= t.title %>
+                            <%= t.title %>
                         </a>
 
                         <% if (t.is_routine) { %>
@@ -266,20 +266,21 @@
 
                     </div>
 
-                    <small style="display: block; color: #3b68b7; font-weight: 600; margin-top: 2px; font-size: 11px;">
-                        <i class="fa-solid fa-folder-open" style="margin-right: 3px;"></i><%= t.project_name || 'No project' %>
+                    <small style="display: flex; align-items: center; gap: 6px; color: #3b68b7; font-weight: 600; margin-top: 2px; font-size: 11px; flex-wrap: wrap;">
+                        <span><i class="fa-solid fa-folder-open" style="margin-right: 3px;"></i><%= t.project_name || 'No project' %></span>
+                        <span style="color: #64748b; font-weight: 700;">#<%= t.task_number || t.id %></span>
                     </small>
 
                 </div>
 
                 <div class="entity-meta">
                     <small>Assigned By</small>
-                    <b><%= Number(t.created_by) === user.id ? 'You' : t.creator_name %></b>
+                    <b><%= formatShortName(Number(t.created_by) === user.id ? 'You' : t.creator_name) %></b>
                 </div>
 
                 <div class="entity-meta">
                     <small>Assigned To</small>
-                    <b><%= assignedIds.includes(user.id) && assignedIds.length === 1 ? 'You' : t.assigned_name %></b>
+                    <b><%= formatShortName(assignedIds.includes(user.id) && assignedIds.length === 1 ? 'You' : t.assigned_name) %></b>
                 </div>
 
                 <div class="entity-meta">
@@ -318,6 +319,19 @@ if (window.currentKpiFilter === undefined) {
     window.currentKpiFilter = initialUrlParams.has('status') ? initialUrlParams.get('status').trim() : 'pending';
 }
 
+function formatShortName(nameStr) {
+    if (!nameStr) return '';
+    const str = String(nameStr).trim();
+    if (!str) return '';
+    return str.split(',').map(part => {
+        const item = part.trim();
+        if (!item || item.toLowerCase() === 'you') return item;
+        const words = item.split(/\s+/).filter(Boolean);
+        if (words.length <= 1) return item;
+        return words[0] + ' ' + words[1].charAt(0);
+    }).join(', ');
+}
+
 function createTaskCardNode(t) {
     const assignedIds = String(t.assigned_to || '').split(',').map(x => Number(x.trim()));
     const isPureSelf = t.is_self_task || String(t.project_name || '').toLowerCase() === 'self task' || (Number(t.created_by) === myUserId && assignedIds.length === 1 && assignedIds[0] === myUserId);
@@ -348,7 +362,7 @@ function createTaskCardNode(t) {
         <div class="entity-title">
             <div class="task-title-row" style="display: flex; align-items: center; gap: 5px; flex-wrap: nowrap; overflow: hidden; width: 100%;">
                 <a href="/tasks/${t.id}" style="font-weight: 800; font-size: 14px; color: #0f172a; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 auto; min-width: 40px;">
-                    #${t.task_number || t.id} ${escapeHtml(t.title)}
+                    ${escapeHtml(t.title)}
                 </a>
                 ${t.is_routine ? '<span class="routine-badge" style="flex:0 0 auto; margin:0!important;"><i class="fa-solid fa-repeat"></i> Routine</span>' : ''}
                 ${isPureSelf ? `
@@ -379,17 +393,18 @@ function createTaskCardNode(t) {
                     `
                 ) : ''}
             </div>
-            <small style="display: block; color: #3b68b7; font-weight: 600; margin-top: 2px; font-size: 11px;">
-                <i class="fa-solid fa-folder-open" style="margin-right: 3px;"></i>${escapeHtml(t.project_name || 'No project')}
+            <small style="display: flex; align-items: center; gap: 6px; color: #3b68b7; font-weight: 600; margin-top: 2px; font-size: 11px; flex-wrap: wrap;">
+                <span><i class="fa-solid fa-folder-open" style="margin-right: 3px;"></i>${escapeHtml(t.project_name || 'No project')}</span>
+                <span style="color: #64748b; font-weight: 700;">#${t.task_number || t.id}</span>
             </small>
         </div>
         <div class="entity-meta">
             <small>Assigned By</small>
-            <b>${Number(t.created_by) === myUserId ? 'You' : escapeHtml(t.creator_name || 'Manager')}</b>
+            <b>${escapeHtml(formatShortName(Number(t.created_by) === myUserId ? 'You' : (t.creator_name || 'Manager')))}</b>
         </div>
         <div class="entity-meta">
             <small>Assigned To</small>
-            <b>${assignedIds.includes(myUserId) && assignedIds.length === 1 ? 'You' : escapeHtml(t.assigned_name || 'You')}</b>
+            <b>${escapeHtml(formatShortName(assignedIds.includes(myUserId) && assignedIds.length === 1 ? 'You' : (t.assigned_name || 'You')))}</b>
         </div>
         <div class="entity-meta">
             <small>Assigned on</small>
