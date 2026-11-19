@@ -189,6 +189,289 @@
         </select>
     </div>
 
+<style>
+/* ==========================================================================
+   Task Card Custom Responsive Styles: iPad/Desktop vs Mobile
+   ========================================================================== */
+@media (min-width: 769px) {
+    html body .entity-list {
+        gap: 6px !important;
+    }
+    html body .entity-card.task-card {
+        display: block !important;
+        grid-template-columns: none !important;
+        grid-template-rows: none !important;
+        padding: 0 !important;
+        border-radius: 16px !important;
+        background: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04) !important;
+        border: 1px solid #e2e8f0 !important;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease !important;
+        overflow: hidden !important;
+        margin-bottom: 0 !important;
+    }
+    html body .entity-card.task-card:hover {
+        transform: translateY(-1.5px) !important;
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08) !important;
+        border-color: #cbd5e1 !important;
+    }
+    .tc-mobile-view {
+        display: none !important;
+    }
+    .tc-desktop-view {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 14px 24px !important;
+        gap: 20px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        min-height: 84px !important;
+    }
+    .tc-desk-left-col {
+        flex: 0 0 75px !important;
+        min-width: 65px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        user-select: none !important;
+    }
+    .tc-desk-num {
+        font-size: 24px !important;
+        font-weight: 800 !important;
+        color: #0f172a !important;
+        letter-spacing: -0.02em !important;
+        line-height: 1 !important;
+        text-align: center !important;
+        margin: 0 !important;
+    }
+    .tc-desk-body {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        gap: 4px !important;
+    }
+    .tc-desk-proj-row {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex-wrap: nowrap !important;
+        line-height: 1.2 !important;
+    }
+    .tc-desk-project-tag {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 5px !important;
+        color: #3b68b7 !important;
+        font-size: 12.5px !important;
+        font-weight: 700 !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        line-height: 1.2 !important;
+    }
+    .tc-desk-project-tag i {
+        font-size: 12px !important;
+        color: #3b68b7 !important;
+    }
+    .tc-desk-title-row {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex-wrap: nowrap !important;
+        overflow: hidden !important;
+        width: 100% !important;
+        line-height: 1.3 !important;
+    }
+    .tc-desk-title {
+        font-size: 15px !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        text-decoration: none !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        flex: 0 1 auto !important;
+        max-width: 90% !important;
+    }
+    .tc-desk-title:hover {
+        color: #2563eb !important;
+    }
+    .tc-desk-meta-row {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 22px !important;
+        font-size: 12.5px !important;
+        line-height: 1.3 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    .tc-meta-item {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 5px !important;
+    }
+    .tc-lbl {
+        color: #64748b !important;
+        font-weight: 500 !important;
+        font-size: 13px !important;
+    }
+    .tc-val {
+        color: #0f172a !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
+    }
+    .tc-desk-right {
+        flex: 0 0 auto !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 6px !important;
+        min-width: 80px !important;
+    }
+    .tc-priority-pill {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 3.5px 12px !important;
+        border-radius: 999px !important;
+        font-size: 10.5px !important;
+        font-weight: 800 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        line-height: 1.3 !important;
+    }
+    .tc-priority-pill.low,
+    .tc-priority-pill.best {
+        background: #f1f5f9 !important;
+        color: #334155 !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+    .tc-priority-pill.medium {
+        background: #e0f2fe !important;
+        color: #0369a1 !important;
+        border: 1px solid #bae6fd !important;
+    }
+    .tc-priority-pill.high {
+        background: #fef3c7 !important;
+        color: #b45309 !important;
+        border: 1px solid #fde68a !important;
+    }
+    .tc-priority-pill.critical {
+        background: #fee2e2 !important;
+        color: #b91c1c !important;
+        border: 1px solid #fecaca !important;
+    }
+    .tc-right-due {
+        font-size: 12.5px !important;
+        color: #64748b !important;
+        font-weight: 500 !important;
+        text-align: right !important;
+        white-space: nowrap !important;
+    }
+    .tc-right-due.is-overdue {
+        color: #dc2626 !important;
+        font-weight: 700 !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .tc-desktop-view {
+        display: none !important;
+    }
+    html body .entity-card.task-card {
+        display: block !important;
+        padding: 9px 10px !important;
+        border-radius: 16px !important;
+    }
+    .tc-mobile-view {
+        display: grid !important;
+        grid-template-columns: 1.4fr 1.2fr 1fr 1fr !important;
+        grid-template-rows: auto auto !important;
+        align-items: start !important;
+        gap: 6px 5px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    .tc-mobile-view .entity-title {
+        grid-column: 1/-1 !important;
+        grid-row: 1 !important;
+        padding-left: 0 !important;
+        margin-bottom: 2px !important;
+    }
+    .tc-mobile-view .entity-meta {
+        display: block !important;
+        grid-column: auto !important;
+        grid-row: 2 !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
+    }
+    .tc-mobile-view .entity-meta small {
+        display: block !important;
+        font-size: 7.5px !important;
+        line-height: 1.1 !important;
+        color: #64748b !important;
+        text-transform: uppercase !important;
+        letter-spacing: .02em !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    .tc-mobile-view .entity-meta b {
+        display: block !important;
+        margin-top: 1px !important;
+        font-size: 9px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+}
+
+/* Dark Theme Adjustments */
+@media (min-width: 769px) {
+    html.dark-theme body .entity-card.task-card {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+    }
+    html.dark-theme body .entity-card.task-card:hover {
+        border-color: #475569 !important;
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35) !important;
+    }
+    html.dark-theme .tc-desk-num {
+        color: #f1f5f9 !important;
+    }
+    html.dark-theme .tc-desk-title {
+        color: #f8fafc !important;
+    }
+    html.dark-theme .tc-desk-project-tag {
+        color: #60a5fa !important;
+    }
+    html.dark-theme .tc-desk-project-tag i {
+        color: #60a5fa !important;
+    }
+    html.dark-theme .tc-lbl {
+        color: #94a3b8 !important;
+    }
+    html.dark-theme .tc-val {
+        color: #f1f5f9 !important;
+    }
+
+    html.gray-glass-theme body .entity-card.task-card {
+        background: rgba(255, 255, 255, 0.75) !important;
+        backdrop-filter: blur(14px) !important;
+        -webkit-backdrop-filter: blur(14px) !important;
+        border-color: rgba(255, 255, 255, 0.5) !important;
+    }
+}
+</style>
+
     <div class="entity-list">
 
         <% tasks.forEach(t => { %>
@@ -198,6 +481,8 @@
                 const isAssignedByMe = Number(t.created_by) === user.id && !isPureSelf;
                 const isAssignedToMe = assignedIds.includes(user.id);
                 const filterGroup = isPureSelf ? 'self' : isAssignedByMe ? 'assigned-by-me' : 'assigned-to-me';
+                const byName = Number(t.created_by) === user.id ? 'You' : t.creator_name;
+                const toName = assignedIds.includes(user.id) && assignedIds.length === 1 ? 'You' : t.assigned_name;
             %>
 
             <article
@@ -213,84 +498,154 @@
                 data-id="<%= t.id %>"
             >
 
-                <div class="entity-title">
-
-                    <div class="task-title-row" style="display: flex; align-items: center; gap: 5px; flex-wrap: nowrap; overflow: hidden; width: 100%;">
-
-                        <a href="/tasks/<%= t.id %>" style="font-weight: 800; font-size: 14px; color: #0f172a; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 auto; min-width: 40px;">
-                            <%= t.title %>
-                        </a>
-
-                        <% if (t.is_routine) { %>
-                            <span class="routine-badge" style="flex:0 0 auto; margin:0!important;"><i class="fa-solid fa-repeat"></i> Routine</span>
-                        <% } %>
-
-                        <% if (isPureSelf) { %>
-                            <span class="status-chip self-task" style="background:#e0e7ff;color:#4338ca;border:1px solid #c7d2fe;padding:2px 6px;font-size:9px;font-weight:700;display:inline-flex;align-items:center;gap:3px;flex:0 0 auto;margin:0!important;">
-                                <i class="fa-solid fa-user-check"></i> Self Task
-                            </span>
-                        <% } %>
-
-                        <span class="priority-pill <%= t.priority.toLowerCase() %>" style="font-weight:700; font-size:9px; padding:2px 6px; border-radius:99px; flex:0 0 auto; margin:0!important;">
-                            <i class="fa-solid fa-flag"></i> <%= t.priority %>
-                        </span>
-
-                        <% if (t.is_forwarded) { %>
-                            <span class="status-chip forwarded" style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;padding:2px 6px;font-size:9px;font-weight:700;flex:0 0 auto;margin:0!important;">
-                                <i class="fa-solid fa-share"></i> Forwarded
-                            </span>
-                        <% } %>
-
-                        <span
-                            class="status-chip task-status-pill <%= 
-                                t.is_overdue
-                                    ? 'overdue'
-                                    : t.status.toLowerCase().replaceAll(' ', '-')
-                            %>"
-                            style="flex:0 0 auto; font-size:9px; padding:2px 6px; margin:0!important;"
-                        >
-                            <%= t.is_overdue ? 'Overdue' : t.status %>
-                        </span>
-
-                        <% if (t.status === 'Completed' || t.status === '2') { %>
-                            <% if (t.is_verified) { %>
-                                <span class="status-chip verified-chip" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; padding:2px 6px; font-size:9px; font-weight:700; flex:0 0 auto; margin:0!important;" title="Verified by <%= t.verifier_name || 'Manager' %>">
-                                    <i class="fa-solid fa-certificate"></i> Verified
-                                </span>
-                            <% } else { %>
-                                <span class="status-chip awaiting-chip" style="background:#fef9c3; color:#b45309; border:1px solid #fde68a; padding:2px 6px; font-size:9px; font-weight:700; flex:0 0 auto; margin:0!important;" title="Awaiting Manager Verification">
-                                    <i class="fa-solid fa-triangle-exclamation"></i> Awaiting Verification
-                                </span>
-                            <% } %>
-                        <% } %>
-
+                <!-- DESKTOP / IPAD VIEW (min-width: 769px) -->
+                <div class="tc-desktop-view">
+                    <!-- 1: Task number centered -->
+                    <div class="tc-desk-left-col">
+                        <span class="tc-desk-num">#<%= t.task_number || t.id %></span>
                     </div>
 
-                    <small style="display: flex; align-items: center; gap: 6px; color: #3b68b7; font-weight: 600; margin-top: 2px; font-size: 11px; flex-wrap: wrap;">
-                        <span><i class="fa-solid fa-folder-open" style="margin-right: 3px;"></i><%= t.project_name || 'No project' %></span>
-                        <span style="color: #64748b; font-weight: 700;">#<%= t.task_number || t.id %></span>
-                    </small>
+                    <!-- 2: Task title on top, Project row below, Metadata -->
+                    <div class="tc-desk-body">
+                        <!-- Line 1: Task title on top with badges -->
+                        <div class="tc-desk-title-row">
+                            <a href="/tasks/<%= t.id %>" class="tc-desk-title">
+                                <%= t.title %>
+                            </a>
 
+                            <% if (t.is_routine) { %>
+                                <span class="routine-badge"><i class="fa-solid fa-repeat"></i> Routine</span>
+                            <% } %>
+
+                            <% if (isPureSelf) { %>
+                                <span class="status-chip self-task">
+                                    <i class="fa-solid fa-user-check"></i> Self Task
+                                </span>
+                            <% } %>
+
+                            <% if (t.is_forwarded) { %>
+                                <span class="status-chip forwarded">
+                                    <i class="fa-solid fa-share"></i> Forwarded
+                                </span>
+                            <% } %>
+
+                            <% if (t.status === 'Completed' || t.status === '2') { %>
+                                <% if (t.is_verified) { %>
+                                    <span class="status-chip verified-chip" title="Verified by <%= t.verifier_name || 'Manager' %>">
+                                        <i class="fa-solid fa-certificate"></i> Verified
+                                    </span>
+                                <% } else { %>
+                                    <span class="status-chip awaiting-chip" title="Awaiting Manager Verification">
+                                        <i class="fa-solid fa-triangle-exclamation"></i> Awaiting Verification
+                                    </span>
+                                <% } %>
+                            <% } %>
+                        </div>
+
+                        <!-- Line 2: Folder icon + project name in distinct color -->
+                        <div class="tc-desk-proj-row">
+                            <span class="tc-desk-project-tag">
+                                <i class="fa-solid fa-folder-open"></i> <%= t.project_name || 'No project' %>
+                            </span>
+                        </div>
+
+                        <!-- 3: By: ..., To: ..., On: ..., Due: ... all on one line -->
+                        <div class="tc-desk-meta-row">
+                            <span class="tc-meta-item"><span class="tc-lbl">By:</span> <span class="tc-val"><%= byName %></span></span>
+                            <span class="tc-meta-item"><span class="tc-lbl">To:</span> <span class="tc-val"><%= toName %></span></span>
+                            <span class="tc-meta-item"><span class="tc-lbl">On:</span> <span class="tc-val"><%= formatDate(t.created_at) %></span></span>
+                            <span class="tc-meta-item"><span class="tc-lbl">Due:</span> <span class="tc-val"><%= formatDate(t.due_date) %></span></span>
+                        </div>
+                    </div>
+
+                    <!-- Right side: Priority badge & Status chip -->
+                    <div class="tc-desktop-right">
+                        <span class="tc-priority-pill <%= (t.priority || 'medium').toLowerCase() %>">
+                            <%= (t.priority || 'Medium').toUpperCase() %>
+                        </span>
+                        <span class="status-chip task-status-pill <%= t.is_overdue ? 'overdue' : String(t.status || 'Pending').toLowerCase().replaceAll(' ', '-') %>">
+                            <%= t.is_overdue ? 'Overdue' : t.status %>
+                        </span>
+                    </div>
                 </div>
 
-                <div class="entity-meta">
-                    <small>Assigned By</small>
-                    <b><%= formatShortName(Number(t.created_by) === user.id ? 'You' : t.creator_name) %></b>
-                </div>
+                <!-- MOBILE VIEW (max-width: 768px): ORIGINAL MOBILE LAYOUT -->
+                <div class="tc-mobile-view">
+                    <div class="entity-title">
+                        <div class="task-title-row" style="display: flex; align-items: center; gap: 5px; flex-wrap: nowrap; overflow: hidden; width: 100%;">
+                            <a href="/tasks/<%= t.id %>" style="font-weight: 800; font-size: 14px; color: #0f172a; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 auto; min-width: 40px;">
+                                <%= t.title %>
+                            </a>
 
-                <div class="entity-meta">
-                    <small>Assigned To</small>
-                    <b><%= formatShortName(assignedIds.includes(user.id) && assignedIds.length === 1 ? 'You' : t.assigned_name) %></b>
-                </div>
+                            <% if (t.is_routine) { %>
+                                <span class="routine-badge" style="flex:0 0 auto; margin:0!important;"><i class="fa-solid fa-repeat"></i> Routine</span>
+                            <% } %>
 
-                <div class="entity-meta">
-                    <small>Assigned on</small>
-                    <b><%= formatDate(t.created_at) %></b>
-                </div>
+                            <% if (isPureSelf) { %>
+                                <span class="status-chip self-task" style="background:#e0e7ff;color:#4338ca;border:1px solid #c7d2fe;padding:2px 6px;font-size:9px;font-weight:700;display:inline-flex;align-items:center;gap:3px;flex:0 0 auto;margin:0!important;">
+                                    <i class="fa-solid fa-user-check"></i> Self Task
+                                </span>
+                            <% } %>
 
-                <div class="entity-meta" style="text-align: right;">
-                    <small>Due date</small>
-                    <b><%= formatDate(t.due_date) %></b>
+                            <span class="priority-pill <%= t.priority.toLowerCase() %>" style="font-weight:700; font-size:9px; padding:2px 6px; border-radius:99px; flex:0 0 auto; margin:0!important;">
+                                <i class="fa-solid fa-flag"></i> <%= t.priority %>
+                            </span>
+
+                            <% if (t.is_forwarded) { %>
+                                <span class="status-chip forwarded" style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;padding:2px 6px;font-size:9px;font-weight:700;flex:0 0 auto;margin:0!important;">
+                                    <i class="fa-solid fa-share"></i> Forwarded
+                                </span>
+                            <% } %>
+
+                            <span
+                                class="status-chip task-status-pill <%= 
+                                    t.is_overdue
+                                        ? 'overdue'
+                                        : t.status.toLowerCase().replaceAll(' ', '-')
+                                %>"
+                                style="flex:0 0 auto; font-size:9px; padding:2px 6px; margin:0!important;"
+                            >
+                                <%= t.is_overdue ? 'Overdue' : t.status %>
+                            </span>
+
+                            <% if (t.status === 'Completed' || t.status === '2') { %>
+                                <% if (t.is_verified) { %>
+                                    <span class="status-chip verified-chip" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; padding:2px 6px; font-size:9px; font-weight:700; flex:0 0 auto; margin:0!important;" title="Verified by <%= t.verifier_name || 'Manager' %>">
+                                        <i class="fa-solid fa-certificate"></i> Verified
+                                    </span>
+                                <% } else { %>
+                                    <span class="status-chip awaiting-chip" style="background:#fef9c3; color:#b45309; border:1px solid #fde68a; padding:2px 6px; font-size:9px; font-weight:700; flex:0 0 auto; margin:0!important;" title="Awaiting Manager Verification">
+                                        <i class="fa-solid fa-triangle-exclamation"></i> Awaiting Verification
+                                    </span>
+                                <% } %>
+                            <% } %>
+                        </div>
+
+                        <small style="display: flex; align-items: center; gap: 6px; color: #3b68b7; font-weight: 600; margin-top: 2px; font-size: 11px; flex-wrap: wrap;">
+                            <span><i class="fa-solid fa-folder-open" style="margin-right: 3px;"></i><%= t.project_name || 'No project' %></span>
+                            <span style="color: #64748b; font-weight: 700;">#<%= t.task_number || t.id %></span>
+                        </small>
+                    </div>
+
+                    <div class="entity-meta">
+                        <small>Assigned By</small>
+                        <b><%= formatShortName(byName) %></b>
+                    </div>
+
+                    <div class="entity-meta">
+                        <small>Assigned To</small>
+                        <b><%= formatShortName(toName) %></b>
+                    </div>
+
+                    <div class="entity-meta">
+                        <small>Assigned on</small>
+                        <b><%= formatDate(t.created_at) %></b>
+                    </div>
+
+                    <div class="entity-meta" style="text-align: right;">
+                        <small>Due date</small>
+                        <b><%= formatDate(t.due_date) %></b>
+                    </div>
                 </div>
 
             </article>
@@ -339,6 +694,12 @@ function createTaskCardNode(t) {
     const isAssignedByMe = Number(t.created_by) === myUserId && !isPureSelf;
     const filterGroup = isPureSelf ? 'self' : isAssignedByMe ? 'assigned-by-me' : 'assigned-to-me';
 
+    const byName = Number(t.created_by) === myUserId ? 'You' : (t.creator_name || 'Manager');
+    const toName = assignedIds.includes(myUserId) && assignedIds.length === 1 ? 'You' : (t.assigned_name || 'You');
+    const projName = t.project_name || 'No project';
+    const isEmptyProj = !t.project_name || String(t.project_name).toLowerCase().trim() === 'no project';
+    const taskNum = t.task_number || t.id;
+
     const article = document.createElement('article');
     article.className = `entity-card task-card ${t.is_overdue ? 'overdue-card' : ''} ${t.is_routine ? 'routine-task-card' : ''}`;
     article.dataset.status = String(t.status || 'Pending').toLowerCase().replaceAll(' ', '-');
@@ -359,60 +720,143 @@ function createTaskCardNode(t) {
     };
 
     article.innerHTML = `
-        <div class="entity-title">
-            <div class="task-title-row" style="display: flex; align-items: center; gap: 5px; flex-wrap: nowrap; overflow: hidden; width: 100%;">
-                <a href="/tasks/${t.id}" style="font-weight: 800; font-size: 14px; color: #0f172a; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 auto; min-width: 40px;">
-                    ${escapeHtml(t.title)}
-                </a>
-                ${t.is_routine ? '<span class="routine-badge" style="flex:0 0 auto; margin:0!important;"><i class="fa-solid fa-repeat"></i> Routine</span>' : ''}
-                ${isPureSelf ? `
-                    <span class="status-chip self-task" style="background:#e0e7ff;color:#4338ca;border:1px solid #c7d2fe;padding:2px 6px;font-size:9px;font-weight:700;display:inline-flex;align-items:center;gap:3px;flex:0 0 auto;margin:0!important;">
-                        <i class="fa-solid fa-user-check"></i> Self Task
+        <!-- DESKTOP / IPAD VIEW (min-width: 769px) -->
+        <div class="tc-desktop-view">
+            <!-- 1: Task number centered -->
+            <div class="tc-desk-left-col">
+                <span class="tc-desk-num">#${taskNum}</span>
+            </div>
+
+            <!-- 2: Task title on top, Project row below, Metadata -->
+            <div class="tc-desk-body">
+                <!-- Line 1: Task title on top with badges -->
+                <div class="tc-desk-title-row">
+                    <a href="/tasks/${t.id}" class="tc-desk-title">
+                        ${escapeHtml(t.title)}
+                    </a>
+
+                    ${t.is_routine ? '<span class="routine-badge"><i class="fa-solid fa-repeat"></i> Routine</span>' : ''}
+                    ${isPureSelf ? `
+                        <span class="status-chip self-task">
+                            <i class="fa-solid fa-user-check"></i> Self Task
+                        </span>
+                    ` : ''}
+                    ${t.is_forwarded ? `
+                        <span class="status-chip forwarded">
+                            <i class="fa-solid fa-share"></i> Forwarded
+                        </span>
+                    ` : ''}
+                    ${(String(t.status || '').toLowerCase() === 'completed' || String(t.status) === '2') ? (
+                        t.is_verified ? `
+                            <span class="status-chip verified-chip" title="Verified by ${escapeHtml(t.verifier_name || 'Manager')}">
+                                <i class="fa-solid fa-certificate"></i> Verified
+                            </span>
+                        ` : `
+                            <span class="status-chip awaiting-chip" title="Awaiting Manager Verification">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Awaiting Verification
+                            </span>
+                        `
+                    ) : ''}
+                </div>
+
+                <!-- Line 2: Folder icon + project name in distinct color -->
+                <div class="tc-desk-proj-row">
+                    <span class="tc-desk-project-tag">
+                        <i class="fa-solid fa-folder-open"></i> ${escapeHtml(projName)}
                     </span>
-                ` : ''}
-                <span class="priority-pill ${(t.priority || 'Medium').toLowerCase()}" style="font-weight:700; font-size:9px; padding:2px 6px; border-radius:99px; flex:0 0 auto; margin:0!important;">
-                    <i class="fa-solid fa-flag"></i> ${escapeHtml(t.priority || 'Medium')}
+                </div>
+
+                <!-- 3: By: ..., To: ..., On: ..., Due: ... all on one line -->
+                <div class="tc-desk-meta-row">
+                    <span class="tc-meta-item"><span class="tc-lbl">By:</span> <span class="tc-val">${escapeHtml(byName)}</span></span>
+                    <span class="tc-meta-item"><span class="tc-lbl">To:</span> <span class="tc-val">${escapeHtml(toName)}</span></span>
+                    <span class="tc-meta-item"><span class="tc-lbl">On:</span> <span class="tc-val">${formatDateStr(t.created_at)}</span></span>
+                    <span class="tc-meta-item"><span class="tc-lbl">Due:</span> <span class="tc-val">${formatDateStr(t.due_date)}</span></span>
+                </div>
+            </div>
+
+            <!-- Right side: Priority badge & Status chip -->
+            <div class="tc-desktop-right">
+                <span class="tc-priority-pill ${(t.priority || 'medium').toLowerCase()}">
+                    ${String(t.priority || 'Medium').toUpperCase()}
                 </span>
-                ${t.is_forwarded ? `
-                    <span class="status-chip forwarded" style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;padding:2px 6px;font-size:9px;font-weight:700;flex:0 0 auto;margin:0!important;">
-                        <i class="fa-solid fa-share"></i> Forwarded
-                    </span>
-                ` : ''}
-                <span class="status-chip task-status-pill ${t.is_overdue ? 'overdue' : String(t.status || 'Pending').toLowerCase().replaceAll(' ', '-')}" style="flex:0 0 auto; font-size:9px; padding:2px 6px; margin:0!important;">
+                <span class="status-chip task-status-pill ${t.is_overdue ? 'overdue' : String(t.status || 'Pending').toLowerCase().replaceAll(' ', '-')}">
                     ${t.is_overdue ? 'Overdue' : escapeHtml(t.status)}
                 </span>
-                ${(String(t.status || '').toLowerCase() === 'completed' || String(t.status) === '2') ? (
-                    t.is_verified ? `
-                        <span class="status-chip verified-chip" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; padding:2px 6px; font-size:9px; font-weight:700; flex:0 0 auto; margin:0!important;" title="Verified by ${escapeHtml(t.verifier_name || 'Manager')}">
-                            <i class="fa-solid fa-certificate"></i> Verified
-                        </span>
-                    ` : `
-                        <span class="status-chip awaiting-chip" style="background:#fef9c3; color:#b45309; border:1px solid #fde68a; padding:2px 6px; font-size:9px; font-weight:700; flex:0 0 auto; margin:0!important;" title="Awaiting Manager Verification">
-                            <i class="fa-solid fa-triangle-exclamation"></i> Awaiting Verification
-                        </span>
-                    `
-                ) : ''}
             </div>
-            <small style="display: flex; align-items: center; gap: 6px; color: #3b68b7; font-weight: 600; margin-top: 2px; font-size: 11px; flex-wrap: wrap;">
-                <span><i class="fa-solid fa-folder-open" style="margin-right: 3px;"></i>${escapeHtml(t.project_name || 'No project')}</span>
-                <span style="color: #64748b; font-weight: 700;">#${t.task_number || t.id}</span>
-            </small>
         </div>
-        <div class="entity-meta">
-            <small>Assigned By</small>
-            <b>${escapeHtml(formatShortName(Number(t.created_by) === myUserId ? 'You' : (t.creator_name || 'Manager')))}</b>
-        </div>
-        <div class="entity-meta">
-            <small>Assigned To</small>
-            <b>${escapeHtml(formatShortName(assignedIds.includes(myUserId) && assignedIds.length === 1 ? 'You' : (t.assigned_name || 'You')))}</b>
-        </div>
-        <div class="entity-meta">
-            <small>Assigned on</small>
-            <b>${formatDateStr(t.created_at)}</b>
-        </div>
-        <div class="entity-meta" style="text-align: right;">
-            <small>Due date</small>
-            <b>${formatDateStr(t.due_date)}</b>
+
+        <!-- MOBILE VIEW (max-width: 768px): ORIGINAL MOBILE LAYOUT -->
+        <div class="tc-mobile-view">
+            <div class="entity-title">
+                <div class="task-title-row" style="display: flex; align-items: center; gap: 5px; flex-wrap: nowrap; overflow: hidden; width: 100%;">
+                    <a href="/tasks/${t.id}" style="font-weight: 800; font-size: 14px; color: #0f172a; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 auto; min-width: 40px;">
+                        ${escapeHtml(t.title)}
+                    </a>
+
+                    ${t.is_routine ? '<span class="routine-badge" style="flex:0 0 auto; margin:0!important;"><i class="fa-solid fa-repeat"></i> Routine</span>' : ''}
+
+                    ${isPureSelf ? `
+                        <span class="status-chip self-task" style="background:#e0e7ff;color:#4338ca;border:1px solid #c7d2fe;padding:2px 6px;font-size:9px;font-weight:700;display:inline-flex;align-items:center;gap:3px;flex:0 0 auto;margin:0!important;">
+                            <i class="fa-solid fa-user-check"></i> Self Task
+                        </span>
+                    ` : ''}
+
+                    <span class="priority-pill ${(t.priority || 'medium').toLowerCase()}" style="font-weight:700; font-size:9px; padding:2px 6px; border-radius:99px; flex:0 0 auto; margin:0!important;">
+                        <i class="fa-solid fa-flag"></i> ${escapeHtml(t.priority || 'Medium')}
+                    </span>
+
+                    ${t.is_forwarded ? `
+                        <span class="status-chip forwarded" style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;padding:2px 6px;font-size:9px;font-weight:700;flex:0 0 auto;margin:0!important;">
+                            <i class="fa-solid fa-share"></i> Forwarded
+                        </span>
+                    ` : ''}
+
+                    <span
+                        class="status-chip task-status-pill ${t.is_overdue ? 'overdue' : String(t.status || 'Pending').toLowerCase().replaceAll(' ', '-')}"
+                        style="flex:0 0 auto; font-size:9px; padding:2px 6px; margin:0!important;"
+                    >
+                        ${t.is_overdue ? 'Overdue' : escapeHtml(t.status)}
+                    </span>
+
+                    ${(String(t.status || '').toLowerCase() === 'completed' || String(t.status) === '2') ? (
+                        t.is_verified ? `
+                            <span class="status-chip verified-chip" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; padding:2px 6px; font-size:9px; font-weight:700; flex:0 0 auto; margin:0!important;" title="Verified by ${escapeHtml(t.verifier_name || 'Manager')}">
+                                <i class="fa-solid fa-certificate"></i> Verified
+                            </span>
+                        ` : `
+                            <span class="status-chip awaiting-chip" style="background:#fef9c3; color:#b45309; border:1px solid #fde68a; padding:2px 6px; font-size:9px; font-weight:700; flex:0 0 auto; margin:0!important;" title="Awaiting Manager Verification">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Awaiting Verification
+                            </span>
+                        `
+                    ) : ''}
+                </div>
+
+                <small style="display: flex; align-items: center; gap: 6px; color: #3b68b7; font-weight: 600; margin-top: 2px; font-size: 11px; flex-wrap: wrap;">
+                    <span><i class="fa-solid fa-folder-open" style="margin-right: 3px;"></i>${escapeHtml(projName)}</span>
+                    <span style="color: #64748b; font-weight: 700;">#${taskNum}</span>
+                </small>
+            </div>
+
+            <div class="entity-meta">
+                <small>Assigned By</small>
+                <b>${escapeHtml(formatShortName(byName))}</b>
+            </div>
+
+            <div class="entity-meta">
+                <small>Assigned To</small>
+                <b>${escapeHtml(formatShortName(toName))}</b>
+            </div>
+
+            <div class="entity-meta">
+                <small>Assigned on</small>
+                <b>${formatDateStr(t.created_at)}</b>
+            </div>
+
+            <div class="entity-meta" style="text-align: right;">
+                <small>Due date</small>
+                <b>${formatDateStr(t.due_date)}</b>
+            </div>
         </div>
     `;
 

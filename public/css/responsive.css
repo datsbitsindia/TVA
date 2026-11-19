@@ -1205,6 +1205,290 @@ html.dark-theme .login-card .alert.error {
     font-weight: 600 !important;
 }
 
+/* ==========================================================================
+   Responsive Task Card Views: Mobile vs. iPad / Desktop
+   ========================================================================== */
+
+@media (min-width: 769px) {
+    html body .entity-list {
+        gap: 6px !important;
+    }
+    html body .entity-card.task-card {
+        display: block !important;
+        grid-template-columns: none !important;
+        grid-template-rows: none !important;
+        padding: 0 !important;
+        border-radius: 16px !important;
+        background: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04) !important;
+        border: 1px solid #e2e8f0 !important;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease !important;
+        overflow: hidden !important;
+        margin-bottom: 0 !important;
+    }
+    html body .entity-card.task-card:hover {
+        transform: translateY(-1.5px) !important;
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08) !important;
+        border-color: #cbd5e1 !important;
+    }
+    .tc-mobile-view {
+        display: none !important;
+    }
+    .tc-desktop-view {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 14px 24px !important;
+        gap: 20px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        min-height: 84px !important;
+    }
+    .tc-desk-left-col {
+        flex: 0 0 75px !important;
+        min-width: 65px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        user-select: none !important;
+    }
+    .tc-desk-num {
+        font-size: 24px !important;
+        font-weight: 800 !important;
+        color: #0f172a !important;
+        letter-spacing: -0.02em !important;
+        line-height: 1 !important;
+        text-align: center !important;
+        margin: 0 !important;
+    }
+    .tc-desk-body {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        gap: 4px !important;
+    }
+    .tc-desk-proj-row {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex-wrap: nowrap !important;
+        line-height: 1.2 !important;
+    }
+    .tc-desk-project-tag {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 5px !important;
+        color: #3b68b7 !important;
+        font-size: 12.5px !important;
+        font-weight: 700 !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        line-height: 1.2 !important;
+    }
+    .tc-desk-project-tag i {
+        font-size: 12px !important;
+        color: #3b68b7 !important;
+    }
+    .tc-desk-title-row {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex-wrap: nowrap !important;
+        overflow: hidden !important;
+        width: 100% !important;
+        line-height: 1.3 !important;
+    }
+    .tc-desk-title {
+        font-size: 15px !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        text-decoration: none !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        flex: 0 1 auto !important;
+        max-width: 90% !important;
+    }
+    .tc-desk-title:hover {
+        color: #2563eb !important;
+    }
+    .tc-desk-meta-row {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 22px !important;
+        font-size: 12.5px !important;
+        line-height: 1.3 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    .tc-meta-item {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 5px !important;
+    }
+    .tc-lbl {
+        color: #64748b !important;
+        font-weight: 500 !important;
+        font-size: 13px !important;
+    }
+    .tc-val {
+        color: #0f172a !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
+    }
+    .tc-desk-right {
+        flex: 0 0 auto !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 6px !important;
+        min-width: 80px !important;
+    }
+    .tc-priority-pill {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 3.5px 12px !important;
+        border-radius: 999px !important;
+        font-size: 10.5px !important;
+        font-weight: 800 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        line-height: 1.3 !important;
+    }
+    .tc-priority-pill.low,
+    .tc-priority-pill.best {
+        background: #f1f5f9 !important;
+        color: #334155 !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+    .tc-priority-pill.medium {
+        background: #e0f2fe !important;
+        color: #0369a1 !important;
+        border: 1px solid #bae6fd !important;
+    }
+    .tc-priority-pill.high {
+        background: #fef3c7 !important;
+        color: #b45309 !important;
+        border: 1px solid #fde68a !important;
+    }
+    .tc-priority-pill.critical {
+        background: #fee2e2 !important;
+        color: #b91c1c !important;
+        border: 1px solid #fecaca !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .tc-desktop-view {
+        display: none !important;
+    }
+    html body .entity-card.task-card {
+        display: block !important;
+        padding: 9px 10px !important;
+        border-radius: 16px !important;
+    }
+    .tc-mobile-view {
+        display: grid !important;
+        grid-template-columns: 1.4fr 1.2fr 1fr 1fr !important;
+        grid-template-rows: auto auto !important;
+        align-items: start !important;
+        gap: 6px 5px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    .tc-mobile-view .entity-title {
+        grid-column: 1/-1 !important;
+        grid-row: 1 !important;
+        padding-left: 0 !important;
+        margin-bottom: 2px !important;
+    }
+    .tc-mobile-view .entity-meta {
+        display: block !important;
+        grid-column: auto !important;
+        grid-row: 2 !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
+    }
+    .tc-mobile-view .entity-meta small {
+        display: block !important;
+        font-size: 7.5px !important;
+        line-height: 1.1 !important;
+        color: #64748b !important;
+        text-transform: uppercase !important;
+        letter-spacing: .02em !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    .tc-mobile-view .entity-meta b {
+        display: block !important;
+        margin-top: 1px !important;
+        font-size: 9px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+}
+
+/* Dark Theme Adjustments */
+@media (min-width: 769px) {
+    html.dark-theme body .entity-card.task-card {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+    }
+    html.dark-theme body .entity-card.task-card:hover {
+        border-color: #475569 !important;
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35) !important;
+    }
+    html.dark-theme .tc-desk-num {
+        color: #f1f5f9 !important;
+    }
+    html.dark-theme .tc-desk-title {
+        color: #f8fafc !important;
+    }
+    html.dark-theme .tc-desk-project-tag {
+        color: #60a5fa !important;
+    }
+    html.dark-theme .tc-desk-project-tag i {
+        color: #60a5fa !important;
+    }
+    html.dark-theme .tc-lbl {
+        color: #94a3b8 !important;
+    }
+        color: #94a3b8 !important;
+    }
+    html.dark-theme .tc-val {
+        color: #f1f5f9 !important;
+    }
+    html.dark-theme .tc-right-due {
+        color: #94a3b8 !important;
+    }
+    html.dark-theme .tc-right-due.is-overdue {
+        color: #f87171 !important;
+    }
+
+    html.gray-glass-theme body .entity-card.task-card {
+        background: rgba(255, 255, 255, 0.75) !important;
+        backdrop-filter: blur(14px) !important;
+        -webkit-backdrop-filter: blur(14px) !important;
+        border-color: rgba(255, 255, 255, 0.5) !important;
+    }
+    html.gray-glass-theme .tc-desk-project {
+        background: rgba(238, 242, 246, 0.85) !important;
+        color: #334155 !important;
+        border-color: rgba(212, 224, 238, 0.7) !important;
+    }
+}
+
 
 
 

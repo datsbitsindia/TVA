@@ -1170,61 +1170,150 @@ document.addEventListener('submit', async function(e) {
                             return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
                         };
 
+                        const byName = Number(t.created_by) === myUserId ? 'You' : (t.creator_name || 'You');
+                        const toName = assignedIds.includes(myUserId) && assignedIds.length === 1 ? 'You' : (t.assigned_name || 'You');
+                        const projName = t.project_name || 'No project';
+                        const isEmptyProj = !t.project_name || String(t.project_name).toLowerCase().trim() === 'no project';
+                        const taskNum = t.task_number || t.id;
+
                         article.innerHTML = `
-                            <div class="entity-title">
-                                <div class="task-title-row" style="display: flex; align-items: center; gap: 5px; flex-wrap: nowrap; overflow: hidden; width: 100%;">
-                                    <a href="/tasks/${t.id}" style="font-weight: 800; font-size: 14px; color: #0f172a; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 auto; min-width: 40px;">
-                                        ${t.title}
-                                    </a>
-                                    ${t.is_routine ? '<span class="routine-badge" style="flex:0 0 auto; margin:0!important;"><i class="fa-solid fa-repeat"></i> Routine</span>' : ''}
-                                    ${isPureSelf ? `
-                                        <span class="status-chip self-task" style="background:#e0e7ff;color:#4338ca;border:1px solid #c7d2fe;padding:2px 6px;font-size:9px;font-weight:700;display:inline-flex;align-items:center;gap:3px;flex:0 0 auto;margin:0!important;">
-                                            <i class="fa-solid fa-user-check"></i> Self Task
+                            <!-- DESKTOP / IPAD VIEW (min-width: 769px) -->
+                            <div class="tc-desktop-view">
+                                <!-- 1: Task number centered -->
+                                <div class="tc-desk-left-col">
+                                    <span class="tc-desk-num">#${taskNum}</span>
+                                </div>
+
+                                <!-- 2: Task title on top, Project row below, Metadata -->
+                                <div class="tc-desk-body">
+                                    <!-- Line 1: Task title on top with badges -->
+                                    <div class="tc-desk-title-row">
+                                        <a href="/tasks/${t.id}" class="tc-desk-title">
+                                            ${t.title}
+                                        </a>
+
+                                        ${t.is_routine ? '<span class="routine-badge"><i class="fa-solid fa-repeat"></i> Routine</span>' : ''}
+                                        ${isPureSelf ? `
+                                            <span class="status-chip self-task">
+                                                <i class="fa-solid fa-user-check"></i> Self Task
+                                            </span>
+                                        ` : ''}
+                                        ${t.is_forwarded ? `
+                                            <span class="status-chip forwarded">
+                                                <i class="fa-solid fa-share"></i> Forwarded
+                                            </span>
+                                        ` : ''}
+                                        ${(t.status === 'Completed' || t.status === '2') ? (
+                                            t.is_verified ? `
+                                                <span class="status-chip verified-chip" title="Verified by ${t.verifier_name || 'Manager'}">
+                                                    <i class="fa-solid fa-certificate"></i> Verified
+                                                </span>
+                                            ` : `
+                                                <span class="status-chip awaiting-chip" title="Awaiting Manager Verification">
+                                                    <i class="fa-solid fa-triangle-exclamation"></i> Awaiting Verification
+                                                </span>
+                                            `
+                                        ) : ''}
+                                    </div>
+
+                                    <!-- Line 2: Folder icon + project name in distinct color -->
+                                    <div class="tc-desk-proj-row">
+                                        <span class="tc-desk-project-tag">
+                                            <i class="fa-solid fa-folder-open"></i> ${projName}
                                         </span>
-                                    ` : ''}
-                                    <span class="priority-pill ${(t.priority || 'medium').toLowerCase()}" style="font-weight:700; font-size:9px; padding:2px 6px; border-radius:99px; flex:0 0 auto; margin:0!important;">
-                                        <i class="fa-solid fa-flag"></i> ${t.priority || 'Medium'}
+                                    </div>
+
+                                    <!-- 3: By: ..., To: ..., On: ..., Due: ... all on one line -->
+                                    <div class="tc-desk-meta-row">
+                                        <span class="tc-meta-item"><span class="tc-lbl">By:</span> <span class="tc-val">${byName}</span></span>
+                                        <span class="tc-meta-item"><span class="tc-lbl">To:</span> <span class="tc-val">${toName}</span></span>
+                                        <span class="tc-meta-item"><span class="tc-lbl">On:</span> <span class="tc-val">${formatDateStr(t.created_at)}</span></span>
+                                        <span class="tc-meta-item"><span class="tc-lbl">Due:</span> <span class="tc-val">${formatDateStr(t.due_date)}</span></span>
+                                    </div>
+                                </div>
+
+                                <!-- Right side: Priority badge & Status chip -->
+                                <div class="tc-desktop-right">
+                                    <span class="tc-priority-pill ${(t.priority || 'medium').toLowerCase()}">
+                                        ${String(t.priority || 'Medium').toUpperCase()}
                                     </span>
-                                    ${t.is_forwarded ? `
-                                        <span class="status-chip forwarded" style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;padding:2px 6px;font-size:9px;font-weight:700;flex:0 0 auto;margin:0!important;">
-                                            <i class="fa-solid fa-share"></i> Forwarded
-                                        </span>
-                                    ` : ''}
-                                    <span class="status-chip task-status-pill ${t.is_overdue ? 'overdue' : String(t.status || 'Pending').toLowerCase().replaceAll(' ', '-')}" style="flex:0 0 auto; font-size:9px; padding:2px 6px; margin:0!important;">
+                                    <span class="status-chip task-status-pill ${t.is_overdue ? 'overdue' : String(t.status || 'Pending').toLowerCase().replaceAll(' ', '-')}">
                                         ${t.is_overdue ? 'Overdue' : t.status}
                                     </span>
-                                    ${(t.status === 'Completed' || t.status === '2') ? (
-                                        t.is_verified ? `
-                                            <span class="status-chip verified-chip" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; padding:2px 6px; font-size:9px; font-weight:700; flex:0 0 auto; margin:0!important;" title="Verified by ${t.verifier_name || 'Manager'}">
-                                                <i class="fa-solid fa-certificate"></i> Verified
-                                            </span>
-                                        ` : `
-                                            <span class="status-chip awaiting-chip" style="background:#fef9c3; color:#b45309; border:1px solid #fde68a; padding:2px 6px; font-size:9px; font-weight:700; flex:0 0 auto; margin:0!important;" title="Awaiting Manager Verification">
-                                                <i class="fa-solid fa-triangle-exclamation"></i> Awaiting Verification
-                                            </span>
-                                        `
-                                    ) : ''}
                                 </div>
-                                <small style="display: flex; align-items: center; gap: 6px; color: #3b68b7; font-weight: 600; margin-top: 2px; font-size: 11px; flex-wrap: wrap;">
-                                    <span><i class="fa-solid fa-folder-open" style="margin-right: 3px;"></i>${t.project_name || 'No project'}</span>
-                                    <span style="color: #64748b; font-weight: 700;">#${t.task_number || t.id}</span>
-                                </small>
                             </div>
-                            <div class="entity-meta">
-                                <small>Assigned By</small>
-                                <b>${formatShortName(t.creator_name || 'You')}</b>
-                            </div>
-                            <div class="entity-meta">
-                                <small>Assigned To</small>
-                                <b>${formatShortName(t.assigned_name || 'You')}</b>
-                            </div>
-                            <div class="entity-meta">
-                                <small>Assigned on</small>
-                                <b>${formatDateStr(t.created_at)}</b>
-                            </div>
-                            <div class="entity-meta" style="text-align: right;">
-                                <small>Due date</small>
-                                <b>${formatDateStr(t.due_date)}</b>
+
+                            <!-- MOBILE VIEW (max-width: 768px): ORIGINAL MOBILE LAYOUT -->
+                            <div class="tc-mobile-view">
+                                <div class="entity-title">
+                                    <div class="task-title-row" style="display: flex; align-items: center; gap: 5px; flex-wrap: nowrap; overflow: hidden; width: 100%;">
+                                        <a href="/tasks/${t.id}" style="font-weight: 800; font-size: 14px; color: #0f172a; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 auto; min-width: 40px;">
+                                            ${t.title}
+                                        </a>
+
+                                        ${t.is_routine ? '<span class="routine-badge" style="flex:0 0 auto; margin:0!important;"><i class="fa-solid fa-repeat"></i> Routine</span>' : ''}
+
+                                        ${isPureSelf ? `
+                                            <span class="status-chip self-task" style="background:#e0e7ff;color:#4338ca;border:1px solid #c7d2fe;padding:2px 6px;font-size:9px;font-weight:700;display:inline-flex;align-items:center;gap:3px;flex:0 0 auto;margin:0!important;">
+                                                <i class="fa-solid fa-user-check"></i> Self Task
+                                            </span>
+                                        ` : ''}
+
+                                        <span class="priority-pill ${(t.priority || 'medium').toLowerCase()}" style="font-weight:700; font-size:9px; padding:2px 6px; border-radius:99px; flex:0 0 auto; margin:0!important;">
+                                            <i class="fa-solid fa-flag"></i> ${t.priority || 'Medium'}
+                                        </span>
+
+                                        ${t.is_forwarded ? `
+                                            <span class="status-chip forwarded" style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;padding:2px 6px;font-size:9px;font-weight:700;flex:0 0 auto;margin:0!important;">
+                                                <i class="fa-solid fa-share"></i> Forwarded
+                                            </span>
+                                        ` : ''}
+
+                                        <span
+                                            class="status-chip task-status-pill ${t.is_overdue ? 'overdue' : String(t.status || 'Pending').toLowerCase().replaceAll(' ', '-')}"
+                                            style="flex:0 0 auto; font-size:9px; padding:2px 6px; margin:0!important;"
+                                        >
+                                            ${t.is_overdue ? 'Overdue' : t.status}
+                                        </span>
+
+                                        ${(t.status === 'Completed' || t.status === '2') ? (
+                                            t.is_verified ? `
+                                                <span class="status-chip verified-chip" title="Verified by ${t.verifier_name || 'Manager'}">
+                                                    <i class="fa-solid fa-certificate"></i> Verified
+                                                </span>
+                                            ` : `
+                                                <span class="status-chip awaiting-chip" title="Awaiting Manager Verification">
+                                                    <i class="fa-solid fa-triangle-exclamation"></i> Awaiting Verification
+                                                </span>
+                                            `
+                                        ) : ''}
+                                    </div>
+
+                                    <small style="display: flex; align-items: center; gap: 6px; color: #3b68b7; font-weight: 600; margin-top: 2px; font-size: 11px; flex-wrap: wrap;">
+                                        <span><i class="fa-solid fa-folder-open" style="margin-right: 3px;"></i>${projName}</span>
+                                        <span style="color: #64748b; font-weight: 700;">#${taskNum}</span>
+                                    </small>
+                                </div>
+
+                                <div class="entity-meta">
+                                    <small>Assigned By</small>
+                                    <b>${formatShortName(byName)}</b>
+                                </div>
+
+                                <div class="entity-meta">
+                                    <small>Assigned To</small>
+                                    <b>${formatShortName(toName)}</b>
+                                </div>
+
+                                <div class="entity-meta">
+                                    <small>Assigned on</small>
+                                    <b>${formatDateStr(t.created_at)}</b>
+                                </div>
+
+                                <div class="entity-meta" style="text-align: right;">
+                                    <small>Due date</small>
+                                    <b>${formatDateStr(t.due_date)}</b>
+                                </div>
                             </div>
                         `;
 
