@@ -1225,15 +1225,15 @@ document.addEventListener('submit', async function(e) {
 
                                     <!-- 3: By: ..., To: ..., On: ..., Due: ... all on one line -->
                                     <div class="tc-desk-meta-row">
-                                        <span class="tc-meta-item"><span class="tc-lbl">By:</span> <span class="tc-val">${byName}</span></span>
-                                        <span class="tc-meta-item"><span class="tc-lbl">To:</span> <span class="tc-val">${toName}</span></span>
-                                        <span class="tc-meta-item"><span class="tc-lbl">On:</span> <span class="tc-val">${formatDateStr(t.created_at)}</span></span>
-                                        <span class="tc-meta-item"><span class="tc-lbl">Due:</span> <span class="tc-val">${formatDateStr(t.due_date)}</span></span>
+                                        <span class="tc-meta-item tc-meta-by"><span class="tc-lbl">By:</span> <span class="tc-val">${byName}</span></span>
+                                        <span class="tc-meta-item tc-meta-to" title="${toName}"><span class="tc-lbl">To:</span> <span class="tc-val">${toName}</span></span>
+                                        <span class="tc-meta-item tc-meta-on"><span class="tc-lbl">On:</span> <span class="tc-val">${formatDateStr(t.created_at)}</span></span>
+                                        <span class="tc-meta-item tc-meta-due"><span class="tc-lbl">Due:</span> <span class="tc-val">${formatDateStr(t.due_date)}</span></span>
                                     </div>
                                 </div>
 
                                 <!-- Right side: Priority badge & Status chip -->
-                                <div class="tc-desktop-right">
+                                <div class="tc-desktop-right tc-desk-right">
                                     <span class="tc-priority-pill ${(t.priority || 'medium').toLowerCase()}">
                                         ${String(t.priority || 'Medium').toUpperCase()}
                                     </span>
