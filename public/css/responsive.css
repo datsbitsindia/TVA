@@ -1530,8 +1530,10 @@ html.dark-theme .login-card .alert.error {
     html.dark-theme .tc-val {
         color: #f1f5f9 !important;
     }
-    html.dark-theme .task-detail-num-tag {
-        color: #94a3b8 !important;
+    html.dark-theme .task-detail-top-num {
+        color: #f1f5f9 !important;
+        background: #1e293b !important;
+        border-color: #334155 !important;
     }
     html.dark-theme .tc-right-due {
         color: #94a3b8 !important;
