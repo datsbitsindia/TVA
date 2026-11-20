@@ -1247,7 +1247,7 @@ document.addEventListener('submit', async function(e) {
                             <div class="tc-mobile-view">
                                 <div class="entity-title">
                                     <div class="task-title-row" style="display: flex; align-items: center; gap: 5px; flex-wrap: nowrap; overflow: hidden; width: 100%;">
-                                        <a href="/tasks/${t.id}" style="font-weight: 800; font-size: 14px; color: #0f172a; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 auto; min-width: 40px;">
+                                        <a href="/tasks/${t.id}" style="font-weight: 600; font-size: 14px; color: #0f172a; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 auto; min-width: 40px;">
                                             ${t.title}
                                         </a>
 
@@ -1291,7 +1291,7 @@ document.addEventListener('submit', async function(e) {
 
                                     <small style="display: flex; align-items: center; gap: 6px; color: #3b68b7; font-weight: 600; margin-top: 2px; font-size: 11px; flex-wrap: wrap;">
                                         <span><i class="fa-solid fa-folder-open" style="margin-right: 3px;"></i>${projName}</span>
-                                        <span style="color: #64748b; font-weight: 700;">#${taskNum}</span>
+                                        <span style="color: #64748b; font-weight: 600;">#${taskNum}</span>
                                     </small>
                                 </div>
 

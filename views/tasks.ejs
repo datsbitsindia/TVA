@@ -203,8 +203,9 @@
         grid-template-rows: none !important;
         padding: 0 !important;
         border-radius: 16px !important;
-        background: #ffffff !important;
-        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04) !important;
+        background: rgba(255, 255, 255, 0.58) !important;
+        backdrop-filter: blur(35px) saturate(200%) !important;
+        -webkit-backdrop-filter: blur(35px) saturate(200%) !important;
         border: 1px solid #e2e8f0 !important;
         transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease !important;
         overflow: hidden !important;
@@ -240,7 +241,7 @@
     }
     .tc-desk-num {
         font-size: 17px !important;
-        font-weight: 800 !important;
+        font-weight: 600 !important;
         color: #0f172a !important;
         letter-spacing: -0.01em !important;
         line-height: 1 !important;
@@ -268,7 +269,7 @@
     }
     .tc-desk-title {
         font-size: 15px !important;
-        font-weight: 700 !important;
+        font-weight: 600 !important;
         color: #0f172a !important;
         text-decoration: none !important;
         white-space: nowrap !important;
@@ -497,42 +498,135 @@
     }
 }
 
-/* Dark Theme Adjustments */
-@media (min-width: 769px) {
-    html.dark-theme body .entity-card.task-card {
-        background: #1e293b !important;
-        border-color: #334155 !important;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
-    }
-    html.dark-theme body .entity-card.task-card:hover {
-        border-color: #475569 !important;
-        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35) !important;
-    }
-    html.dark-theme .tc-desk-num {
-        color: #f1f5f9 !important;
-    }
-    html.dark-theme .tc-desk-title {
-        color: #f8fafc !important;
-    }
-    html.dark-theme .tc-desk-project-tag {
-        color: #60a5fa !important;
-    }
-    html.dark-theme .tc-desk-project-tag i {
-        color: #60a5fa !important;
-    }
-    html.dark-theme .tc-lbl {
-        color: #94a3b8 !important;
-    }
-    html.dark-theme .tc-val {
-        color: #f1f5f9 !important;
-    }
+/* ── Left Status Indicator Stripe across all themes on task cards ── */
+html body .entity-card.task-card::before,
+html.dark-theme body .entity-card.task-card::before,
+html.gray-glass-theme body .entity-card.task-card::before {
+    content: "" !important;
+    position: absolute !important;
+    inset: 0 !important;
+    border-radius: inherit !important;
+    pointer-events: none !important;
+    display: block !important;
+    box-shadow: inset 4px 0 0 0 #d97706 !important;
+    transition: box-shadow 0.2s ease !important;
+    z-index: 2 !important;
+}
 
-    html.gray-glass-theme body .entity-card.task-card {
-        background: rgba(255, 255, 255, 0.75) !important;
-        backdrop-filter: blur(14px) !important;
-        -webkit-backdrop-filter: blur(14px) !important;
-        border-color: rgba(255, 255, 255, 0.5) !important;
-    }
+/* Overdue -> Red indicator */
+html body .entity-card.task-card[data-status="overdue"]::before,
+html body .entity-card.task-card[data-overdue="true"]::before,
+html body .entity-card.task-card.overdue-card::before,
+html.dark-theme body .entity-card.task-card[data-status="overdue"]::before,
+html.dark-theme body .entity-card.task-card[data-overdue="true"]::before,
+html.dark-theme body .entity-card.task-card.overdue-card::before,
+html.gray-glass-theme body .entity-card.task-card[data-status="overdue"]::before,
+html.gray-glass-theme body .entity-card.task-card[data-overdue="true"]::before,
+html.gray-glass-theme body .entity-card.task-card.overdue-card::before {
+    box-shadow: inset 4px 0 0 0 #dc2626 !important;
+}
+
+/* Pending / Planned -> Orange indicator */
+html body .entity-card.task-card[data-status="pending"]::before,
+html body .entity-card.task-card[data-status="planned"]::before,
+html.dark-theme body .entity-card.task-card[data-status="pending"]::before,
+html.dark-theme body .entity-card.task-card[data-status="planned"]::before,
+html.gray-glass-theme body .entity-card.task-card[data-status="pending"]::before,
+html.gray-glass-theme body .entity-card.task-card[data-status="planned"]::before {
+    box-shadow: inset 4px 0 0 0 #d97706 !important;
+}
+
+/* In Progress / Active -> Blue indicator */
+html body .entity-card.task-card[data-status="in-progress"]::before,
+html body .entity-card.task-card[data-status="active"]::before,
+html.dark-theme body .entity-card.task-card[data-status="in-progress"]::before,
+html.dark-theme body .entity-card.task-card[data-status="active"]::before,
+html.gray-glass-theme body .entity-card.task-card[data-status="in-progress"]::before,
+html.gray-glass-theme body .entity-card.task-card[data-status="active"]::before {
+    box-shadow: inset 4px 0 0 0 #3b68b7 !important;
+}
+
+/* Completed -> Green indicator */
+html body .entity-card.task-card[data-status="completed"]::before,
+html.dark-theme body .entity-card.task-card[data-status="completed"]::before,
+html.gray-glass-theme body .entity-card.task-card[data-status="completed"]::before {
+    box-shadow: inset 4px 0 0 0 #16a34a !important;
+}
+
+/* Gray Glass Theme (Reference: Transparent Glass Cards) */
+html.gray-glass-theme body .entity-card.task-card,
+html.gray-glass-theme body .entity-card.task-card[data-status],
+html.gray-glass-theme body .entity-card.task-card.overdue-card,
+html.gray-glass-theme .entity-card.task-card {
+    background: rgba(255, 255, 255, 0.22) !important;
+    backdrop-filter: blur(16px) saturate(1.1) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(1.1) !important;
+    border: 1px solid rgba(203, 213, 225, 0.5) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+}
+html.gray-glass-theme body .entity-card.task-card:hover,
+html.gray-glass-theme body .entity-card.task-card[data-status]:hover,
+html.gray-glass-theme body .entity-card.task-card.overdue-card:hover,
+html.gray-glass-theme .entity-card.task-card:hover {
+    background: rgba(255, 255, 255, 0.36) !important;
+    border-color: rgba(255, 255, 255, 0.55) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07) !important;
+}
+html.gray-glass-theme .tc-desk-num {
+    color: #0f172a !important;
+}
+html.gray-glass-theme .tc-desk-title {
+    color: #0f172a !important;
+}
+html.gray-glass-theme .tc-desk-project-tag {
+    color: #3b68b7 !important;
+}
+html.gray-glass-theme .tc-desk-project-tag i {
+    color: #3b68b7 !important;
+}
+html.gray-glass-theme .tc-lbl {
+    color: #64748b !important;
+}
+html.gray-glass-theme .tc-val {
+    color: #1e293b !important;
+}
+
+/* Dark Theme (Reference: Dark Charcoal Glass Cards) */
+html.dark-theme body .entity-card.task-card,
+html.dark-theme body .entity-card.task-card[data-status],
+html.dark-theme body .entity-card.task-card.overdue-card,
+html.dark-theme .entity-card.task-card {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(16px) saturate(0.5) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.07) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+html.dark-theme body .entity-card.task-card:hover,
+html.dark-theme body .entity-card.task-card[data-status]:hover,
+html.dark-theme body .entity-card.task-card.overdue-card:hover,
+html.dark-theme .entity-card.task-card:hover {
+    background: rgba(255, 255, 255, 0.09) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6) !important;
+}
+html.dark-theme .tc-desk-num {
+    color: #e2e8f0 !important;
+}
+html.dark-theme .tc-desk-title {
+    color: #f8fafc !important;
+}
+html.dark-theme .tc-desk-project-tag {
+    color: #94a3b8 !important;
+}
+html.dark-theme .tc-desk-project-tag i {
+    color: #94a3b8 !important;
+}
+html.dark-theme .tc-lbl {
+    color: #71717a !important;
+}
+html.dark-theme .tc-val {
+    color: #e4e4e7 !important;
 }
 </style>
 
@@ -637,7 +731,7 @@
                 <div class="tc-mobile-view">
                     <div class="entity-title">
                         <div class="task-title-row" style="display: flex; align-items: center; gap: 5px; flex-wrap: nowrap; overflow: hidden; width: 100%;">
-                            <a href="/tasks/<%= t.id %>" style="font-weight: 800; font-size: 14px; color: #0f172a; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 auto; min-width: 40px;">
+                            <a href="/tasks/<%= t.id %>" style="font-weight: 600; font-size: 14px; color: #0f172a; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 auto; min-width: 40px;">
                                 <%= t.title %>
                             </a>
 
@@ -687,7 +781,7 @@
 
                         <small style="display: flex; align-items: center; gap: 6px; color: #3b68b7; font-weight: 600; margin-top: 2px; font-size: 11px; flex-wrap: wrap;">
                             <span><i class="fa-solid fa-folder-open" style="margin-right: 3px;"></i><%= t.project_name || 'No project' %></span>
-                            <span style="color: #64748b; font-weight: 700;">#<%= t.task_number || t.id %></span>
+                            <span style="color: #64748b; font-weight: 600;">#<%= t.task_number || t.id %></span>
                         </small>
                     </div>
 
@@ -854,7 +948,7 @@ function createTaskCardNode(t) {
         <div class="tc-mobile-view">
             <div class="entity-title">
                 <div class="task-title-row" style="display: flex; align-items: center; gap: 5px; flex-wrap: nowrap; overflow: hidden; width: 100%;">
-                    <a href="/tasks/${t.id}" style="font-weight: 800; font-size: 14px; color: #0f172a; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 auto; min-width: 40px;">
+                    <a href="/tasks/${t.id}" style="font-weight: 600; font-size: 14px; color: #0f172a; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 auto; min-width: 40px;">
                         ${escapeHtml(t.title)}
                     </a>
 
@@ -898,7 +992,7 @@ function createTaskCardNode(t) {
 
                 <small style="display: flex; align-items: center; gap: 6px; color: #3b68b7; font-weight: 600; margin-top: 2px; font-size: 11px; flex-wrap: wrap;">
                     <span><i class="fa-solid fa-folder-open" style="margin-right: 3px;"></i>${escapeHtml(projName)}</span>
-                    <span style="color: #64748b; font-weight: 700;">#${taskNum}</span>
+                    <span style="color: #64748b; font-weight: 600;">#${taskNum}</span>
                 </small>
             </div>
 

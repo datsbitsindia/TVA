@@ -1223,23 +1223,30 @@ html.dark-theme .login-card .alert.error {
     html body .entity-list {
         gap: 6px !important;
     }
-    html body .entity-card.task-card {
+    html body .entity-card.task-card,
+    html body .entity-card.task-card[data-status],
+    html body .entity-card.task-card.overdue-card {
         display: block !important;
         grid-template-columns: none !important;
         grid-template-rows: none !important;
         padding: 0 !important;
         border-radius: 16px !important;
-        background: #ffffff !important;
-        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04) !important;
+        background: rgba(255, 255, 255, 0.58) !important;
+        backdrop-filter: blur(35px) saturate(200%) !important;
+        -webkit-backdrop-filter: blur(35px) saturate(200%) !important;
         border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04) !important;
         transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease !important;
         overflow: hidden !important;
         margin-bottom: 0 !important;
     }
-    html body .entity-card.task-card:hover {
+    html body .entity-card.task-card:hover,
+    html body .entity-card.task-card[data-status]:hover,
+    html body .entity-card.task-card.overdue-card:hover {
         transform: translateY(-1.5px) !important;
         box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08) !important;
         border-color: #cbd5e1 !important;
+        background: rgba(255, 255, 255, 0.75) !important;
     }
     .tc-mobile-view {
         display: none !important;
@@ -1266,7 +1273,7 @@ html.dark-theme .login-card .alert.error {
     }
     .tc-desk-num {
         font-size: 17px !important;
-        font-weight: 800 !important;
+        font-weight: 600 !important;
         color: #0f172a !important;
         letter-spacing: -0.01em !important;
         line-height: 1 !important;
@@ -1294,7 +1301,7 @@ html.dark-theme .login-card .alert.error {
     }
     .tc-desk-title {
         font-size: 15px !important;
-        font-weight: 700 !important;
+        font-weight: 600 !important;
         color: #0f172a !important;
         text-decoration: none !important;
         white-space: nowrap !important;
@@ -1512,57 +1519,254 @@ html.dark-theme .login-card .alert.error {
     }
 }
 
-/* Dark Theme Adjustments */
-@media (min-width: 769px) {
-    html.dark-theme body .entity-card.task-card {
-        background: #1e293b !important;
-        border-color: #334155 !important;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
-    }
-    html.dark-theme body .entity-card.task-card:hover {
-        border-color: #475569 !important;
-        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35) !important;
-    }
-    html.dark-theme .tc-desk-num {
-        color: #f1f5f9 !important;
-    }
-    html.dark-theme .tc-desk-title {
-        color: #f8fafc !important;
-    }
-    html.dark-theme .tc-desk-project-tag {
-        color: #60a5fa !important;
-    }
-    html.dark-theme .tc-desk-project-tag i {
-        color: #60a5fa !important;
-    }
-    html.dark-theme .tc-lbl {
-        color: #94a3b8 !important;
-    html.dark-theme .tc-val {
-        color: #f1f5f9 !important;
-    }
-    html.dark-theme .task-detail-top-num {
-        color: #f1f5f9 !important;
-        background: #1e293b !important;
-        border-color: #334155 !important;
-    }
-    html.dark-theme .tc-right-due {
-        color: #94a3b8 !important;
-    }
-    html.dark-theme .tc-right-due.is-overdue {
-        color: #f87171 !important;
-    }
+/* ==========================================================================
+   Theme Styling for Task Cards: Gray Glass & Dark Theme
+   ========================================================================== */
 
-    html.gray-glass-theme body .entity-card.task-card {
-        background: rgba(255, 255, 255, 0.75) !important;
-        backdrop-filter: blur(14px) !important;
-        -webkit-backdrop-filter: blur(14px) !important;
-        border-color: rgba(255, 255, 255, 0.5) !important;
-    }
-    html.gray-glass-theme .tc-desk-project {
-        background: rgba(238, 242, 246, 0.85) !important;
-        color: #334155 !important;
-        border-color: rgba(212, 224, 238, 0.7) !important;
-    }
+/* ── Left Status Indicator Stripe across all themes on task cards ── */
+html body .entity-card.task-card::before,
+html.dark-theme body .entity-card.task-card::before,
+html.gray-glass-theme body .entity-card.task-card::before {
+    content: "" !important;
+    position: absolute !important;
+    inset: 0 !important;
+    border-radius: inherit !important;
+    pointer-events: none !important;
+    display: block !important;
+    box-shadow: inset 4px 0 0 0 #d97706 !important;
+    transition: box-shadow 0.2s ease !important;
+    z-index: 2 !important;
+}
+
+/* Overdue -> Red indicator */
+html body .entity-card.task-card[data-status="overdue"]::before,
+html body .entity-card.task-card[data-overdue="true"]::before,
+html body .entity-card.task-card.overdue-card::before,
+html.dark-theme body .entity-card.task-card[data-status="overdue"]::before,
+html.dark-theme body .entity-card.task-card[data-overdue="true"]::before,
+html.dark-theme body .entity-card.task-card.overdue-card::before,
+html.gray-glass-theme body .entity-card.task-card[data-status="overdue"]::before,
+html.gray-glass-theme body .entity-card.task-card[data-overdue="true"]::before,
+html.gray-glass-theme body .entity-card.task-card.overdue-card::before {
+    box-shadow: inset 4px 0 0 0 #dc2626 !important;
+}
+
+/* Pending / Planned -> Orange indicator */
+html body .entity-card.task-card[data-status="pending"]::before,
+html body .entity-card.task-card[data-status="planned"]::before,
+html.dark-theme body .entity-card.task-card[data-status="pending"]::before,
+html.dark-theme body .entity-card.task-card[data-status="planned"]::before,
+html.gray-glass-theme body .entity-card.task-card[data-status="pending"]::before,
+html.gray-glass-theme body .entity-card.task-card[data-status="planned"]::before {
+    box-shadow: inset 4px 0 0 0 #d97706 !important;
+}
+
+/* In Progress / Active -> Blue indicator */
+html body .entity-card.task-card[data-status="in-progress"]::before,
+html body .entity-card.task-card[data-status="active"]::before,
+html.dark-theme body .entity-card.task-card[data-status="in-progress"]::before,
+html.dark-theme body .entity-card.task-card[data-status="active"]::before,
+html.gray-glass-theme body .entity-card.task-card[data-status="in-progress"]::before,
+html.gray-glass-theme body .entity-card.task-card[data-status="active"]::before {
+    box-shadow: inset 4px 0 0 0 #3b68b7 !important;
+}
+
+/* Completed -> Green indicator */
+html body .entity-card.task-card[data-status="completed"]::before,
+html.dark-theme body .entity-card.task-card[data-status="completed"]::before,
+html.gray-glass-theme body .entity-card.task-card[data-status="completed"]::before {
+    box-shadow: inset 4px 0 0 0 #16a34a !important;
+}
+
+/* ── Gray Glass Theme (Reference: Transparent Glass Cards) ── */
+html.gray-glass-theme body .entity-card.task-card,
+html.gray-glass-theme body .entity-card.task-card[data-status],
+html.gray-glass-theme body .entity-card.task-card.overdue-card,
+html.gray-glass-theme .entity-card.task-card {
+    background: rgba(255, 255, 255, 0.22) !important;
+    backdrop-filter: blur(16px) saturate(1.1) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(1.1) !important;
+    border: 1px solid rgba(203, 213, 225, 0.5) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+}
+html.gray-glass-theme body .entity-card.task-card:hover,
+html.gray-glass-theme body .entity-card.task-card[data-status]:hover,
+html.gray-glass-theme body .entity-card.task-card.overdue-card:hover,
+html.gray-glass-theme .entity-card.task-card:hover {
+    background: rgba(255, 255, 255, 0.36) !important;
+    border-color: rgba(255, 255, 255, 0.55) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07) !important;
+}
+html.gray-glass-theme .tc-desk-num {
+    color: #0f172a !important;
+}
+html.gray-glass-theme .tc-desk-title {
+    color: #0f172a !important;
+}
+html.gray-glass-theme .tc-desk-project-tag {
+    color: #3b68b7 !important;
+}
+html.gray-glass-theme .tc-desk-project-tag i {
+    color: #3b68b7 !important;
+}
+html.gray-glass-theme .tc-lbl {
+    color: #64748b !important;
+}
+html.gray-glass-theme .tc-val {
+    color: #1e293b !important;
+}
+html.gray-glass-theme .tc-right-due {
+    color: #64748b !important;
+}
+html.gray-glass-theme .tc-right-due.is-overdue {
+    color: #dc2626 !important;
+}
+html.gray-glass-theme .tc-priority-pill.low,
+html.gray-glass-theme .tc-priority-pill.best {
+    background: rgba(255, 255, 255, 0.55) !important;
+    color: #334155 !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+}
+html.gray-glass-theme .tc-priority-pill.medium {
+    background: rgba(224, 242, 254, 0.6) !important;
+    color: #0369a1 !important;
+    border: 1px solid rgba(186, 230, 253, 0.8) !important;
+}
+html.gray-glass-theme .tc-priority-pill.high {
+    background: rgba(254, 243, 199, 0.6) !important;
+    color: #b45309 !important;
+    border: 1px solid rgba(253, 230, 138, 0.8) !important;
+}
+html.gray-glass-theme .tc-priority-pill.critical {
+    background: rgba(254, 226, 226, 0.6) !important;
+    color: #b91c1c !important;
+    border: 1px solid rgba(254, 202, 202, 0.8) !important;
+}
+html.gray-glass-theme .task-status-pill.pending,
+html.gray-glass-theme .status-chip.pending {
+    background: rgba(254, 243, 199, 0.6) !important;
+    color: #b45309 !important;
+    border: 1px solid rgba(253, 230, 138, 0.8) !important;
+}
+html.gray-glass-theme .task-status-pill.completed,
+html.gray-glass-theme .status-chip.completed {
+    background: rgba(220, 252, 231, 0.6) !important;
+    color: #15803d !important;
+    border: 1px solid rgba(187, 247, 208, 0.8) !important;
+}
+html.gray-glass-theme .task-status-pill.overdue,
+html.gray-glass-theme .status-chip.overdue {
+    background: rgba(254, 226, 226, 0.6) !important;
+    color: #b91c1c !important;
+    border: 1px solid rgba(254, 202, 202, 0.8) !important;
+}
+html.gray-glass-theme .task-detail-top-num {
+    background: rgba(255, 255, 255, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.75) !important;
+    color: #0f172a !important;
+}
+
+/* ── Dark Theme (Reference: Dark Charcoal Glass Cards) ── */
+html.dark-theme body .entity-card.task-card,
+html.dark-theme body .entity-card.task-card[data-status],
+html.dark-theme body .entity-card.task-card.overdue-card,
+html.dark-theme .entity-card.task-card {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(16px) saturate(0.5) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.07) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+html.dark-theme body .entity-card.task-card:hover,
+html.dark-theme body .entity-card.task-card[data-status]:hover,
+html.dark-theme body .entity-card.task-card.overdue-card:hover,
+html.dark-theme .entity-card.task-card:hover {
+    background: rgba(255, 255, 255, 0.09) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6) !important;
+}
+html.dark-theme .tc-desk-num {
+    color: #e2e8f0 !important;
+}
+html.dark-theme .tc-desk-title {
+    color: #f8fafc !important;
+}
+html.dark-theme .tc-desk-project-tag {
+    color: #94a3b8 !important;
+}
+html.dark-theme .tc-desk-project-tag i {
+    color: #94a3b8 !important;
+}
+html.dark-theme .tc-lbl {
+    color: #71717a !important;
+}
+html.dark-theme .tc-val {
+    color: #e4e4e7 !important;
+}
+html.dark-theme .tc-right-due {
+    color: #94a3b8 !important;
+}
+html.dark-theme .tc-right-due.is-overdue {
+    color: #f87171 !important;
+}
+html.dark-theme .task-detail-top-num {
+    color: #f1f5f9 !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+}
+html.dark-theme .tc-priority-pill.low,
+html.dark-theme .tc-priority-pill.best {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #cbd5e1 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+html.dark-theme .tc-priority-pill.medium {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #cbd5e1 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+html.dark-theme .tc-priority-pill.high {
+    background: rgba(245, 158, 11, 0.15) !important;
+    color: #fbbf24 !important;
+    border: 1px solid rgba(245, 158, 11, 0.25) !important;
+}
+html.dark-theme .tc-priority-pill.critical {
+    background: rgba(239, 68, 68, 0.18) !important;
+    color: #f87171 !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+}
+html.dark-theme .task-status-pill.pending,
+html.dark-theme .status-chip.pending {
+    background: rgba(245, 158, 11, 0.15) !important;
+    color: #fbbf24 !important;
+    border: 1px solid rgba(245, 158, 11, 0.25) !important;
+}
+html.dark-theme .task-status-pill.completed,
+html.dark-theme .status-chip.completed {
+    background: rgba(34, 197, 94, 0.15) !important;
+    color: #4ade80 !important;
+    border: 1px solid rgba(34, 197, 94, 0.25) !important;
+}
+html.dark-theme .task-status-pill.overdue,
+html.dark-theme .status-chip.overdue {
+    background: rgba(239, 68, 68, 0.18) !important;
+    color: #f87171 !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+}
+html.dark-theme .routine-badge {
+    background: rgba(245, 158, 11, 0.15) !important;
+    color: #fbbf24 !important;
+    border: 1px solid rgba(245, 158, 11, 0.25) !important;
+}
+html.dark-theme .status-chip.self-task {
+    background: rgba(99, 102, 241, 0.15) !important;
+    color: #a5b4fc !important;
+    border: 1px solid rgba(99, 102, 241, 0.25) !important;
+}
+html.dark-theme .status-chip.forwarded {
+    background: rgba(14, 165, 233, 0.15) !important;
+    color: #7dd3fc !important;
+    border: 1px solid rgba(14, 165, 233, 0.25) !important;
 }
 
 
