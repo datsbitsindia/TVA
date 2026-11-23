@@ -279,7 +279,7 @@ exports.list = async (req, res, next) => {
         const projects = await db.prepare("SELECT id,name FROM projects WHERE organization_id=? AND ((status NOT IN (2, 3, '2', '3', 'Completed', 'Cancelled') AND status_id NOT IN (2, 3)) OR name='Self Task') ORDER BY CASE WHEN name='Self Task' THEN 0 ELSE 1 END, name").all(orgId);
         
         let dailyRoutines = [];
-        if (u.role === 'manager') {
+        if (u.role === 'manager' || u.role === 'admin' || u.role === 'employee') {
             dailyRoutines = await db.prepare(`
                 SELECT r.*, p.name project_name, u.name assigned_name 
                 FROM daily_routines r 

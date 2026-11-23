@@ -901,6 +901,8 @@ html.dark-theme .metric-card.red i {
 }
 html.dark-theme .metric-card.purple i {
     background: rgba(60, 20, 120, 0.5) !important;
+    color: #c084fc !important;
+}
 html.dark-theme .task-tab-btn.active {
     background: rgba(255, 255, 255, 0.10) !important;
     border-color: rgba(255, 255, 255, 0.12) !important;
@@ -1319,7 +1321,7 @@ html.dark-theme body .awaiting-chip i,
 html.dark-theme body .awaiting-pill i,
 html.dark-theme body .verified-chip i,
 html.dark-theme body .pill i,
-html.dark-theme body .priority-pill i {
+html.dark-theme body .priority-pill i,
 html.dark-theme body .priority-tag-pill i {
     color: inherit !important;
 }
@@ -2081,6 +2083,747 @@ html.gray-glass-theme body .task-desc-box p,
 html.gray-glass-theme body .task-info-grid b,
 html.gray-glass-theme body .task-info-grid div b {
     color: #0F172A !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   TVA Profile Switcher & Add Account Modal - Multi-Theme Support
+   ───────────────────────────────────────────────────────────────────────────── */
+.tva-profile-picker {
+    position: relative;
+    display: inline-block;
+}
+
+/* Trigger Pill */
+.tva-profile-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 12px 3px 5px;
+    height: 36px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1.5px solid rgba(59, 104, 183, 0.3);
+    color: #0f172a;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.tva-profile-pill:hover {
+    background: #ffffff;
+    border-color: rgba(59, 104, 183, 0.5);
+    box-shadow: 0 4px 14px rgba(59, 104, 183, 0.15);
+}
+.tva-profile-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 12px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+.tva-profile-summary {
+    text-align: left;
+    line-height: 1.2;
+    max-width: 130px;
+    overflow: hidden;
+}
+.tva-profile-summary-name {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.tva-profile-summary-role {
+    font-size: 10.5px;
+    color: #64748b;
+    font-weight: 500;
+    text-transform: capitalize;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.tva-profile-arrow {
+    font-size: 9px;
+    color: #64748b;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+/* Floating Popup Menu */
+.tva-profile-popup {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 999999;
+    width: 295px;
+    padding: 12px;
+    border-radius: 18px;
+    background: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.14), 0 4px 12px rgba(15, 23, 42, 0.08);
+    border: 1px solid #e2e8f0;
+}
+
+/* Active User Card */
+.tva-profile-active-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+.tva-profile-active-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2563eb, #8b5cf6);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 15px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+.tva-profile-active-info {
+    overflow: hidden;
+    flex: 1;
+}
+.tva-profile-active-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.tva-profile-active-email {
+    font-size: 11.5px;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.tva-profile-active-org {
+    font-size: 10.5px;
+    color: #2563eb;
+    font-weight: 600;
+}
+.tva-profile-active-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 99px;
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+}
+
+/* Other Profiles Section */
+.tva-profile-section {
+    margin-top: 10px;
+}
+.tva-profile-section-hdr {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #475569;
+    padding: 4px 6px 8px;
+    letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.tva-profile-count {
+    font-size: 10.5px;
+    color: #94a3b8;
+    font-weight: 500;
+}
+.tva-profile-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    max-height: 210px;
+    overflow-y: auto;
+}
+.tva-profile-empty {
+    padding: 12px 10px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 11.5px;
+    line-height: 1.4;
+}
+
+/* Items in list */
+.tva-profile-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    background: transparent;
+}
+.tva-profile-item:hover {
+    background: #f1f5f9;
+}
+.tva-profile-item-left {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    overflow: hidden;
+    flex: 1;
+}
+.tva-profile-item-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+.tva-profile-item-text {
+    overflow: hidden;
+    text-align: left;
+}
+.tva-profile-item-name {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.tva-profile-item-meta {
+    font-size: 10.5px;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.tva-profile-item-org {
+    color: #2563eb;
+    font-weight: 600;
+}
+.tva-profile-item-remove {
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    padding: 4px 6px;
+    cursor: pointer;
+    font-size: 12px;
+    border-radius: 4px;
+    margin-left: 4px;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+.tva-profile-item-remove:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* Actions */
+.tva-profile-action-group {
+    border-top: 1px solid #f1f5f9;
+    margin-top: 10px;
+    padding-top: 8px;
+}
+.tva-profile-add-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #1e293b;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 12.5px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.15s ease;
+}
+.tva-profile-add-btn i {
+    font-size: 12px;
+    color: #2563eb;
+}
+.tva-profile-add-btn:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+.tva-profile-superadmin-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    color: #7e22ce;
+    background: #f5f3ff;
+    border: 1px solid #ddd6fe;
+    box-sizing: border-box;
+    transition: background 0.15s ease;
+}
+.tva-profile-superadmin-link:hover {
+    background: #ede9fe;
+}
+.tva-profile-signout-row {
+    border-top: 1px solid #f1f5f9;
+    margin-top: 8px;
+    padding-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.tva-profile-signout-btn {
+    background: none;
+    border: none;
+    color: #ef4444;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 6px;
+    font-family: 'Inter', sans-serif;
+    transition: color 0.15s ease;
+}
+.tva-profile-signout-btn:hover {
+    color: #dc2626;
+}
+.tva-profile-signout-all-btn {
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 11.5px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 4px 6px;
+    font-family: 'Inter', sans-serif;
+    transition: color 0.15s ease;
+}
+.tva-profile-signout-all-btn:hover {
+    color: #0f172a;
+}
+
+/* Add Account Modal */
+.tva-add-modal-card {
+    width: 100%;
+    max-width: 390px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    color: #0f172a;
+}
+.tva-add-modal-header {
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.tva-add-modal-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #eff6ff;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+.tva-add-modal-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+.tva-add-modal-sub {
+    font-size: 11.5px;
+    color: #64748b;
+    margin: 2px 0 0;
+}
+.tva-add-modal-close {
+    border: none;
+    background: none;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px;
+    transition: color 0.15s;
+}
+.tva-add-modal-close:hover {
+    color: #ef4444;
+}
+.tva-add-modal-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 6px;
+}
+.tva-add-modal-input {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1.5px solid #cbd5e1;
+    font-size: 13.5px;
+    outline: none;
+    box-sizing: border-box;
+    background: #ffffff;
+    color: #0f172a;
+    transition: border-color 0.15s;
+}
+.tva-add-modal-input:focus {
+    border-color: #2563eb;
+}
+.tva-add-modal-cancel {
+    padding: 8px 14px;
+    font-size: 13px;
+    border-radius: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+}
+
+/* ── Gray Glass Theme Overrides ── */
+html.gray-glass-theme .tva-profile-pill {
+    background: rgba(255, 255, 255, 0.38) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+    color: #0f172a !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6) !important;
+}
+html.gray-glass-theme .tva-profile-pill:hover {
+    background: rgba(255, 255, 255, 0.62) !important;
+    border-color: rgba(255, 255, 255, 0.9) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12) !important;
+}
+html.gray-glass-theme .tva-profile-summary-name {
+    color: #0f172a !important;
+}
+html.gray-glass-theme .tva-profile-summary-role,
+html.gray-glass-theme .tva-profile-arrow {
+    color: #475569 !important;
+}
+
+html.gray-glass-theme .tva-profile-popup {
+    background: rgba(225, 232, 242, 0.92) !important;
+    backdrop-filter: blur(28px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+    border-color: rgba(255, 255, 255, 0.75) !important;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.16), 0 4px 12px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+    color: #0f172a !important;
+}
+html.gray-glass-theme .tva-profile-active-card {
+    border-bottom-color: rgba(255, 255, 255, 0.5) !important;
+}
+html.gray-glass-theme .tva-profile-active-name {
+    color: #0f172a !important;
+}
+html.gray-glass-theme .tva-profile-active-email {
+    color: #475569 !important;
+}
+html.gray-glass-theme .tva-profile-active-org {
+    color: #1d4ed8 !important;
+}
+html.gray-glass-theme .tva-profile-active-badge {
+    background: rgba(37, 99, 235, 0.15) !important;
+    color: #1d4ed8 !important;
+    border-color: rgba(37, 99, 235, 0.28) !important;
+}
+html.gray-glass-theme .tva-profile-section-hdr {
+    color: #334155 !important;
+}
+html.gray-glass-theme .tva-profile-count,
+html.gray-glass-theme .tva-profile-empty {
+    color: #64748b !important;
+}
+html.gray-glass-theme .tva-profile-item:hover {
+    background: rgba(255, 255, 255, 0.6) !important;
+}
+html.gray-glass-theme .tva-profile-item-name {
+    color: #0f172a !important;
+}
+html.gray-glass-theme .tva-profile-item-meta {
+    color: #475569 !important;
+}
+html.gray-glass-theme .tva-profile-item-org {
+    color: #1d4ed8 !important;
+}
+html.gray-glass-theme .tva-profile-item-remove {
+    color: #64748b !important;
+}
+html.gray-glass-theme .tva-profile-item-remove:hover {
+    color: #dc2626 !important;
+    background: rgba(220, 38, 38, 0.15) !important;
+}
+html.gray-glass-theme .tva-profile-action-group,
+html.gray-glass-theme .tva-profile-signout-row {
+    border-top-color: rgba(255, 255, 255, 0.5) !important;
+}
+html.gray-glass-theme .tva-profile-add-btn {
+    background: rgba(255, 255, 255, 0.45) !important;
+    border-color: rgba(255, 255, 255, 0.7) !important;
+    color: #0f172a !important;
+}
+html.gray-glass-theme .tva-profile-add-btn:hover {
+    background: rgba(255, 255, 255, 0.75) !important;
+    border-color: rgba(255, 255, 255, 0.95) !important;
+}
+html.gray-glass-theme .tva-profile-superadmin-link {
+    background: rgba(168, 85, 247, 0.14) !important;
+    color: #6b21a8 !important;
+    border-color: rgba(168, 85, 247, 0.3) !important;
+}
+html.gray-glass-theme .tva-profile-superadmin-link:hover {
+    background: rgba(168, 85, 247, 0.22) !important;
+}
+html.gray-glass-theme .tva-profile-signout-btn {
+    color: #dc2626 !important;
+}
+html.gray-glass-theme .tva-profile-signout-all-btn {
+    color: #475569 !important;
+}
+html.gray-glass-theme .tva-profile-signout-all-btn:hover {
+    color: #0f172a !important;
+}
+
+/* Modal Gray Glass */
+html.gray-glass-theme .tva-add-modal-card {
+    background: rgba(230, 236, 245, 0.94) !important;
+    backdrop-filter: blur(28px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+    border-color: rgba(255, 255, 255, 0.75) !important;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.2) !important;
+    color: #0f172a !important;
+}
+html.gray-glass-theme .tva-add-modal-header {
+    border-bottom-color: rgba(255, 255, 255, 0.5) !important;
+}
+html.gray-glass-theme .tva-add-modal-title {
+    color: #0f172a !important;
+}
+html.gray-glass-theme .tva-add-modal-sub {
+    color: #475569 !important;
+}
+html.gray-glass-theme .tva-add-modal-close {
+    color: #64748b !important;
+}
+html.gray-glass-theme .tva-add-modal-label {
+    color: #334155 !important;
+}
+html.gray-glass-theme .tva-add-modal-input {
+    background: rgba(255, 255, 255, 0.7) !important;
+    border-color: rgba(255, 255, 255, 0.85) !important;
+    color: #0f172a !important;
+}
+html.gray-glass-theme .tva-add-modal-cancel {
+    background: rgba(255, 255, 255, 0.5) !important;
+    border-color: rgba(255, 255, 255, 0.7) !important;
+    color: #334155 !important;
+}
+
+/* ── Dark Theme Overrides ── */
+html.dark-theme .tva-profile-pill {
+    background: rgba(15, 23, 42, 0.75) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #e2e8f0 !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06) !important;
+}
+html.dark-theme .tva-profile-pill:hover {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border-color: rgba(96, 165, 250, 0.4) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+}
+html.dark-theme .tva-profile-summary-name {
+    color: #f1f5f9 !important;
+}
+html.dark-theme .tva-profile-summary-role,
+html.dark-theme .tva-profile-arrow {
+    color: #94a3b8 !important;
+}
+
+html.dark-theme .tva-profile-popup {
+    background: #18181b !important;
+    border-color: #27272a !important;
+    box-shadow: 0 18px 45px rgba(0,0,0,0.45), 0 4px 12px rgba(0,0,0,0.25) !important;
+    color: #f4f4f5 !important;
+}
+html.dark-theme .tva-profile-active-card {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+html.dark-theme .tva-profile-active-name {
+    color: #ffffff !important;
+}
+html.dark-theme .tva-profile-active-email {
+    color: #a1a1aa !important;
+}
+html.dark-theme .tva-profile-active-org {
+    color: #60a5fa !important;
+}
+html.dark-theme .tva-profile-active-badge {
+    background: rgba(37, 99, 235, 0.25) !important;
+    color: #93c5fd !important;
+    border-color: rgba(96, 165, 250, 0.3) !important;
+}
+html.dark-theme .tva-profile-section-hdr {
+    color: #e4e4e7 !important;
+}
+html.dark-theme .tva-profile-count,
+html.dark-theme .tva-profile-empty {
+    color: #71717a !important;
+}
+html.dark-theme .tva-profile-item:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+html.dark-theme .tva-profile-item-name {
+    color: #f4f4f5 !important;
+}
+html.dark-theme .tva-profile-item-meta {
+    color: #a1a1aa !important;
+}
+html.dark-theme .tva-profile-item-org {
+    color: #60a5fa !important;
+}
+html.dark-theme .tva-profile-item-remove {
+    color: #71717a !important;
+}
+html.dark-theme .tva-profile-item-remove:hover {
+    color: #f87171 !important;
+    background: rgba(239, 68, 68, 0.15) !important;
+}
+html.dark-theme .tva-profile-action-group,
+html.dark-theme .tva-profile-signout-row {
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+html.dark-theme .tva-profile-add-btn {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    color: #f4f4f5 !important;
+}
+html.dark-theme .tva-profile-add-btn:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+}
+html.dark-theme .tva-profile-superadmin-link {
+    background: rgba(168, 85, 247, 0.15) !important;
+    color: #c084fc !important;
+    border-color: rgba(168, 85, 247, 0.3) !important;
+}
+html.dark-theme .tva-profile-superadmin-link:hover {
+    background: rgba(168, 85, 247, 0.25) !important;
+}
+html.dark-theme .tva-profile-signout-btn {
+    color: #f87171 !important;
+}
+html.dark-theme .tva-profile-signout-btn:hover {
+    color: #ef4444 !important;
+}
+html.dark-theme .tva-profile-signout-all-btn {
+    color: #a1a1aa !important;
+}
+html.dark-theme .tva-profile-signout-all-btn:hover {
+    color: #f4f4f5 !important;
+}
+
+/* Modal Dark Theme */
+html.dark-theme .tva-add-modal-card {
+    background: #18181b !important;
+    border-color: #27272a !important;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6) !important;
+    color: #f4f4f5 !important;
+}
+html.dark-theme .tva-add-modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+html.dark-theme .tva-add-modal-icon {
+    background: rgba(37, 99, 235, 0.2) !important;
+    color: #60a5fa !important;
+}
+html.dark-theme .tva-add-modal-title {
+    color: #ffffff !important;
+}
+html.dark-theme .tva-add-modal-sub {
+    color: #a1a1aa !important;
+}
+html.dark-theme .tva-add-modal-close {
+    color: #71717a !important;
+}
+html.dark-theme .tva-add-modal-close:hover {
+    color: #f87171 !important;
+}
+html.dark-theme .tva-add-modal-label {
+    color: #cbd5e1 !important;
+}
+html.dark-theme .tva-add-modal-input {
+    background: #27272a !important;
+    border-color: #3f3f46 !important;
+    color: #f4f4f5 !important;
+}
+html.dark-theme .tva-add-modal-input:focus {
+    border-color: #60a5fa !important;
+}
+html.dark-theme .tva-add-modal-cancel {
+    background: #27272a !important;
+    border-color: #3f3f46 !important;
+    color: #e4e4e7 !important;
+}
+html.dark-theme .tva-add-modal-cancel:hover {
+    background: #3f3f46 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Task Modal Desktop-Grade Responsive Layout Hardening
+   ───────────────────────────────────────────────────────────────────────────── */
+#task-modal {
+    z-index: 999999 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 16px 12px !important;
+}
+#task-modal .modal-card {
+    width: min(640px, 95%) !important;
+    border-radius: 18px !important;
+    margin: auto !important;
+    padding: 22px 20px !important;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28) !important;
+}
+#task-modal .form-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 13px !important;
+}
+#task-modal .form-grid .full {
+    grid-column: 1 / -1 !important;
+}
+#task-modal .actions {
+    display: flex !important;
+    gap: 8px !important;
+    justify-content: flex-end !important;
+    flex-direction: row !important;
+}
+#task-modal .actions .btn {
+    width: auto !important;
 }
 
 

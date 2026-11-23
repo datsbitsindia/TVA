@@ -73,70 +73,70 @@
 
         <div class="topbar-user-area" style="display: flex; align-items: center; gap: 10px; margin-right: auto;">
             <!-- Chrome / Google Profiles Switcher (Interactive) -->
-            <div class="tva-profile-picker" style="position:relative; display:inline-block;">
-                <button type="button" id="tvaProfileBtn" style="display:inline-flex; align-items:center; gap:8px; padding:3px 12px 3px 5px; height:36px; border-radius:99px; background:rgba(255,255,255,0.92); border:1.5px solid rgba(59,104,183,0.3); color:#0f172a; cursor:pointer; box-shadow:0 2px 8px rgba(15,23,42,0.08); outline:none; font-family:Inter,sans-serif;" title="Switch Account / Profile">
-                    <div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg, #2563eb, #7c3aed); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12px; text-transform:uppercase; flex-shrink:0;">
+            <div class="tva-profile-picker">
+                <button type="button" id="tvaProfileBtn" class="tva-profile-pill" title="Switch Account / Profile">
+                    <div class="tva-profile-avatar">
                         <%= (user.name || 'U').charAt(0) %>
                     </div>
-                    <div style="text-align:left; line-height:1.2; max-width:130px; overflow:hidden;">
-                        <div style="font-size:12.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= user.name %></div>
-                        <div style="font-size:10.5px; color:#64748b; font-weight:500; text-transform:capitalize; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= user.role %></div>
+                    <div class="tva-profile-summary">
+                        <div class="tva-profile-summary-name"><%= user.name %></div>
+                        <div class="tva-profile-summary-role"><%= user.role %></div>
                     </div>
-                    <i class="fa-solid fa-chevron-down" style="font-size:9px; color:#64748b;"></i>
+                    <i class="fa-solid fa-chevron-down tva-profile-arrow"></i>
                 </button>
 
                 <!-- Chrome Profile Popup Menu (Matching user photo) -->
-                <div id="tvaProfileMenu" style="display:none; position:absolute; top:calc(100% + 8px); left:0; z-index:999999; width:295px; padding:12px; border-radius:18px; background:#18181b; color:#f4f4f5; box-shadow:0 18px 45px rgba(0,0,0,0.45), 0 4px 12px rgba(0,0,0,0.25); border:1px solid #27272a;">
+                <div id="tvaProfileMenu" class="tva-profile-popup" style="display:none;">
                     <!-- Active User Card -->
-                    <div style="display:flex; align-items:center; gap:10px; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.1);">
-                        <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg, #2563eb, #8b5cf6); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px; text-transform:uppercase; flex-shrink:0;">
+                    <div class="tva-profile-active-card">
+                        <div class="tva-profile-active-avatar">
                             <%= (user.name || 'U').charAt(0) %>
                         </div>
-                        <div style="overflow:hidden; flex:1;">
-                            <div style="font-size:13.5px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= user.name %></div>
-                            <div style="font-size:11.5px; color:#a1a1aa; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= user.email %></div>
-                            <div style="font-size:10.5px; color:#60a5fa; font-weight:600;"><%= (typeof currentOrg !== 'undefined' && currentOrg && currentOrg.name) ? currentOrg.name : 'Workspace' %> · <%= user.role %></div>
+                        <div class="tva-profile-active-info">
+                            <div class="tva-profile-active-name"><%= user.name %></div>
+                            <div class="tva-profile-active-email"><%= user.email %></div>
+                            <div class="tva-profile-active-org"><%= (typeof currentOrg !== 'undefined' && currentOrg && currentOrg.name) ? currentOrg.name : 'Workspace' %> · <%= user.role %></div>
                         </div>
-                        <span style="font-size:10px; font-weight:700; padding:2px 7px; border-radius:99px; background:rgba(37,99,235,0.25); color:#93c5fd; border:1px solid rgba(96,165,250,0.3);">Active</span>
+                        <span class="tva-profile-active-badge">Active</span>
                     </div>
 
                     <!-- Other Chrome profiles Style Header -->
-                    <div style="margin-top:10px;">
-                        <div style="font-size:11.5px; font-weight:700; color:#e4e4e7; padding:4px 6px 8px; letter-spacing:0.3px; display:flex; align-items:center; justify-content:space-between;">
+                    <div class="tva-profile-section">
+                        <div class="tva-profile-section-hdr">
                             <span>Other Profiles</span>
-                            <span id="tvaProfilesCount" style="font-size:10.5px; color:#71717a; font-weight:500;"></span>
+                            <span id="tvaProfilesCount" class="tva-profile-count"></span>
                         </div>
-                        <div id="tvaOtherProfilesContainer" style="display:flex; flex-direction:column; gap:3px; max-height:210px; overflow-y:auto;">
+                        <div id="tvaOtherProfilesContainer" class="tva-profile-list">
                             <!-- Populated dynamically via JS from localStorage -->
                         </div>
                     </div>
 
                     <!-- Add Another Account Button -->
-                    <div style="border-top:1px solid rgba(255,255,255,0.1); margin-top:10px; padding-top:8px;">
-                        <button type="button" onclick="openAddAccountModal()" style="display:flex; align-items:center; gap:10px; width:100%; padding:9px 12px; border:none; background:rgba(255,255,255,0.06); color:#f4f4f5; border-radius:10px; cursor:pointer; font-size:12.5px; font-weight:600; font-family:Inter,sans-serif; transition:background 0.15s;">
-                            <i class="fa-solid fa-user-plus" style="font-size:12px; color:#60a5fa;"></i>
+                    <div class="tva-profile-action-group">
+                        <button type="button" class="tva-profile-add-btn" onclick="openAddAccountModal()">
+                            <i class="fa-solid fa-user-plus"></i>
                             <span>Add another account</span>
                         </button>
                     </div>
 
                     <!-- Super Admin Link (if applicable) -->
                     <% if (typeof isSuperAdmin !== 'undefined' && isSuperAdmin) { %>
-                        <div style="border-top:1px solid rgba(255,255,255,0.1); margin-top:8px; padding-top:8px;">
-                            <a href="/superadmin" style="display:flex; align-items:center; gap:8px; width:100%; padding:8px 12px; border-radius:10px; text-decoration:none; font-size:12px; font-weight:600; color:#c084fc; background:rgba(168,85,247,0.15); box-sizing:border-box;">
-                                <i class="fa-solid fa-crown" style="font-size:11px;"></i>
+                        <div class="tva-profile-action-group">
+                            <a href="/superadmin" class="tva-profile-superadmin-link">
+                                <i class="fa-solid fa-crown"></i>
                                 <span>Super Admin Platform</span>
                             </a>
                         </div>
                     <% } %>
 
                     <!-- Sign Out Options -->
-                    <div style="border-top:1px solid rgba(255,255,255,0.08); margin-top:8px; padding-top:8px; display:flex; justify-content:space-between; align-items:center;">
+                    <div class="tva-profile-signout-row">
                         <form action="/logout" method="post" style="margin:0;">
-                            <button type="submit" style="background:none; border:none; color:#f87171; font-size:11.5px; font-weight:600; cursor:pointer; padding:4px 6px; font-family:Inter,sans-serif;">
+                            <button type="submit" class="tva-profile-signout-btn">
                                 <i class="fa-solid fa-right-from-bracket"></i> Sign out
                             </button>
                         </form>
-                        <button type="button" onclick="signOutAllProfiles()" style="background:none; border:none; color:#a1a1aa; font-size:11.5px; font-weight:500; cursor:pointer; padding:4px 6px; font-family:Inter,sans-serif;">
+                        <button type="button" class="tva-profile-signout-all-btn" onclick="signOutAllProfiles()">
                             Sign out of all
                         </button>
                     </div>
@@ -198,34 +198,34 @@
 
     <!-- Add Another Account Modal (Chrome Profile Switcher) -->
     <div id="tvaAddAccountModal" style="display:none; position:fixed; inset:0; z-index:9999999; background:rgba(15,23,42,0.7); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:16px;">
-        <div style="width:100%; max-width:390px; background:#ffffff; border-radius:20px; box-shadow:0 24px 60px rgba(0,0,0,0.3); border:1px solid #e2e8f0; overflow:hidden;">
-            <div style="padding:18px 22px 14px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; justify-content:space-between;">
+        <div class="tva-add-modal-card">
+            <div class="tva-add-modal-header">
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <div style="width:34px; height:34px; border-radius:50%; background:#eff6ff; color:#2563eb; display:flex; align-items:center; justify-content:center; font-size:14px;">
+                    <div class="tva-add-modal-icon">
                         <i class="fa-solid fa-user-plus"></i>
                     </div>
                     <div>
-                        <h3 style="font-size:15px; font-weight:700; color:#0f172a; margin:0;">Add Another Account</h3>
-                        <p style="font-size:11.5px; color:#64748b; margin:2px 0 0;">Sign in to save this profile for 1-click switching</p>
+                        <h3 class="tva-add-modal-title">Add Another Account</h3>
+                        <p class="tva-add-modal-sub">Sign in to save this profile for 1-click switching</p>
                     </div>
                 </div>
-                <button type="button" onclick="closeAddAccountModal()" style="border:none; background:none; color:#94a3b8; cursor:pointer; font-size:18px; padding:4px;"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" onclick="closeAddAccountModal()" class="tva-add-modal-close"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="tvaAddAccountForm" onsubmit="submitAddAccount(event)" style="padding:20px 22px;">
                 <div id="tvaAddAccountAlert" style="display:none; padding:10px 12px; border-radius:8px; font-size:12.5px; margin-bottom:14px; line-height:1.4;"></div>
                 
                 <div style="margin-bottom:14px;">
-                    <label style="display:block; font-size:12px; font-weight:600; color:#334155; margin-bottom:6px;">Email address *</label>
-                    <input type="email" id="tvaAddEmail" required placeholder="name@company.com" style="width:100%; height:40px; padding:0 12px; border-radius:8px; border:1.5px solid #cbd5e1; font-size:13.5px; outline:none; box-sizing:border-box;">
+                    <label class="tva-add-modal-label">Email address *</label>
+                    <input type="email" id="tvaAddEmail" required placeholder="name@company.com" class="tva-add-modal-input">
                 </div>
 
                 <div style="margin-bottom:18px;">
-                    <label style="display:block; font-size:12px; font-weight:600; color:#334155; margin-bottom:6px;">Password *</label>
-                    <input type="password" id="tvaAddPassword" required placeholder="••••••••" style="width:100%; height:40px; padding:0 12px; border-radius:8px; border:1.5px solid #cbd5e1; font-size:13.5px; outline:none; box-sizing:border-box;">
+                    <label class="tva-add-modal-label">Password *</label>
+                    <input type="password" id="tvaAddPassword" required placeholder="••••••••" class="tva-add-modal-input">
                 </div>
 
                 <div style="display:flex; gap:10px; justify-content:flex-end;">
-                    <button type="button" onclick="closeAddAccountModal()" class="btn btn-outline" style="padding:8px 14px; font-size:13px; border-radius:8px;">Cancel</button>
+                    <button type="button" onclick="closeAddAccountModal()" class="btn btn-outline tva-add-modal-cancel">Cancel</button>
                     <button type="submit" id="btnSubmitAddAccount" class="btn btn-primary" style="padding:8px 18px; font-size:13px; border-radius:8px; font-weight:600;">
                         <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In &amp; Add
                     </button>

@@ -1731,7 +1731,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (otherProfiles.length === 0) {
             container.innerHTML = `
-                <div style="padding: 12px 10px; text-align: center; color: #71717a; font-size: 11.5px; line-height: 1.4;">
+                <div class="tva-profile-empty">
                     No other accounts added yet.<br>Click below to sign into another account.
                 </div>
             `;
@@ -1750,19 +1750,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const initial = (p.name || 'U').charAt(0).toUpperCase();
             const grad = colors[idx % colors.length];
             return `
-                <div class="tva-profile-item" onclick="switchTvaProfile(${p.id}, '${p.token}')" style="display:flex; align-items:center; justify-content:space-between; padding:7px 8px; border-radius:10px; cursor:pointer; transition:background 0.15s; background:transparent;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'">
-                    <div style="display:flex; align-items:center; gap:9px; overflow:hidden; flex:1;">
-                        <div style="width:30px; height:30px; border-radius:50%; background:${grad}; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; flex-shrink:0;">
+                <div class="tva-profile-item" onclick="switchTvaProfile(${p.id}, '${p.token}')">
+                    <div class="tva-profile-item-left">
+                        <div class="tva-profile-item-avatar" style="background:${grad};">
                             ${initial}
                         </div>
-                        <div style="overflow:hidden; text-align:left;">
-                            <div style="font-size:12.5px; font-weight:600; color:#f4f4f5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</div>
-                            <div style="font-size:10.5px; color:#a1a1aa; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                                ${p.email} • <span style="color:#60a5fa;">${p.orgName || 'Org'}</span>
+                        <div class="tva-profile-item-text">
+                            <div class="tva-profile-item-name">${p.name || ''}</div>
+                            <div class="tva-profile-item-meta">
+                                ${p.email || ''} • <span class="tva-profile-item-org">${p.orgName || 'Org'}</span>
                             </div>
                         </div>
                     </div>
-                    <button type="button" onclick="removeTvaProfile(${p.id}, event)" title="Remove account from list" style="border:none; background:transparent; color:#71717a; padding:4px 6px; cursor:pointer; font-size:12px; border-radius:4px; margin-left:4px;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#71717a'">
+                    <button type="button" class="tva-profile-item-remove" onclick="removeTvaProfile(${p.id}, event)" title="Remove account from list">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>

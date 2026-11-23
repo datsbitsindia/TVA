@@ -51,15 +51,15 @@
   .comments article{padding:12px;margin:0;border-bottom:1px solid var(--line)}
   .avatar{width:32px;height:32px}
   .inline-form,.upload{display:grid;grid-template-columns:1fr;align-items:stretch;margin-top:14px}
-  .modal{align-items:flex-end;padding:0;background:rgba(15,23,42,.55)}
-  .modal-card{width:100%;max-height:calc(100vh - 80px);max-height:calc(100dvh - 80px);overflow-y:auto;border-radius:22px 22px 0 0;padding:20px 16px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -10px 30px rgba(15,23,42,.18);-webkit-overflow-scrolling:touch}
+  .modal{align-items:center;justify-content:center;padding:16px 12px;background:rgba(15,23,42,.65);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:999999!important}
+  .modal-card{width:min(640px,96%);max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);overflow-y:auto;border-radius:18px!important;padding:22px 20px;box-shadow:0 24px 60px rgba(15,23,42,.28);-webkit-overflow-scrolling:touch;margin:auto}
   .modal-card h2{font-size:18px;margin-top:0}
   .modal-close{width:36px;height:36px;border-radius:50%;background:var(--bg);top:12px;right:12px}
-  .modal-card form,.modal-card .form-grid{display:grid;grid-template-columns:1fr;gap:13px}
+  .modal-card form,.modal-card .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
   .modal-card form .full,.modal-card .full{grid-column:1/-1!important}
-  .modal-header-tabs{flex-wrap:nowrap;gap:8px;padding-bottom:10px;margin-bottom:12px;position:sticky;top:-20px;background:var(--panel);z-index:2;padding-top:4px}
-  .modal-tabs{gap:4px;flex-wrap:nowrap;overflow-x:auto}
-  .modal-tab{padding:7px 12px;font-size:12px;white-space:nowrap;flex-shrink:0}
+  .modal-header-tabs{display:flex;align-items:center;justify-content:space-between;flex-wrap:nowrap;gap:8px;padding-bottom:12px;margin-bottom:14px;position:sticky;top:-22px;background:var(--panel);z-index:5;padding-top:4px;border-bottom:2px solid var(--line)}
+  .modal-tabs{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto}
+  .modal-tab{padding:8px 16px;font-size:13px;white-space:nowrap;flex-shrink:0;border-radius:10px}
   .sidebar{position:fixed;inset:auto 0 0 0;width:100%;height:64px;padding:0;background:#ffffff!important;border-top:1px solid #d8e2f0!important;transform:none!important;z-index:50;overflow-x:auto;overflow-y:hidden;box-shadow:0 -4px 20px rgba(11,29,58,.08)!important}
   .sidebar .brand{display:none}
   .sidebar nav{width:100%;height:100%;display:flex;align-items:stretch;gap:0;min-width:0}
@@ -107,10 +107,10 @@
   .theme-btn{width:34px;height:34px}
   .link-btn{padding-inline:8px}
   .stat{min-height:96px}
-  .modal-card{padding:16px 12px calc(20px + env(safe-area-inset-bottom));max-height:calc(100vh - 70px);max-height:calc(100dvh - 70px)}
-  .modal-card .actions{flex-direction:column-reverse;gap:8px}
-  .modal-card .actions .btn{width:100%}
-  .modal-tab{padding:6px 10px;font-size:11px}
+  .modal-card{padding:18px 14px;max-height:calc(100vh - 30px);max-height:calc(100dvh - 30px)}
+  .modal-card .actions{display:flex;gap:8px;justify-content:flex-end}
+  .modal-card .actions .btn{width:auto}
+  .modal-tab{padding:7px 12px;font-size:12px}
   .notification-list a{align-items:flex-start}
 }
 
@@ -872,6 +872,7 @@ html body .entity-card.manager-card .row-actions {
         margin-left: 4px !important;
         margin-right: 4px !important;
     }
+}
 
 /* ==========================================================================
    GLASSMORPHISM THEME & MOBILE RESPONSIVE ENHANCEMENTS
@@ -1116,10 +1117,10 @@ html:not(.dark-theme) body textarea:focus {
         -webkit-backdrop-filter: blur(14px) !important;
     }
     .modal-card {
-        border-radius: 24px 24px 0 0 !important;
+        border-radius: 18px !important;
         backdrop-filter: blur(24px) saturate(190%) !important;
         -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
-        background: rgba(255, 255, 255, 0.92) !important;
+        background: rgba(255, 255, 255, 0.95) !important;
     }
     .stats {
         gap: 8px !important;
@@ -1132,6 +1133,7 @@ html:not(.dark-theme) body textarea:focus {
         border-radius: 14px !important;
         padding: 10px !important;
     }
+}
 /* Dark Theme Glass Inputs & Form Fields Hardening */
 html.dark-theme body input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not(.note-title-field),
 html.dark-theme body select,

@@ -5,8 +5,6 @@
         <div class="modal-card">
 
             <!-- Modal Header Tabs -->
-            <% if (user.role === 'manager' || user.role === 'admin') { %>
-
             <div class="modal-header-tabs">
                 <div class="modal-tabs">
                     <button type="button" class="modal-tab active" data-tab="single-task-tab">
@@ -18,12 +16,6 @@
                 </div>
                 <button class="modal-close" data-close>&times;</button>
             </div>
-            <% } else { %>
-            <div class="modal-header-tabs">
-                <h2 style="margin:0; font-size:16px;"><i class="fa-solid fa-plus"></i> Add Task</h2>
-                <button class="modal-close" data-close>&times;</button>
-            </div>
-            <% } %>
 
             <!-- Single Regular Task Form -->
             <div class="modal-tab-content active" id="single-task-tab">
@@ -160,6 +152,7 @@
                         Assignee
                         <select name="assigned_to" required>
                             <option value="">Select Assignee...</option>
+                            <option value="<%= user.id %>"><%= user.name %> (Self)</option>
                             <% if (typeof employees !== 'undefined' && employees.length) { %>
                                 <optgroup label="Employees">
                                     <% employees.forEach(e => { %>
@@ -176,6 +169,8 @@
                             <% } %>
                         </select>
                     </label>
+                    <% } else { %>
+                        <input type="hidden" name="assigned_to" value="<%= user.id %>">
                     <% } %>
 
                     <label>
