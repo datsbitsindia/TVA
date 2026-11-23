@@ -562,6 +562,7 @@ html.gray-glass-theme .entity-card.task-card {
     backdrop-filter: blur(16px) saturate(1.1) !important;
     -webkit-backdrop-filter: blur(16px) saturate(1.1) !important;
     border: 1px solid rgba(203, 213, 225, 0.5) !important;
+    border-radius: 16px !important;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
 }
 html.gray-glass-theme body .entity-card.task-card:hover,
@@ -571,6 +572,46 @@ html.gray-glass-theme .entity-card.task-card:hover {
     background: rgba(255, 255, 255, 0.36) !important;
     border-color: rgba(255, 255, 255, 0.55) !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07) !important;
+}
+
+/* Match White Theme border radius for Gray Glass */
+html.gray-glass-theme body .ui-panel,
+html.gray-glass-theme .ui-panel {
+    border-radius: 16px !important;
+}
+html.gray-glass-theme body .task-kpis .metric-card,
+html.gray-glass-theme body .metric-grid.task-kpis .metric-card,
+html.gray-glass-theme body div.task-kpis .metric-card,
+html.gray-glass-theme .task-kpis .metric-card {
+    border-radius: 10px !important;
+}
+html.gray-glass-theme body .task-kpis .metric-card i,
+html.gray-glass-theme body .metric-grid.task-kpis .metric-card i,
+html.gray-glass-theme body div.task-kpis .metric-card i,
+html.gray-glass-theme .task-kpis .metric-card i {
+    border-radius: 6px !important;
+}
+html.gray-glass-theme body .task-tab-btn,
+html.gray-glass-theme .task-tab-btn {
+    border-radius: 10px !important;
+}
+html.gray-glass-theme body .toolbar-ui,
+html.gray-glass-theme .toolbar-ui {
+    border-radius: 14px !important;
+}
+html.gray-glass-theme body .toolbar-ui input,
+html.gray-glass-theme body .toolbar-ui select,
+html.gray-glass-theme .toolbar-ui input,
+html.gray-glass-theme .toolbar-ui select {
+    border-radius: 8px !important;
+}
+html.gray-glass-theme body .btn,
+html.gray-glass-theme .btn {
+    border-radius: 10px !important;
+}
+html.gray-glass-theme body .btn.primary,
+html.gray-glass-theme .btn.primary {
+    border-radius: 8px !important;
 }
 html.gray-glass-theme .tc-desk-num {
     color: #0f172a !important;

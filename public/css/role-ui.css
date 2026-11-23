@@ -1776,7 +1776,7 @@ html.gray-glass-theme .login-card {
     backdrop-filter: blur(24px) saturate(1.2) !important;
     -webkit-backdrop-filter: blur(24px) saturate(1.2) !important;
     border: 1px solid rgba(255, 255, 255, 0.35) !important;
-    border-radius: 32px !important;
+    border-radius: 16px !important;
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
 }
 
@@ -1939,7 +1939,7 @@ html.gray-glass-theme body .status-update-form {
     backdrop-filter: blur(24px) saturate(1.2) !important;
     -webkit-backdrop-filter: blur(24px) saturate(1.2) !important;
     border: 1px solid rgba(255, 255, 255, 0.35) !important;
-    border-radius: 24px !important;
+    border-radius: 16px !important;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
     color: #0F172A !important;
 }
@@ -1955,7 +1955,7 @@ html.gray-glass-theme body .routine-highlight-card {
     backdrop-filter: blur(16px) saturate(1.1) !important;
     -webkit-backdrop-filter: blur(16px) saturate(1.1) !important;
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    border-radius: 18px !important;
+    border-radius: 16px !important;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
     color: #0F172A !important;
     transition: all 0.3s ease !important;
@@ -2016,6 +2016,7 @@ html.gray-glass-theme body .task-tab-btn {
     border: 1px solid rgba(255, 255, 255, 0.35) !important;
     color: #1E293B !important;
     backdrop-filter: blur(8px) !important;
+    border-radius: 10px !important;
 }
 
 html.gray-glass-theme body .task-tab-btn.active {
@@ -2039,7 +2040,7 @@ html.gray-glass-theme body .toolbar-ui select {
     color: #0F172A !important;
     backdrop-filter: blur(12px) !important;
     -webkit-backdrop-filter: blur(12px) !important;
-    border-radius: 14px !important;
+    border-radius: 8px !important;
 }
 
 /* Status Chips & Badges in Gray Glass Theme */
