@@ -2826,6 +2826,54 @@ html.dark-theme .tva-add-modal-cancel:hover {
     width: auto !important;
 }
 
+#task-modal .modal-header-tabs,
+.modal-header-tabs {
+    background: transparent !important;
+    position: static !important;
+    top: auto !important;
+}
+
+#task-modal .modal-header-tabs .modal-close,
+.modal-header-tabs .modal-close {
+    background: transparent !important;
+    border: none !important;
+}
+
+html.gray-glass-theme #task-modal .modal-header-tabs,
+html.gray-glass-theme .modal-header-tabs {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4) !important;
+}
+
+html.gray-glass-theme #task-modal .modal-header-tabs .modal-close,
+html.gray-glass-theme .modal-header-tabs .modal-close {
+    background: transparent !important;
+    color: #334155 !important;
+}
+
+html.gray-glass-theme #task-modal .modal-header-tabs .modal-close:hover,
+html.gray-glass-theme .modal-header-tabs .modal-close:hover {
+    background: rgba(255, 255, 255, 0.35) !important;
+}
+
+html.dark-theme #task-modal .modal-header-tabs,
+html.dark-theme .modal-header-tabs {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+}
+
+html.dark-theme #task-modal .modal-header-tabs .modal-close,
+html.dark-theme .modal-header-tabs .modal-close {
+    background: transparent !important;
+    color: #cbd5e1 !important;
+}
+
+html.dark-theme #task-modal .modal-header-tabs .modal-close:hover,
+html.dark-theme .modal-header-tabs .modal-close:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+}
+
+
 
 
 
