@@ -87,6 +87,7 @@ async function start() {
             Object.assign(res.locals, helpers);
             if (req.session.user) {
                 notifications.syncOverdue().catch(e => console.error('Background syncOverdue error:', e));
+                notifications.checkTaskReminders().catch(e => console.error('Background checkTaskReminders error:', e));
                 const unreadRow = await database.db.prepare('SELECT COUNT(*) count FROM notifications WHERE user_id=? AND is_read=0').get(req.session.user.id);
                 res.locals.unread = unreadRow ? unreadRow.count : 0;
             } else {
@@ -147,6 +148,16 @@ async function start() {
         instance.once('error', reject);
     });
     console.log(`TVA running at http://localhost:${config.port}`);
+
+    // Background reminder scheduler - runs every 60 seconds (1 minute)
+    setInterval(() => {
+        notifications.checkTaskReminders().catch(e => console.error('Scheduler checkTaskReminders error:', e));
+    }, 60 * 1000);
+    // Initial check on server launch after 3 seconds
+    setTimeout(() => {
+        notifications.checkTaskReminders().catch(e => console.error('Initial checkTaskReminders error:', e));
+    }, 3000);
+
     return {
         webApp,
         server

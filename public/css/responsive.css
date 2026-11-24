@@ -1942,6 +1942,35 @@ html.gray-glass-theme .modal-card .btn.primary:hover {
     border-color: #2b579a !important;
 }
 
+/* ── Task Detail Action Pill: Reminder Pill ── */
+.task-action-pill.reminder-pill {
+    background: #fef3c7 !important;
+    color: #92400e !important;
+    border-color: #fde68a !important;
+}
+.task-action-pill.reminder-pill:hover {
+    background: #fde68a !important;
+}
+.task-action-pill.reminder-pill.has-reminder {
+    background: #e0e7ff !important;
+    color: #3730a3 !important;
+    border-color: #c7d2fe !important;
+}
+.task-action-pill.reminder-pill.has-reminder:hover {
+    background: #c7d2fe !important;
+}
+html.dark-theme .task-action-pill.reminder-pill {
+    background: rgba(245, 158, 11, 0.15) !important;
+    color: #fbbf24 !important;
+    border-color: rgba(245, 158, 11, 0.3) !important;
+}
+html.dark-theme .task-action-pill.reminder-pill.has-reminder {
+    background: rgba(99, 102, 241, 0.2) !important;
+    color: #a5b4fc !important;
+    border-color: rgba(99, 102, 241, 0.4) !important;
+}
+
+
 
 
 

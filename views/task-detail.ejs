@@ -50,7 +50,7 @@
 <% if(success){ %>
     <div class="success-toast">
         <i class="fa-solid fa-circle-check"></i>
-        <span><b>Update successful</b><small><%= success==='forwarded' ? 'Task has been forwarded successfully!' : (success==='status'?'Task status has been updated.':'Your update has been posted.') %></small></span>
+        <span><b>Update successful</b><small><%= success==='reminder_saved' ? 'Task reminder has been scheduled successfully!' : (success==='reminder_deleted' ? 'Task reminder has been removed.' : (success==='forwarded' ? 'Task has been forwarded successfully!' : (success==='status'?'Task status has been updated.':'Your update has been posted.'))) %></small></span>
     </div>
     <script>sessionStorage.setItem('tasks_need_refresh', '1');</script>
 <% } %>
@@ -89,6 +89,17 @@
                         <i class="fa-solid fa-trash"></i> Delete
                     </button>
                 </form>
+            <% } %>
+
+            <%# ─── Reminder Action Pill ─── %>
+            <% 
+                const isTaskIncomplete = !['completed', 'cancelled', '2', '3'].includes(String(task.status || '').toLowerCase().trim());
+                const hasActiveReminders = typeof taskReminders !== 'undefined' && taskReminders && taskReminders.length > 0;
+            %>
+            <% if (isTaskIncomplete && user.role !== 'admin') { %>
+                <button type="button" class="task-action-pill reminder-pill <%= hasActiveReminders ? 'has-reminder' : '' %>" data-open="task-reminder-modal" title="<%= hasActiveReminders ? 'Active Follow-up Reminder' : 'Set a follow-up reminder' %>">
+                    <i class="fa-solid fa-bell"></i> <%= hasActiveReminders ? `Reminder (${taskReminders.length})` : 'Set Reminder' %>
+                </button>
             <% } %>
 
             <% 
@@ -408,6 +419,157 @@
         </div>
     </div>
 <% } %>
+
+<!-- Task Reminder Modal -->
+<div class="modal" id="task-reminder-modal">
+    <div class="modal-card" style="max-width: 520px; border-radius: 18px;">
+        <button class="modal-close" data-close>&times;</button>
+        <h2 style="display:flex; align-items:center; gap:8px; margin-top:0; margin-bottom:4px; font-size:18px;">
+            <i class="fa-solid fa-bell" style="color:#d97706;"></i> Task Follow-up Reminder
+        </h2>
+        <p class="muted" style="font-size:12.5px; margin-bottom:14px; line-height:1.4;">
+            Automated notifications will be sent until this task is marked as <b>Completed</b>.
+        </p>
+
+        <% if (typeof taskReminders !== 'undefined' && taskReminders && taskReminders.length > 0) { %>
+            <div style="margin-bottom:16px; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;">
+                <div style="font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:8px;">
+                    Active Reminders (<%= taskReminders.length %>)
+                </div>
+                <div style="display:grid; gap:8px;">
+                    <% taskReminders.forEach(r => { %>
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; background:#ffffff; border:1px solid #cbd5e1; border-radius:10px; padding:8px 12px; font-size:12px;">
+                            <div>
+                                <div style="font-weight:700; color:#0f172a; display:flex; align-items:center; gap:6px;">
+                                    <i class="fa-regular fa-clock" style="color:#3b68b7;"></i>
+                                    <% if (r.reminder_type === 'daily') { %>
+                                        Daily at <%= r.remind_time.slice(0, 5) %>
+                                    <% } else if (r.reminder_type === 'weekly') { %>
+                                        Weekly (<%= (r.days_of_week || '').split(',').map(d => ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][Number(d)] || d).join(', ') %>) at <%= r.remind_time.slice(0, 5) %>
+                                    <% } else { %>
+                                        Deadline: <%= r.remind_date ? new Date(r.remind_date).toLocaleDateString('en-GB') : 'Date' %> at <%= r.remind_time.slice(0, 5) %>
+                                    <% } %>
+                                </div>
+                                <div style="color:#64748b; font-size:11px; margin-top:2px;">
+                                    Notifies: <b><%= r.notify_user_name || 'Assignee' %></b>
+                                    <% if (r.custom_message) { %> &bull; "<%= r.custom_message %>"<% } %>
+                                </div>
+                            </div>
+                            <form action="/tasks/<%= task.id %>/reminders/<%= r.id %>/delete" method="post" style="margin:0;">
+                                <button type="submit" class="task-action-pill delete-pill" style="height:26px; padding:0 8px; font-size:11px; cursor:pointer;" title="Delete this reminder">
+                                    <i class="fa-solid fa-trash"></i> Cancel
+                                </button>
+                            </form>
+                        </div>
+                    <% }) %>
+                </div>
+            </div>
+        <% } %>
+
+        <form action="/tasks/<%= task.id %>/reminders" method="post" class="form-grid" id="task-reminder-form" style="gap:12px;">
+            <div class="full" style="display:flex; flex-direction:column; gap:6px;">
+                <label style="font-weight:700; font-size:12px; margin:0; color:#0f172a;">Repeat Frequency</label>
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px;">
+                    <label id="lbl-rem-daily" class="reminder-type-choice" style="border:1.5px solid #3b68b7; background:#eff6ff; color:#1d4ed8; border-radius:10px; padding:9px 6px; text-align:center; cursor:pointer; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:5px;">
+                        <input type="radio" name="reminder_type" value="daily" checked style="display:none;" onchange="updateReminderTypeUI(this.value)">
+                        <i class="fa-solid fa-repeat"></i> Daily
+                    </label>
+                    <label id="lbl-rem-weekly" class="reminder-type-choice" style="border:1.5px solid #cbd5e1; background:#ffffff; color:#334155; border-radius:10px; padding:9px 6px; text-align:center; cursor:pointer; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:5px;">
+                        <input type="radio" name="reminder_type" value="weekly" style="display:none;" onchange="updateReminderTypeUI(this.value)">
+                        <i class="fa-solid fa-calendar-week"></i> Weekly
+                    </label>
+                    <label id="lbl-rem-once" class="reminder-type-choice" style="border:1.5px solid #cbd5e1; background:#ffffff; color:#334155; border-radius:10px; padding:9px 6px; text-align:center; cursor:pointer; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:5px;">
+                        <input type="radio" name="reminder_type" value="once" style="display:none;" onchange="updateReminderTypeUI(this.value)">
+                        <i class="fa-regular fa-calendar-check"></i> One-Time
+                    </label>
+                </div>
+            </div>
+
+            <div id="rem-time-box" style="grid-column: span 1;">
+                <label style="font-weight:700; font-size:12px; color:#0f172a;">Reminder Time
+                    <input type="time" name="remind_time" value="10:00" required style="margin-top:4px;">
+                </label>
+            </div>
+
+            <div id="rem-target-box" style="grid-column: span 1;">
+                <label style="font-weight:700; font-size:12px; color:#0f172a;">Who to Notify
+                    <select name="notify_target" style="margin-top:4px;">
+                        <option value="assignee" selected>Assignee(s) of task</option>
+                        <option value="self">Only Me (<%= user.name %>)</option>
+                        <% if (Number(task.created_by) !== Number(user.id)) { %>
+                            <option value="creator">Task Creator (<%= task.creator_name || 'Manager' %>)</option>
+                        <% } %>
+                        <option value="both">Both Creator & Assignees</option>
+                    </select>
+                </label>
+            </div>
+
+            <div id="rem-date-box" class="full" style="display:none;">
+                <label style="font-weight:700; font-size:12px; color:#0f172a;">Deadline Date (Notify on or after this date if not completed)
+                    <input type="date" name="remind_date" value="<%= task.due_date ? new Date(task.due_date).toISOString().split('T')[0] : '' %>" style="margin-top:4px;">
+                </label>
+            </div>
+
+            <div id="rem-days-box" class="full" style="display:none;">
+                <label style="font-weight:700; font-size:12px; margin-bottom:6px; display:block; color:#0f172a;">Repeat on Days</label>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <% const dayList = [{v:'1',l:'Mon'},{v:'2',l:'Tue'},{v:'3',l:'Wed'},{v:'4',l:'Thu'},{v:'5',l:'Fri'},{v:'6',l:'Sat'},{v:'0',l:'Sun'}]; %>
+                    <% dayList.forEach(d => { %>
+                        <label class="reminder-day-chip" style="border:1px solid #cbd5e1; border-radius:8px; padding:5px 10px; cursor:pointer; font-size:11.5px; font-weight:700; display:inline-flex; align-items:center; gap:5px; user-select:none; background:#ffffff;">
+                            <input type="checkbox" name="days_of_week" value="<%= d.v %>" <%= ['1','2','3','4','5'].includes(d.v)?'checked':'' %>>
+                            <span><%= d.l %></span>
+                        </label>
+                    <% }) %>
+                </div>
+            </div>
+
+            <div class="full">
+                <label style="font-weight:700; font-size:12px; color:#0f172a;">Reminder Note (Optional)
+                    <input type="text" name="custom_message" placeholder="e.g. Please update progress or finish today." maxlength="200" style="margin-top:4px;">
+                </label>
+            </div>
+
+            <div class="full actions" style="display:flex; justify-content:flex-end; gap:8px; margin-top:6px;">
+                <button type="button" class="btn" data-close>Cancel</button>
+                <button type="submit" class="btn primary" style="background:#3b68b7; border-color:#3b68b7;">
+                    <i class="fa-solid fa-bell"></i> Save Reminder
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function updateReminderTypeUI(type) {
+    const dateBox = document.getElementById('rem-date-box');
+    const daysBox = document.getElementById('rem-days-box');
+    if (type === 'once') {
+        if (dateBox) dateBox.style.display = 'block';
+        if (daysBox) daysBox.style.display = 'none';
+    } else if (type === 'weekly') {
+        if (dateBox) dateBox.style.display = 'none';
+        if (daysBox) daysBox.style.display = 'block';
+    } else {
+        if (dateBox) dateBox.style.display = 'none';
+        if (daysBox) daysBox.style.display = 'none';
+    }
+    const choices = ['daily', 'weekly', 'once'];
+    choices.forEach(c => {
+        const lbl = document.getElementById('lbl-rem-' + c);
+        if (lbl) {
+            if (c === type) {
+                lbl.style.borderColor = '#3b68b7';
+                lbl.style.background = '#eff6ff';
+                lbl.style.color = '#1d4ed8';
+            } else {
+                lbl.style.borderColor = '#cbd5e1';
+                lbl.style.background = '#ffffff';
+                lbl.style.color = '#334155';
+            }
+        }
+    });
+}
+</script>
 
 <script>
 window.taskMembers = <%- JSON.stringify(tagMembers) %>;

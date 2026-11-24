@@ -346,6 +346,15 @@ exports.detail = async (req, res) => {
         WHERE ta.task_id=?
     `).all(task.id);
 
+    const taskReminders = await db.prepare(`
+        SELECT r.*, u.name as notify_user_name, creator.name as creator_name
+        FROM task_reminders r
+        JOIN users u ON u.id = r.notify_user_id
+        JOIN users creator ON creator.id = r.user_id
+        WHERE r.task_id = ? AND r.is_active = 1
+        ORDER BY r.created_at DESC
+    `).all(task.id);
+
     // Auto mark notifications for this task as read when user opens the task
     try {
         await db.prepare(
@@ -362,6 +371,7 @@ exports.detail = async (req, res) => {
         projects,
         forwardLogs,
         taskAssignees,
+        taskReminders,
         success: req.query.success || ''
     });
 };
@@ -709,6 +719,10 @@ exports.status = async (req, res) => {
             try { await routineService.updateRoutineLogStatus(task.id, overallStatusName); } catch(e) {}
         }
 
+        if (overallStatusId === 2 || overallStatusId === 3) {
+            try { await db.prepare('UPDATE task_reminders SET is_active=0 WHERE task_id=?').run(task.id); } catch(e) {}
+        }
+
         try { await activity.log(req.session.user.id, myStatusName === 'Completed' ? 'Task Completed' : 'Task Updated', task.title); } catch(e) {}
         // Notify creator (only if commenter is not the creator themselves)
         if (Number(task.created_by) !== Number(req.session.user.id)) {
@@ -1009,5 +1023,77 @@ exports.timerSummary = async (req, res) => {
     } catch (err) {
         console.error('Timer summary error:', err);
         return res.status(500).json({ success: false, error: err.message });
+    }
+};
+
+exports.saveReminder = async (req, res) => {
+    try {
+        const taskId = Number(req.params.id);
+        const task = await db.prepare('SELECT * FROM tasks WHERE id=?').get(taskId);
+        if (!task || !(await canView(req.session.user, task))) {
+            return res.status(403).render('error', { message: 'Access denied or task not found.' });
+        }
+
+        const { reminder_type, remind_date, remind_time, custom_message, notify_target } = req.body;
+        let days_of_week = req.body.days_of_week || '';
+        if (Array.isArray(days_of_week)) {
+            days_of_week = days_of_week.join(',');
+        }
+
+        const type = ['once', 'daily', 'weekly'].includes(reminder_type) ? reminder_type : 'daily';
+        const time = remind_time ? (String(remind_time).length === 5 ? `${remind_time}:00` : String(remind_time).slice(0, 8)) : '10:00:00';
+        const date = (type === 'once' && remind_date) ? remind_date : null;
+
+        let notifyUserIds = [];
+        if (notify_target === 'self') {
+            notifyUserIds = [req.session.user.id];
+        } else if (notify_target === 'creator') {
+            notifyUserIds = [task.created_by];
+        } else if (notify_target === 'both') {
+            const assignees = String(task.assigned_to || '').split(',').map(x => Number(x.trim())).filter(Boolean);
+            notifyUserIds = Array.from(new Set([task.created_by, ...assignees]));
+        } else {
+            notifyUserIds = String(task.assigned_to || '').split(',').map(x => Number(x.trim())).filter(Boolean);
+            if (notifyUserIds.length === 0) notifyUserIds = [req.session.user.id];
+        }
+
+        for (const uid of notifyUserIds) {
+            await db.prepare(`
+                INSERT INTO task_reminders (task_id, user_id, notify_user_id, reminder_type, remind_date, remind_time, days_of_week, custom_message, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+            `).run(taskId, req.session.user.id, uid, type, date, time, String(days_of_week), custom_message ? String(custom_message).trim() : '');
+        }
+
+        if (req.xhr || (req.headers.accept && req.headers.accept.includes('application/json'))) {
+            return res.json({ success: true, message: 'Reminder set successfully' });
+        }
+        res.redirect(`/tasks/${taskId}?success=reminder_saved`);
+    } catch (err) {
+        console.error('saveReminder error:', err);
+        if (req.xhr || (req.headers.accept && req.headers.accept.includes('application/json'))) {
+            return res.status(500).json({ success: false, error: err.message });
+        }
+        res.status(500).render('error', { message: 'Failed to save reminder: ' + err.message });
+    }
+};
+
+exports.deleteReminder = async (req, res) => {
+    try {
+        const taskId = Number(req.params.id);
+        const reminderId = Number(req.params.reminderId);
+        const task = await db.prepare('SELECT * FROM tasks WHERE id=?').get(taskId);
+        if (!task || !(await canView(req.session.user, task))) {
+            return res.status(403).render('error', { message: 'Access denied.' });
+        }
+
+        await db.prepare('UPDATE task_reminders SET is_active=0 WHERE id=? AND task_id=?').run(reminderId, taskId);
+
+        if (req.xhr || (req.headers.accept && req.headers.accept.includes('application/json'))) {
+            return res.json({ success: true, message: 'Reminder deleted successfully' });
+        }
+        res.redirect(`/tasks/${taskId}?success=reminder_deleted`);
+    } catch (err) {
+        console.error('deleteReminder error:', err);
+        res.status(500).render('error', { message: 'Failed to delete reminder: ' + err.message });
     }
 };
