@@ -1345,7 +1345,7 @@ html.dark-theme body .metric-card.purple i {
 
 /* Logo brightness in dark mode */
 html.dark-theme .brand-logo {
-    filter: brightness(1.5) drop-shadow(0 2px 12px rgba(255, 255, 255, 0.2)) !important;
+    filter: drop-shadow(0 2px 14px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 16px rgba(59, 130, 246, 0.2)) !important;
 }
 
 /* Entity Cards & Task Cards */
