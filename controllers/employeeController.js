@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const { db } = require('../database/init');
 const activity = require('../services/activityService');
 const masterService = require('../services/masterService');
+const reliabilityService = require('../services/reliabilityService');
 
 exports.list = async (req, res) => {
     const currentUserRole = req.session.user.role;
@@ -15,15 +16,18 @@ exports.list = async (req, res) => {
         LEFT JOIN designations des ON des.id = u.designation_id 
     `;
     let rawEmployees = [];
+    let reliabilityScores = {};
     if (currentUserRole === 'admin') {
         rawEmployees = await db.prepare(`${sql} WHERE u.role IN ('employee', 'manager') AND (u.organization_id=? OR u.id IN (SELECT user_id FROM user_organizations WHERE organization_id=?)) ORDER BY u.role DESC, u.name ASC`).all(orgId, orgId);
+        reliabilityScores = await reliabilityService.getOrganizationReliabilityScores(orgId);
     } else {
         rawEmployees = await db.prepare(`${sql} WHERE u.role='employee' AND (u.organization_id=? OR u.id IN (SELECT user_id FROM user_organizations WHERE organization_id=?)) ORDER BY u.name ASC`).all(orgId, orgId);
     }
     const employees = rawEmployees.map(e => ({
         ...e,
         department: e.dept_name || e.department || '',
-        designation: e.desig_name || e.designation || ''
+        designation: e.desig_name || e.designation || '',
+        reliability: (currentUserRole === 'admin' && reliabilityScores[e.id]) ? reliabilityScores[e.id] : null
     }));
     res.render('employees', { employees, currentUserRole });
 };

@@ -60,6 +60,30 @@
     </button>
 </div>
 
+<% if (currentUserRole === 'admin') { 
+    const topPerformers = employees
+        .filter(e => e.reliability && !e.reliability.isNew && e.reliability.rank)
+        .sort((a, b) => a.reliability.rank - b.reliability.rank)
+        .slice(0, 3);
+    if (topPerformers.length > 0) { %>
+<div class="cibil-leaderboard-bar">
+    <div class="cibil-lb-title">
+        <i class="fa-solid fa-trophy" style="color:#f59e0b;"></i>
+        <span>Reliability Leaderboard</span>
+        <small>(Admin Only)</small>
+    </div>
+    <div class="cibil-lb-items">
+        <% topPerformers.forEach((tp, idx) => { %>
+            <button type="button" class="cibil-lb-chip" onclick="openReliabilityModal(<%= JSON.stringify(tp.reliability) %>, '<%= tp.name.replace(/'/g, "\\'") %>')" title="View <%= tp.name %>'s Reliability Report">
+                <span class="cibil-lb-rank rank-<%= idx + 1 %>"><%= idx === 0 ? '👑 #1' : '#' + (idx + 1) %></span>
+                <span class="cibil-lb-name"><%= tp.name %></span>
+                <span class="cibil-lb-score" style="--tier-color:<%= tp.reliability.tierColor %>;"><%= tp.reliability.score %></span>
+            </button>
+        <% }) %>
+    </div>
+</div>
+<% } } %>
+
 
 
 
@@ -81,6 +105,18 @@
                             </span>
                         <% } %>
                         <span class="status-chip <%= e.active ? 'active' : 'inactive' %>" style="font-size:10px; padding:1px 6px; flex-shrink:0; white-space:nowrap;"><%= e.active ? 'Active' : 'Inactive' %></span>
+                        <% if (currentUserRole === 'admin' && e.reliability) { %>
+                            <button type="button" class="cibil-badge-btn" onclick="openReliabilityModal(<%= JSON.stringify(e.reliability) %>, '<%= e.name.replace(/'/g, "\\'") %>')" title="Click to view Corporate CIBIL Reliability Score breakdown" style="--tier-color:<%= e.reliability.tierColor %>; cursor:pointer; display:inline-flex; align-items:center; gap:5px; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700; background:<%= e.reliability.tierBg %>; color:<%= e.reliability.tierColor %>; border:1px solid <%= e.reliability.tierColor %>44; flex-shrink:0; transition:all 0.15s ease;">
+                                <i class="fa-solid fa-shield-halved" style="font-size:11px;"></i>
+                                <span><%= e.reliability.score %></span>
+                                <span style="font-size:10px; font-weight:600; opacity:0.85;">• <%= e.reliability.tier %></span>
+                            </button>
+                            <% if (e.reliability.isTopPerformer) { %>
+                                <span class="cibil-top-badge" title="Top Reliable Performer (#1)">
+                                    <i class="fa-solid fa-crown"></i> Top Reliable
+                                </span>
+                            <% } %>
+                        <% } %>
                     </div>
                     <small style="color:#64748b; font-size:12px; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= e.email %></small>
                     <div class="employee-inline-info" style="display:flex; align-items:center; gap:10px; margin-top:4px; font-size:11px; color:#475569; flex-wrap:nowrap; overflow:hidden;">
@@ -313,6 +349,536 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<% if (currentUserRole === 'admin') { %>
+<style>
+    .cibil-leaderboard-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+        padding: 10px 14px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        border: 1px solid #fde68a;
+        box-shadow: 0 2px 6px rgba(245, 158, 11, 0.08);
+    }
+    .cibil-lb-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #92400e;
+    }
+    .cibil-lb-title small {
+        font-weight: 600;
+        opacity: 0.75;
+        font-size: 11px;
+    }
+    .cibil-lb-items {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .cibil-lb-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 11px;
+        border-radius: 999px;
+        background: #ffffff;
+        border: 1px solid #fcd34d;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        color: #0f172a;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .cibil-lb-chip:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    }
+    .cibil-lb-rank {
+        font-weight: 800;
+        font-size: 11px;
+        color: #b45309;
+    }
+    .cibil-lb-rank.rank-1 {
+        color: #d97706;
+    }
+    .cibil-lb-score {
+        font-weight: 800;
+        font-size: 12px;
+    }
+    .cibil-top-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 7px;
+        border-radius: 12px;
+        font-size: 10px;
+        font-weight: 700;
+        background: #fef3c7;
+        color: #b45309;
+        border: 1px solid #fcd34d;
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+    .cibil-badge-btn:hover {
+        transform: scale(1.04);
+    }
+
+    /* Reliability Modal */
+    .rm-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    }
+    .rm-card {
+        background: #ffffff;
+        border-radius: 18px;
+        max-width: 580px;
+        width: 100%;
+        box-shadow: 0 20px 40px -15px rgba(0,0,0,0.25);
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+    .rm-header {
+        padding: 18px 22px;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+    }
+    .rm-title { margin: 0; font-size: 16px; font-weight: 700; color: #0f172a; }
+    .rm-sub { color: #64748b; font-size: 12px; }
+    .rm-close-btn {
+        border: none;
+        background: #f1f5f9;
+        color: #64748b;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .rm-body { padding: 22px; max-height: 80vh; overflow-y: auto; }
+    .rm-meter-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 18px;
+        text-align: center;
+        margin-bottom: 18px;
+    }
+    .rm-needle {
+        position: absolute;
+        top: -6px;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 22px;
+        background: #0f172a;
+        border-radius: 2px;
+        box-shadow: 0 0 6px rgba(0,0,0,0.4);
+        transition: left 0.4s ease;
+    }
+    .rm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .rm-factor-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 12px;
+    }
+    .rm-factor-label { font-size: 11px; font-weight: 600; color: #64748b; }
+    .rm-factor-val { font-size: 17px; font-weight: 700; color: #0f172a; }
+    .rm-factor-sub { color: #94a3b8; font-size: 10px; }
+    .rm-formula-box {
+        background: #f1f5f9;
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 11px;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+    }
+    .rm-formula-title {
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 4px;
+    }
+    .rm-formula-code { font-family: monospace; font-size: 11px; color: #334155; line-height: 1.5; }
+    .rm-footer {
+        padding: 14px 22px;
+        border-top: 1px solid #f1f5f9;
+        background: #f8fafc;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    /* Protect colored badges/scores from global theme span color overrides */
+    .cibil-badge-btn,
+    .cibil-badge-btn span,
+    html.dark-theme .cibil-badge-btn span,
+    html.gray-glass-theme .cibil-badge-btn span {
+        color: var(--tier-color) !important;
+    }
+    .cibil-lb-chip .cibil-lb-score,
+    html.dark-theme .cibil-lb-chip .cibil-lb-score,
+    html.gray-glass-theme .cibil-lb-chip .cibil-lb-score {
+        color: var(--tier-color) !important;
+    }
+    #reliability-modal #rm-score-val,
+    #reliability-modal #rm-tier-badge,
+    #reliability-modal #rm-ontime-impact,
+    #reliability-modal #rm-quality-impact,
+    #reliability-modal #rm-overdue-impact,
+    #reliability-modal #rm-volume-impact {
+        color: inherit;
+    }
+
+    /* Dark Theme Overrides */
+    html.dark-theme .cibil-leaderboard-bar {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.14) 0%, rgba(180, 83, 9, 0.18) 100%);
+        border-color: rgba(245, 158, 11, 0.32);
+    }
+    html.dark-theme .cibil-lb-title,
+    html.dark-theme .cibil-lb-title span { color: #fcd34d !important; }
+    html.dark-theme .cibil-lb-chip {
+        background: rgba(15, 23, 42, 0.85) !important;
+        border-color: rgba(251, 191, 36, 0.35) !important;
+        color: #f8fafc !important;
+    }
+    html.dark-theme .cibil-lb-chip .cibil-lb-name { color: #f8fafc !important; }
+    html.dark-theme .cibil-lb-chip .cibil-lb-rank { color: #fbbf24 !important; }
+    html.dark-theme .cibil-top-badge {
+        background: rgba(245, 158, 11, 0.18);
+        color: #fcd34d !important;
+        border-color: rgba(251, 191, 36, 0.38);
+    }
+    html.dark-theme .rm-card {
+        background: #131c2e !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+    }
+    html.dark-theme .rm-header {
+        background: linear-gradient(135deg, #1b263b 0%, #131c2e 100%) !important;
+        border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+    html.dark-theme .rm-title,
+    html.dark-theme .rm-factor-val { color: #f8fafc !important; }
+    html.dark-theme .rm-sub,
+    html.dark-theme .rm-factor-label,
+    html.dark-theme .rm-factor-sub { color: #94a3b8 !important; }
+    html.dark-theme .rm-close-btn {
+        background: rgba(255, 255, 255, 0.08) !important;
+        color: #cbd5e1 !important;
+    }
+    html.dark-theme .rm-meter-box,
+    html.dark-theme .rm-factor-card {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    html.dark-theme .rm-needle {
+        background: #ffffff !important;
+        box-shadow: 0 0 6px rgba(255,255,255,0.6);
+    }
+    html.dark-theme .rm-formula-box {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        color: #cbd5e1 !important;
+    }
+    html.dark-theme .rm-formula-title { color: #f1f5f9 !important; }
+    html.dark-theme .rm-formula-code { color: #cbd5e1 !important; }
+    html.dark-theme .rm-footer {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border-top-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    /* Gray Glass Theme (Light Frosted Glass) Overrides */
+    html.gray-glass-theme .cibil-leaderboard-bar {
+        background: rgba(255, 251, 235, 0.65) !important;
+        backdrop-filter: blur(18px) saturate(1.2) !important;
+        -webkit-backdrop-filter: blur(18px) saturate(1.2) !important;
+        border: 1px solid rgba(245, 158, 11, 0.42) !important;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05) !important;
+    }
+    html.gray-glass-theme .cibil-lb-title,
+    html.gray-glass-theme .cibil-lb-title span { color: #92400e !important; }
+    html.gray-glass-theme .cibil-lb-title small { color: #b45309 !important; }
+    html.gray-glass-theme .cibil-lb-chip {
+        background: rgba(255, 255, 255, 0.82) !important;
+        backdrop-filter: blur(12px) !important;
+        border: 1px solid rgba(245, 158, 11, 0.45) !important;
+        color: #0f172a !important;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06) !important;
+    }
+    html.gray-glass-theme .cibil-lb-chip .cibil-lb-name { color: #0f172a !important; }
+    html.gray-glass-theme .cibil-lb-chip .cibil-lb-rank { color: #b45309 !important; }
+    html.gray-glass-theme .cibil-lb-chip .cibil-lb-rank.rank-1 { color: #d97706 !important; }
+    html.gray-glass-theme .cibil-top-badge {
+        background: rgba(254, 243, 199, 0.92) !important;
+        color: #b45309 !important;
+        border-color: #fcd34d !important;
+    }
+    html.gray-glass-theme .rm-card {
+        background: rgba(235, 240, 248, 0.94) !important;
+        backdrop-filter: blur(28px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.8) !important;
+        color: #0f172a !important;
+    }
+    html.gray-glass-theme .rm-header,
+    html.gray-glass-theme .rm-footer {
+        background: rgba(255, 255, 255, 0.45) !important;
+        border-color: rgba(255, 255, 255, 0.6) !important;
+    }
+    html.gray-glass-theme .rm-meter-box,
+    html.gray-glass-theme .rm-factor-card {
+        background: rgba(255, 255, 255, 0.68) !important;
+        border: 1px solid rgba(255, 255, 255, 0.85) !important;
+    }
+    html.gray-glass-theme .rm-formula-box {
+        background: rgba(255, 255, 255, 0.55) !important;
+        border: 1px solid rgba(203, 213, 225, 0.85) !important;
+        color: #334155 !important;
+    }
+    html.gray-glass-theme .rm-title,
+    html.gray-glass-theme .rm-factor-val,
+    html.gray-glass-theme .rm-formula-title { color: #0f172a !important; }
+    html.gray-glass-theme .rm-sub,
+    html.gray-glass-theme .rm-factor-label,
+    html.gray-glass-theme .rm-factor-sub,
+    html.gray-glass-theme .rm-formula-code { color: #475569 !important; }
+    html.gray-glass-theme .rm-close-btn {
+        background: rgba(255, 255, 255, 0.7) !important;
+        color: #475569 !important;
+    }
+    html.gray-glass-theme .rm-needle {
+        background: #0f172a !important;
+        box-shadow: 0 0 6px rgba(15, 23, 42, 0.35);
+    }
+</style>
+
+<div class="modal rm-overlay" id="reliability-modal">
+    <div class="modal-card rm-card">
+        
+        <!-- Header -->
+        <div class="rm-header">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:40px; height:40px; border-radius:12px; background:#e0e7ff; color:#4338ca; display:flex; align-items:center; justify-content:center; font-size:18px;">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                    <h3 class="rm-title" id="rm-user-name">Employee Name</h3>
+                    <small class="rm-sub">TVA Reliability Score (Corporate CIBIL Score)</small>
+                </div>
+            </div>
+            <button type="button" class="rm-close-btn" onclick="closeReliabilityModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="rm-body">
+            <!-- Big Score Meter Card -->
+            <div class="rm-meter-box">
+                <div style="display:flex; align-items:baseline; justify-content:center; gap:8px;">
+                    <span id="rm-score-val" style="font-size:46px; font-weight:800; line-height:1;">650</span>
+                    <span style="font-size:15px; font-weight:600; color:#94a3b8;">/ 900</span>
+                </div>
+                <div style="margin-top:8px; display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;">
+                    <span id="rm-tier-badge" style="display:inline-block; padding:4px 14px; border-radius:20px; font-size:12px; font-weight:700;">
+                        Moderate
+                    </span>
+                    <span id="rm-rank-badge" class="cibil-top-badge" style="display:none; padding:4px 10px; font-size:11px;"></span>
+                </div>
+
+                <!-- Range Meter Bar -->
+                <div style="margin-top:16px; position:relative;">
+                    <div style="height:10px; border-radius:6px; background:linear-gradient(to right, #ef4444 0%, #f97316 25%, #eab308 50%, #10b981 75%, #059669 100%); width:100%; position:relative;">
+                        <div id="rm-meter-needle" class="rm-needle"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:10px; color:#94a3b8; font-weight:600;">
+                        <span>300 (Poor)</span>
+                        <span>520</span>
+                        <span>650</span>
+                        <span>720</span>
+                        <span>900 (Exceptional)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Breakdown Grid -->
+            <div class="rm-grid">
+                <!-- 1. On-time delivery -->
+                <div class="rm-factor-card">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                        <span class="rm-factor-label"><i class="fa-regular fa-clock" style="color:#0284c7; margin-right:4px;"></i> On-Time Rate</span>
+                        <span id="rm-ontime-impact" style="font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px;">+0 pts</span>
+                    </div>
+                    <div id="rm-ontime-val" class="rm-factor-val">0%</div>
+                    <small id="rm-ontime-sub" class="rm-factor-sub">0 of 0 tasks</small>
+                </div>
+
+                <!-- 2. Quality & Verified -->
+                <div class="rm-factor-card">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                        <span class="rm-factor-label"><i class="fa-solid fa-circle-check" style="color:#16a34a; margin-right:4px;"></i> Verified (Quality)</span>
+                        <span id="rm-quality-impact" style="font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px; background:#dcfce7; color:#166534;">+0 pts</span>
+                    </div>
+                    <div id="rm-quality-val" class="rm-factor-val">0 Tasks</div>
+                    <small id="rm-quality-sub" class="rm-factor-sub">Verified without rework</small>
+                </div>
+
+                <!-- 3. Overdue & Rejections Penalty -->
+                <div class="rm-factor-card">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                        <span class="rm-factor-label"><i class="fa-solid fa-triangle-exclamation" style="color:#dc2626; margin-right:4px;"></i> Overdue &amp; Rework</span>
+                        <span id="rm-overdue-impact" style="font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px; background:#fee2e2; color:#991b1b;">-0 pts</span>
+                    </div>
+                    <div id="rm-overdue-val" class="rm-factor-val">0 Issues</div>
+                    <small id="rm-overdue-sub" class="rm-factor-sub">0 overdue, 0 rejections</small>
+                </div>
+
+                <!-- 4. Delivery Volume -->
+                <div class="rm-factor-card">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                        <span class="rm-factor-label"><i class="fa-solid fa-layer-group" style="color:#6366f1; margin-right:4px;"></i> Delivery Volume</span>
+                        <span id="rm-volume-impact" style="font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px; background:#e0e7ff; color:#3730a3;">+0 pts</span>
+                    </div>
+                    <div id="rm-volume-val" class="rm-factor-val">0 Completed</div>
+                    <small class="rm-factor-sub">Track record consistency</small>
+                </div>
+            </div>
+
+            <!-- Mathematical Formula Box -->
+            <div class="rm-formula-box">
+                <b class="rm-formula-title">
+                    <i class="fa-solid fa-calculator" style="color:#6366f1;"></i> Live Calculation Breakdown:
+                </b>
+                <div id="rm-formula-text" class="rm-formula-code">
+                    Score = Base (650) + On-Time (±) + Quality (+) + Volume (+) - Overdue (-) - Rejections (-)
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="rm-footer">
+            <button type="button" class="btn primary" onclick="closeReliabilityModal()" style="padding:7px 18px; border-radius:8px; font-size:12px;">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function openReliabilityModal(r, name) {
+    if (!r) return;
+    const modal = document.getElementById('reliability-modal');
+    if (!modal) return;
+
+    document.getElementById('rm-user-name').textContent = name;
+    const scoreEl = document.getElementById('rm-score-val');
+    scoreEl.textContent = r.score;
+    scoreEl.style.setProperty('color', r.tierColor, 'important');
+
+    const tierBadge = document.getElementById('rm-tier-badge');
+    tierBadge.textContent = r.tier;
+    tierBadge.style.setProperty('background', r.tierBg, 'important');
+    tierBadge.style.setProperty('color', r.tierColor, 'important');
+    tierBadge.style.border = `1px solid ${r.tierColor}44`;
+
+    const rankBadge = document.getElementById('rm-rank-badge');
+    if (rankBadge) {
+        if (r.rank) {
+            rankBadge.style.display = 'inline-flex';
+            rankBadge.innerHTML = r.rank === 1
+                ? '<i class="fa-solid fa-crown"></i> #1 Top Reliable Performer'
+                : `<i class="fa-solid fa-ranking-star"></i> Team Rank #${r.rank}`;
+        } else {
+            rankBadge.style.display = 'none';
+        }
+    }
+
+    const pct = Math.max(0, Math.min(100, ((r.score - 300) / 600) * 100));
+    document.getElementById('rm-meter-needle').style.left = `${pct}%`;
+
+    // On-Time
+    document.getElementById('rm-ontime-val').textContent = `${r.onTimeRate}%`;
+    document.getElementById('rm-ontime-sub').textContent = `${r.onTimeTasks} of ${r.completedTasks} completed on-time`;
+    const otDelta = (r.factors && r.factors.onTimeDelta !== undefined) ? r.factors.onTimeDelta : 0;
+    const otImpact = document.getElementById('rm-ontime-impact');
+    otImpact.textContent = `${otDelta >= 0 ? '+' : ''}${otDelta} pts`;
+    otImpact.style.setProperty('background', otDelta >= 0 ? '#dcfce7' : '#fee2e2', 'important');
+    otImpact.style.setProperty('color', otDelta >= 0 ? '#166534' : '#991b1b', 'important');
+
+    // Quality (Verified)
+    const cleanVerified = (r.verifiedCleanTasks !== undefined) ? r.verifiedCleanTasks : (r.verifiedTasks || 0);
+    document.getElementById('rm-quality-val').textContent = `${r.verifiedTasks || 0} Tasks`;
+    document.getElementById('rm-quality-sub').textContent = `${cleanVerified} verified without rework`;
+    const qb = (r.factors && r.factors.qualityBonus !== undefined) ? r.factors.qualityBonus : 0;
+    const qImpact = document.getElementById('rm-quality-impact');
+    qImpact.textContent = `+${qb} pts`;
+    qImpact.style.setProperty('color', '#166534', 'important');
+
+    // Overdue + Rejection Penalty
+    const overdueCount = r.overdueTasks || 0;
+    const rejCount = r.rejectionCount || 0;
+    const op = (r.factors && r.factors.overduePenalty !== undefined) ? r.factors.overduePenalty : 0;
+    const rp = (r.factors && r.factors.rejectionPenalty !== undefined) ? r.factors.rejectionPenalty : 0;
+    document.getElementById('rm-overdue-val').textContent = `${overdueCount + rejCount} Issues`;
+    document.getElementById('rm-overdue-sub').textContent = `${overdueCount} overdue (-${op}), ${rejCount} rejected (-${rp})`;
+    const ovImpact = document.getElementById('rm-overdue-impact');
+    ovImpact.textContent = `-${op + rp} pts`;
+    ovImpact.style.setProperty('color', '#991b1b', 'important');
+
+    // Volume
+    document.getElementById('rm-volume-val').textContent = `${r.completedTasks} Completed`;
+    const vb = (r.factors && r.factors.volumeBonus !== undefined) ? r.factors.volumeBonus : 0;
+    const vImpact = document.getElementById('rm-volume-impact');
+    vImpact.textContent = `+${vb} pts`;
+    vImpact.style.setProperty('color', '#3730a3', 'important');
+
+    // Formula text
+    const f = r.factors || { base: 650, onTimeDelta: 0, qualityBonus: 0, volumeBonus: 0, overduePenalty: 0, rejectionPenalty: 0 };
+    document.getElementById('rm-formula-text').textContent = 
+        `${r.score} = Base (${f.base}) ` +
+        `${f.onTimeDelta >= 0 ? '+ OnTime (' + f.onTimeDelta + ')' : '- OnTime (' + Math.abs(f.onTimeDelta) + ')'} ` +
+        `+ Quality (${f.qualityBonus}) + Volume (${f.volumeBonus}) - Overdue (${f.overduePenalty}) - Reject (${f.rejectionPenalty || 0})`;
+
+    modal.style.display = 'flex';
+}
+
+function closeReliabilityModal() {
+    const modal = document.getElementById('reliability-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeReliabilityModal();
+});
+document.addEventListener('DOMContentLoaded', function() {
+    const rModal = document.getElementById('reliability-modal');
+    if (rModal) {
+        rModal.addEventListener('click', function(e) {
+            if (e.target === this) closeReliabilityModal();
+        });
+    }
+});
+</script>
+<% } %>
 
 <%- include('partials/foot') %>
 

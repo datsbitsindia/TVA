@@ -751,8 +751,11 @@ exports.status = async (req, res) => {
         const overallStatusRow = await db.prepare('SELECT name FROM statuses WHERE id=? LIMIT 1').get(overallStatusId);
         const overallStatusName = overallStatusRow ? overallStatusRow.name : (overallStatusId === 2 ? 'Completed' : (overallStatusId === 1 ? 'In Progress' : 'Pending'));
 
-        await db.prepare("UPDATE tasks SET status=?, status_id=?, completed_at=CASE WHEN ?=2 THEN NOW() ELSE NULL END, is_verified=CASE WHEN ?=2 THEN is_verified ELSE 0 END, verified_by=CASE WHEN ?=2 THEN verified_by ELSE NULL END, verified_at=CASE WHEN ?=2 THEN verified_at ELSE NULL END, updated_by=? WHERE id=?")
-            .run(overallStatusName, overallStatusId, overallStatusId, overallStatusId, overallStatusId, overallStatusId, req.session.user.id, task.id);
+        const wasCompleted = task.status === 'Completed' || Number(task.status_id) === 2;
+        const isReviewerReopening = wasCompleted && overallStatusId !== 2 && !assignedUserIds.includes(Number(req.session.user.id));
+
+        await db.prepare("UPDATE tasks SET status=?, status_id=?, completed_at=CASE WHEN ?=2 THEN NOW() ELSE NULL END, is_verified=CASE WHEN ?=2 THEN is_verified ELSE 0 END, verified_by=CASE WHEN ?=2 THEN verified_by ELSE NULL END, verified_at=CASE WHEN ?=2 THEN verified_at ELSE NULL END, rejection_count=COALESCE(rejection_count,0)+?, updated_by=? WHERE id=?")
+            .run(overallStatusName, overallStatusId, overallStatusId, overallStatusId, overallStatusId, overallStatusId, isReviewerReopening ? 1 : 0, req.session.user.id, task.id);
 
         if (task.is_routine) {
             try { await routineService.updateRoutineLogStatus(task.id, overallStatusName); } catch(e) {}
@@ -809,7 +812,7 @@ exports.verify = async (req, res) => {
 
         const action = req.body.action || 'verify';
         if (action === 'unverify') {
-            await db.prepare('UPDATE tasks SET is_verified=0, verified_by=NULL, verified_at=NULL, updated_by=? WHERE id=?')
+            await db.prepare('UPDATE tasks SET is_verified=0, verified_by=NULL, verified_at=NULL, rejection_count=COALESCE(rejection_count,0)+1, updated_by=? WHERE id=?')
                 .run(u.id, task.id);
             try { await activity.log(u.id, 'Task Unverified', task.title); } catch(e) {}
         } else {
