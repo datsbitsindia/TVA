@@ -17,15 +17,19 @@ const baseQuery = `
         ) AS priority,
         COALESCE(
             (SELECT name FROM statuses WHERE id = ta_sub.status_id LIMIT 1),
+            (SELECT name FROM statuses WHERE id = ta_sub.status LIMIT 1),
             (SELECT name FROM statuses WHERE normalized_name = LOWER(CAST(ta_sub.status AS CHAR)) COLLATE utf8mb4_unicode_ci LIMIT 1),
             (SELECT name FROM statuses WHERE id = t.status_id LIMIT 1),
+            (SELECT name FROM statuses WHERE id = t.status LIMIT 1),
             (SELECT name FROM statuses WHERE normalized_name = LOWER(CAST(t.status AS CHAR)) COLLATE utf8mb4_unicode_ci LIMIT 1),
             CAST(t.status AS CHAR) COLLATE utf8mb4_unicode_ci, 'Pending'
         ) AS status,
         COALESCE(
             (SELECT name FROM statuses WHERE id = ta_sub.status_id LIMIT 1),
+            (SELECT name FROM statuses WHERE id = ta_sub.status LIMIT 1),
             (SELECT name FROM statuses WHERE normalized_name = LOWER(CAST(ta_sub.status AS CHAR)) COLLATE utf8mb4_unicode_ci LIMIT 1),
             (SELECT name FROM statuses WHERE id = t.status_id LIMIT 1),
+            (SELECT name FROM statuses WHERE id = t.status LIMIT 1),
             CAST(t.status AS CHAR) COLLATE utf8mb4_unicode_ci, 'Pending'
         ) AS user_status,
         COALESCE(ta_sub.completed_at, t.completed_at) AS completed_at,
@@ -37,7 +41,9 @@ const baseQuery = `
         c.name creator_name, p.name project_name, COALESCE(t.project_id, p.id) AS project_id, p.manager_id, v.name verifier_name,
         CASE WHEN t.due_date<CURDATE() AND COALESCE(
             (SELECT name FROM statuses WHERE id = ta_sub.status_id LIMIT 1),
+            (SELECT name FROM statuses WHERE id = ta_sub.status LIMIT 1),
             (SELECT name FROM statuses WHERE id = t.status_id LIMIT 1),
+            (SELECT name FROM statuses WHERE id = t.status LIMIT 1),
             CAST(t.status AS CHAR) COLLATE utf8mb4_unicode_ci, '' COLLATE utf8mb4_unicode_ci
         ) NOT IN ('Completed' COLLATE utf8mb4_unicode_ci,'Cancelled' COLLATE utf8mb4_unicode_ci) THEN 1 ELSE 0 END is_overdue
     FROM tasks t
@@ -94,8 +100,10 @@ const getTasksWithPaginationAndCounts = async (req) => {
 
     const taskStatusSql = `COALESCE(
         (SELECT name FROM statuses WHERE id = ta_sub.status_id LIMIT 1),
+        (SELECT name FROM statuses WHERE id = ta_sub.status LIMIT 1),
         (SELECT name FROM statuses WHERE normalized_name = LOWER(CAST(ta_sub.status AS CHAR)) COLLATE utf8mb4_unicode_ci LIMIT 1),
         (SELECT name FROM statuses WHERE id = t.status_id LIMIT 1),
+        (SELECT name FROM statuses WHERE id = t.status LIMIT 1),
         (SELECT name FROM statuses WHERE normalized_name = LOWER(CAST(t.status AS CHAR)) COLLATE utf8mb4_unicode_ci LIMIT 1),
         CAST(t.status AS CHAR) COLLATE utf8mb4_unicode_ci, 'Pending'
     )`;
@@ -332,6 +340,7 @@ exports.detail = async (req, res) => {
             u.name, u.role, u.designation,
             COALESCE(
                 (SELECT name FROM statuses WHERE id = ta.status_id LIMIT 1),
+                (SELECT name FROM statuses WHERE id = ta.status LIMIT 1),
                 (SELECT name FROM statuses WHERE normalized_name = LOWER(CAST(ta.status AS CHAR) COLLATE utf8mb4_unicode_ci) LIMIT 1),
                 CASE CAST(ta.status AS CHAR) COLLATE utf8mb4_unicode_ci
                     WHEN 'Pending' THEN 'Pending'
@@ -403,17 +412,47 @@ exports.forward = async (req, res) => {
         await db.prepare('INSERT INTO task_forward_logs(task_id, from_user_id, to_user_id, reason) VALUES(?,?,?,?)')
             .run(taskId, Number(user.id), Number(targetUser.id), noteText);
 
-        await db.prepare('INSERT IGNORE INTO task_assignees(task_id, user_id, status) VALUES(?,?,?)')
-            .run(taskId, Number(targetUser.id), 'Pending');
+        // 1. Target user (e.g. Priya) is assigned with Pending status (0) for testing/action
+        await db.prepare(`
+            INSERT INTO task_assignees(task_id, user_id, status, status_id, completed_at)
+            VALUES(?,?,0,0,NULL)
+            ON DUPLICATE KEY UPDATE status=0, status_id=0, completed_at=NULL
+        `).run(taskId, Number(targetUser.id));
 
-        const currentAssignees = String(task.assigned_to || '').split(',').filter(Boolean);
+        // 2. Sender user (e.g. Chetan) completed their work and forwarded for testing/handover:
+        // Mark sender's individual status in task_assignees as Completed (2)
+        await db.prepare(`
+            INSERT INTO task_assignees(task_id, user_id, status, status_id, completed_at)
+            VALUES(?,?,2,2,NOW())
+            ON DUPLICATE KEY UPDATE status=2, status_id=2, completed_at=COALESCE(completed_at, NOW())
+        `).run(taskId, Number(user.id));
+
+        const currentAssignees = String(task.assigned_to || '').split(',').map(x => x.trim()).filter(Boolean);
         if (!currentAssignees.includes(String(targetUser.id))) {
             currentAssignees.push(String(targetUser.id));
         }
+        if (!currentAssignees.includes(String(user.id))) {
+            currentAssignees.push(String(user.id));
+        }
         const updatedAssignedToStr = currentAssignees.join(',');
 
-        await db.prepare('UPDATE tasks SET assigned_to=?, is_forwarded=1, updated_by=? WHERE id=?')
-            .run(updatedAssignedToStr, Number(user.id), taskId);
+        // 3. Since task is now in testing / delegated to target user, overall task status is In Progress (1)!
+        // - Creator (Hari) sees "In Progress" in Assigned tab
+        // - Sender (Chetan) sees "Completed" in To Do tab
+        // - Receiver (Priya) sees "Pending" with Forwarded badge in To Do tab
+        await db.prepare(`
+            UPDATE tasks 
+            SET assigned_to=?, 
+                is_forwarded=1, 
+                status='In Progress', 
+                status_id=1, 
+                completed_at=NULL, 
+                is_verified=0, 
+                verified_by=NULL, 
+                verified_at=NULL, 
+                updated_by=? 
+            WHERE id=?
+        `).run(updatedAssignedToStr, Number(user.id), taskId);
 
         await activity.log(user.id, 'Task Forwarded', `${fromUser?.name || 'User'} -> ${targetUser.name}: ${task.title}`);
 
