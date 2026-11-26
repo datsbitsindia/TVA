@@ -449,7 +449,11 @@ document.addEventListener('DOMContentLoaded', function() {
         border-radius: 18px;
         max-width: 580px;
         width: 100%;
-        box-shadow: 0 20px 40px -15px rgba(0,0,0,0.25);
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+        box-shadow: 0 24px 50px -12px rgba(15, 23, 42, 0.28);
         overflow: hidden;
         border: 1px solid #e2e8f0;
     }
@@ -459,7 +463,8 @@ document.addEventListener('DOMContentLoaded', function() {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        flex-shrink: 0;
     }
     .rm-title { margin: 0; font-size: 16px; font-weight: 700; color: #0f172a; }
     .rm-sub { color: #64748b; font-size: 12px; }
@@ -476,7 +481,7 @@ document.addEventListener('DOMContentLoaded', function() {
         align-items: center;
         justify-content: center;
     }
-    .rm-body { padding: 22px; max-height: 80vh; overflow-y: auto; }
+    .rm-body { padding: 20px 22px; overflow-y: auto; flex: 1; background: #ffffff; }
     .rm-meter-box {
         background: #f8fafc;
         border: 1px solid #e2e8f0;
@@ -574,6 +579,9 @@ document.addEventListener('DOMContentLoaded', function() {
         background: #131c2e !important;
         border-color: rgba(255, 255, 255, 0.12) !important;
     }
+    html.dark-theme .rm-body {
+        background: #131c2e !important;
+    }
     html.dark-theme .rm-header {
         background: linear-gradient(135deg, #1b263b 0%, #131c2e 100%) !important;
         border-bottom-color: rgba(255, 255, 255, 0.08) !important;
@@ -635,21 +643,26 @@ document.addEventListener('DOMContentLoaded', function() {
         border-color: #fcd34d !important;
     }
     html.gray-glass-theme .rm-card {
-        background: rgba(235, 240, 248, 0.94) !important;
-        backdrop-filter: blur(28px) saturate(180%) !important;
-        -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.8) !important;
+        background: rgba(241, 245, 249, 0.96) !important;
+        backdrop-filter: blur(28px) saturate(160%) !important;
+        -webkit-backdrop-filter: blur(28px) saturate(160%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.9) !important;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24) !important;
         color: #0f172a !important;
+    }
+    html.gray-glass-theme .rm-body {
+        background: transparent !important;
     }
     html.gray-glass-theme .rm-header,
     html.gray-glass-theme .rm-footer {
-        background: rgba(255, 255, 255, 0.45) !important;
-        border-color: rgba(255, 255, 255, 0.6) !important;
+        background: rgba(255, 255, 255, 0.6) !important;
+        border-color: rgba(226, 232, 240, 0.85) !important;
     }
     html.gray-glass-theme .rm-meter-box,
     html.gray-glass-theme .rm-factor-card {
-        background: rgba(255, 255, 255, 0.68) !important;
-        border: 1px solid rgba(255, 255, 255, 0.85) !important;
+        background: rgba(255, 255, 255, 0.82) !important;
+        border: 1px solid rgba(255, 255, 255, 0.95) !important;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
     }
     html.gray-glass-theme .rm-formula-box {
         background: rgba(255, 255, 255, 0.55) !important;
@@ -674,7 +687,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </style>
 
 <div class="modal rm-overlay" id="reliability-modal">
-    <div class="modal-card rm-card">
+    <div class="rm-card">
         
         <!-- Header -->
         <div class="rm-header">
