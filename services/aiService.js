@@ -11,6 +11,26 @@ const PYTHON_MCP_URL = process.env.PYTHON_MCP_URL || 'http://localhost:8000';
 // Cache for tools declaration
 let cachedToolsDeclaration = null;
 
+/**
+ * Generates live IST date context so relative words ("aaj", "today", "kal", "tomorrow", "parso", "last N days")
+ * always resolve against the actual current date instead of a stale hardcoded date.
+ */
+function buildLiveDateContextRule() {
+    const istNow = new Date(Date.now() + (5.5 * 60 * 60 * 1000));
+    const todayStr = istNow.toISOString().slice(0, 10);
+    const tomorrowStr = new Date(istNow.getTime() + 86400000).toISOString().slice(0, 10);
+    const dayAfterStr = new Date(istNow.getTime() + 2 * 86400000).toISOString().slice(0, 10);
+    const threeDaysAgoStr = new Date(istNow.getTime() - 3 * 86400000).toISOString().slice(0, 10);
+    const weekDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayName = weekDays[istNow.getUTCDay()];
+
+    return `5. LIVE DATE & RANGE FILTERING RULE (IST):
+   - Current Date context: ${todayStr} (${dayName}).
+   - Relative due date mapping: "aaj"/"today" = ${todayStr}, "kal"/"tomorrow" = ${tomorrowStr}, "parso"/"day after tomorrow" = ${dayAfterStr}. Resolve weekday names or relative days relative to ${todayStr} in YYYY-MM-DD format.
+   - When user asks for "tasks created in last N days", calculate start_date (e.g. ${threeDaysAgoStr} for 3 days from ${todayStr}), set date_field='created_at', task_type='all', and call get_user_tasks.
+   - When user asks for tasks within a date range, convert dates to YYYY-MM-DD format relative to ${todayStr} and call get_user_tasks with task_type='all'.`;
+}
+
 // Helper to format raw tool result to natural text if AI follow-up fails
 function formatToolResultToText(toolName, result, currentUser) {
     if (!result) return "Task processed successfully.";
@@ -247,10 +267,7 @@ OPERATIONAL PROJECT & TASK RULES:
 4. TASK STATUS PERMISSION RULE:
    - ONLY assigned team members (or Admin) can change a task's status or mark it Completed.
    - If a Manager/Creator asks to mark a task as Completed that is assigned to someone else (e.g. Jemini), pass user_id and user_role to update_task_status tool. If tool returns Permission Denied, explain politely that only the assigned employee (or Admin) can mark their assigned tasks as Completed.
-5. DATE RANGE FILTERING RULE:
-   - Current Date context: 2026-08-20.
-   - When user asks for "tasks created in last N days", calculate start_date (e.g. 2026-08-18 for 3 days), set date_field='created_at', task_type='all', and call get_user_tasks.
-   - When user asks for tasks within a date range (e.g. "between 14th August to 20th August"), convert dates to YYYY-MM-DD format (start_date='2026-08-14', end_date='2026-08-20') and call get_user_tasks with task_type='all'.
+${buildLiveDateContextRule()}
 6. TEAM NAME MAPPING RULE:
    - Always spell team names as: Bhavin (never Bhabi/Bhabhi), Jemini (starts with J, never Gemini), Chintan, Chetan.
    - If user input contains misheard speech words like "Gemini" or "Bhabi", automatically map them to Jemini and Bhavin.
@@ -405,7 +422,8 @@ OPERATIONAL PROJECT & TASK RULES:
      "No active project with that name exists. Currently active projects are: [${projectContextStr}]. Please assign the task to one of these active projects."
    - When asking clarifying questions for missing task details, NEVER invent a project name like "videos". Ask: "Which project would you like to assign this task to? Active projects: [${projectContextStr}]."
    - "TVA" IS THE APPLICATION SYSTEM NAME (Task & Velocity Administration), NOT A PROJECT! NEVER assume "TVA" is a project name.
-   - In your final message, ONLY report the exact project name returned by create_new_task tool! NEVER display a fake project name.`
+   - In your final message, ONLY report the exact project name returned by create_new_task tool! NEVER display a fake project name.
+${buildLiveDateContextRule()}`
         },
         ...(existingHistory || []).map(m => ({
             role: m.role === 'user' ? 'user' : 'assistant',
@@ -610,10 +628,7 @@ OPERATIONAL PROJECT & TASK RULES:
    - If the user specifies a non-existing or completed project, respond directly and politely:
      "No active project with that name exists. Currently active projects are: [list active projects]. Please specify one of these active projects."
    - If a Manager/Creator asks to mark a task as Completed that is assigned to someone else (e.g. Jemini), pass user_id and user_role to update_task_status tool. If tool returns Permission Denied, explain politely that only the assigned employee (or Admin) can mark their assigned tasks as Completed.
-5. DATE RANGE FILTERING RULE:
-   - Current Date context: 2026-08-20.
-   - When user asks for "tasks created in last N days", calculate start_date (e.g. 2026-08-18 for 3 days), set date_field='created_at', task_type='all', and call get_user_tasks.
-   - When user asks for tasks within a date range (e.g. "between 14th August to 20th August"), convert dates to YYYY-MM-DD format (start_date='2026-08-14', end_date='2026-08-20') and call get_user_tasks with task_type='all'.
+${buildLiveDateContextRule()}
 6. TEAM NAME MAPPING RULE:
    - Always spell team names as: Bhavin (never Bhabi/Bhabhi), Jemini (starts with J, never Gemini), Chintan, Chetan.
    - If user input contains misheard speech words like "Gemini" or "Bhabi", automatically map them to Jemini and Bhavin.
