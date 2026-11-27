@@ -11,6 +11,7 @@ const {
 } = require('./middleware/auth');
 const helpers = require('./utils/helpers');
 const notifications = require('./services/notificationService');
+const escalationService = require('./services/escalationService');
 
 process.on('uncaughtException', (err) => {
     console.error('CRITICAL UNCAUGHT EXCEPTION (Server kept running):', err);
@@ -149,13 +150,15 @@ async function start() {
     });
     console.log(`TVA running at http://localhost:${config.port}`);
 
-    // Background reminder scheduler - runs every 60 seconds (1 minute)
+    // Background reminder & smart escalation radar scheduler - runs every 60 seconds (1 minute)
     setInterval(() => {
         notifications.checkTaskReminders().catch(e => console.error('Scheduler checkTaskReminders error:', e));
+        escalationService.checkSmartEscalations().catch(e => console.error('Scheduler checkSmartEscalations error:', e));
     }, 60 * 1000);
     // Initial check on server launch after 3 seconds
     setTimeout(() => {
         notifications.checkTaskReminders().catch(e => console.error('Initial checkTaskReminders error:', e));
+        escalationService.checkSmartEscalations({ force: true }).catch(e => console.error('Initial checkSmartEscalations error:', e));
     }, 3000);
 
     return {

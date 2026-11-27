@@ -6,6 +6,7 @@ const {
 const activity = require('../services/activityService');
 const notifications = require('../services/notificationService');
 const routineService = require('../services/routineService');
+const escalationService = require('../services/escalationService');
 const config = require('../config');
 
 const baseQuery = `
@@ -38,7 +39,14 @@ const baseQuery = `
             (SELECT GROUP_CONCAT(u.name ORDER BY u.id SEPARATOR ', ') FROM users u WHERE FIND_IN_SET(u.id, t.assigned_to) > 0),
             a.name
         ) AS assigned_name,
-        c.name creator_name, p.name project_name, COALESCE(t.project_id, p.id) AS project_id, p.manager_id, v.name verifier_name,
+        c.name creator_name, p.name project_name, COALESCE(t.project_id, p.id) AS project_id, p.manager_id, v.name verifier_name, blocker.name AS blocked_by_name,
+        CASE WHEN t.due_date IS NOT NULL AND t.due_date >= CURDATE() AND TIMESTAMPDIFF(HOUR, NOW(), CONCAT(t.due_date, ' 23:59:59')) <= 24 AND COALESCE(
+            (SELECT name FROM statuses WHERE id = ta_sub.status_id LIMIT 1),
+            (SELECT name FROM statuses WHERE id = ta_sub.status LIMIT 1),
+            (SELECT name FROM statuses WHERE id = t.status_id LIMIT 1),
+            (SELECT name FROM statuses WHERE id = t.status LIMIT 1),
+            CAST(t.status AS CHAR) COLLATE utf8mb4_unicode_ci, '' COLLATE utf8mb4_unicode_ci
+        ) NOT IN ('Completed' COLLATE utf8mb4_unicode_ci,'Cancelled' COLLATE utf8mb4_unicode_ci) THEN 1 ELSE 0 END AS is_due_soon_24h,
         CASE WHEN t.due_date<CURDATE() AND COALESCE(
             (SELECT name FROM statuses WHERE id = ta_sub.status_id LIMIT 1),
             (SELECT name FROM statuses WHERE id = ta_sub.status LIMIT 1),
@@ -52,6 +60,7 @@ const baseQuery = `
     LEFT JOIN users c ON c.id=t.created_by
     LEFT JOIN projects p ON p.id=t.project_id
     LEFT JOIN users v ON v.id=t.verified_by
+    LEFT JOIN users blocker ON blocker.id=t.blocked_by
 `;
 
 
@@ -115,7 +124,8 @@ const getTasksWithPaginationAndCounts = async (req) => {
             COUNT(DISTINCT CASE WHEN LOWER(${taskStatusSql}) IN ('completed', '2') THEN t.id END) AS completed,
             COUNT(DISTINCT CASE WHEN LOWER(${taskStatusSql}) IN ('pending', 'planned', '0', '4') THEN t.id END) AS pending,
             COUNT(DISTINCT CASE WHEN LOWER(${taskStatusSql}) IN ('in progress', '1') THEN t.id END) AS progress,
-            COUNT(DISTINCT CASE WHEN t.due_date < CURDATE() AND LOWER(${taskStatusSql}) NOT IN ('completed', 'cancelled', '2', '3') THEN t.id END) AS overdueCount
+            COUNT(DISTINCT CASE WHEN t.due_date < CURDATE() AND LOWER(${taskStatusSql}) NOT IN ('completed', 'cancelled', '2', '3') THEN t.id END) AS overdueCount,
+            COUNT(DISTINCT CASE WHEN t.is_blocked = 1 AND LOWER(${taskStatusSql}) NOT IN ('completed', 'cancelled', '2', '3') THEN t.id END) AS blockedCount
         FROM tasks t
         LEFT JOIN task_assignees ta_sub ON ta_sub.task_id = t.id AND ta_sub.user_id = ?
         WHERE ${baseFilter}
@@ -126,7 +136,8 @@ const getTasksWithPaginationAndCounts = async (req) => {
         completed: Number(kpiRow.completed || 0),
         pending: Number(kpiRow.pending || 0),
         progress: Number(kpiRow.progress || 0),
-        overdueCount: Number(kpiRow.overdueCount || 0)
+        overdueCount: Number(kpiRow.overdueCount || 0),
+        blockedCount: Number(kpiRow.blockedCount || 0)
     };
 
     // 2. Build task list filters
@@ -135,6 +146,9 @@ const getTasksWithPaginationAndCounts = async (req) => {
 
     if (req.query.forwarded === '1') {
         filters.push('t.is_forwarded=1');
+    }
+    if (req.query.blocked === '1') {
+        filters.push(`t.is_blocked=1 AND LOWER(${taskStatusSql}) NOT IN ('completed', 'cancelled', '2', '3')`);
     }
 
     // Filter by KPI status (default to 'pending' if not specified)
@@ -530,8 +544,12 @@ exports.save = async (req, res) => {
             }
         } catch(e) { updPriorityName = priority; }
 
-        await db.prepare('UPDATE tasks SET project_id=?,title=?,description=?,priority=?,priority_id=?,due_date=?,assigned_to=?,estimated_hours=?,is_self_task=?,updated_by=? WHERE id=?').run(
-            pid, title, description, updPriorityName, updPriorityId, due_date || null, assignedToStr, Number(estimated_hours) || 0, isSelfTask, Number(req.session.user.id), id
+        const existingDueStr = existingTask.due_date ? new Date(existingTask.due_date).toISOString().slice(0, 10) : '';
+        const newDueStr = due_date ? String(due_date).slice(0, 10) : '';
+        const dueChanged = existingDueStr !== newDueStr;
+
+        await db.prepare('UPDATE tasks SET project_id=?,title=?,description=?,priority=?,priority_id=?,due_date=?,assigned_to=?,estimated_hours=?,is_self_task=?,nudge_24h_sent=CASE WHEN ?=1 THEN 0 ELSE nudge_24h_sent END,escalation_4h_sent=CASE WHEN ?=1 THEN 0 ELSE escalation_4h_sent END,updated_by=? WHERE id=?').run(
+            pid, title, description, updPriorityName, updPriorityId, due_date || null, assignedToStr, Number(estimated_hours) || 0, isSelfTask, dueChanged ? 1 : 0, dueChanged ? 1 : 0, Number(req.session.user.id), id
         );
 
         for (const targetAssignee of assignees) {
@@ -754,8 +772,8 @@ exports.status = async (req, res) => {
         const wasCompleted = task.status === 'Completed' || Number(task.status_id) === 2;
         const isReviewerReopening = wasCompleted && overallStatusId !== 2 && !assignedUserIds.includes(Number(req.session.user.id));
 
-        await db.prepare("UPDATE tasks SET status=?, status_id=?, completed_at=CASE WHEN ?=2 THEN NOW() ELSE NULL END, is_verified=CASE WHEN ?=2 THEN is_verified ELSE 0 END, verified_by=CASE WHEN ?=2 THEN verified_by ELSE NULL END, verified_at=CASE WHEN ?=2 THEN verified_at ELSE NULL END, rejection_count=COALESCE(rejection_count,0)+?, updated_by=? WHERE id=?")
-            .run(overallStatusName, overallStatusId, overallStatusId, overallStatusId, overallStatusId, overallStatusId, isReviewerReopening ? 1 : 0, req.session.user.id, task.id);
+        await db.prepare("UPDATE tasks SET status=?, status_id=?, completed_at=CASE WHEN ?=2 THEN NOW() ELSE NULL END, is_verified=CASE WHEN ?=2 THEN is_verified ELSE 0 END, verified_by=CASE WHEN ?=2 THEN verified_by ELSE NULL END, verified_at=CASE WHEN ?=2 THEN verified_at ELSE NULL END, is_blocked=CASE WHEN ? IN (2,3) THEN 0 ELSE is_blocked END, blocker_reason=CASE WHEN ? IN (2,3) THEN NULL ELSE blocker_reason END, blocked_by=CASE WHEN ? IN (2,3) THEN NULL ELSE blocked_by END, blocked_at=CASE WHEN ? IN (2,3) THEN NULL ELSE blocked_at END, rejection_count=COALESCE(rejection_count,0)+?, updated_by=? WHERE id=?")
+            .run(overallStatusName, overallStatusId, overallStatusId, overallStatusId, overallStatusId, overallStatusId, overallStatusId, overallStatusId, overallStatusId, overallStatusId, isReviewerReopening ? 1 : 0, req.session.user.id, task.id);
 
         if (task.is_routine) {
             try { await routineService.updateRoutineLogStatus(task.id, overallStatusName); } catch(e) {}
@@ -1137,5 +1155,112 @@ exports.deleteReminder = async (req, res) => {
     } catch (err) {
         console.error('deleteReminder error:', err);
         res.status(500).render('error', { message: 'Failed to delete reminder: ' + err.message });
+    }
+};
+
+exports.toggleBlock = async (req, res) => {
+    try {
+        const u = req.session.user;
+        const orgId = u.organization_id || 1;
+        const task = await db.prepare(baseQuery + ' WHERE t.id=? AND t.organization_id=?').get(u.id, req.params.id, orgId);
+        if (!task || !(await canView(u, task))) {
+            return res.status(403).render('error', { message: 'Access denied.' });
+        }
+
+        const isIncomplete = !['completed', 'cancelled', '2', '3'].includes(String(task.status || '').toLowerCase().trim());
+        if (!isIncomplete) {
+            return res.redirect(`/tasks/${task.id}`);
+        }
+
+        const action = String(req.body.action || 'block').toLowerCase().trim();
+        const reason = String(req.body.blocker_reason || '').trim().slice(0, 480);
+
+        // Fetch all assignees & supervisors for notifications
+        const assigneeRows = await db.prepare('SELECT user_id FROM task_assignees WHERE task_id=?').all(task.id);
+        const assigneeIds = [...new Set([
+            ...String(task.assigned_to || '').split(',').map(x => Number(x.trim())).filter(Boolean),
+            ...assigneeRows.map(r => Number(r.user_id)).filter(Boolean)
+        ])];
+        const projManagers = String(task.manager_id || '').split(',').map(x => Number(x.trim())).filter(Boolean);
+        const adminRows = await db.prepare("SELECT id FROM users WHERE role='admin' AND active=1 AND organization_id=?").all(orgId);
+        const orgAdmins = adminRows.map(a => Number(a.id)).filter(Boolean);
+
+        if (action === 'unblock') {
+            await db.prepare('UPDATE tasks SET is_blocked=0, blocker_reason=NULL, blocked_by=NULL, blocked_at=NULL, updated_by=? WHERE id=?')
+                .run(u.id, task.id);
+
+            await db.prepare('INSERT INTO comments(task_id,user_id,message) VALUES(?,?,?)')
+                .run(task.id, u.id, `✅ **Blocker Resolved** by ${u.name}. Work can resume.`);
+            try { await activity.log(u.id, 'Task Unblocked', task.title); } catch (e) {}
+
+            const notifyTargets = [...new Set([Number(task.created_by), ...projManagers, ...assigneeIds])]
+                .filter(uid => uid && uid !== Number(u.id));
+            if (notifyTargets.length > 0) {
+                await notifications.notify(notifyTargets.join(','), `✅ Blocker Resolved: ${u.name} unblocked '${task.title}'`, `/tasks/${task.id}`, u.id);
+            }
+
+            if (req.xhr || (req.headers.accept && req.headers.accept.includes('application/json'))) {
+                return res.json({ success: true, is_blocked: 0 });
+            }
+            return res.redirect(`/tasks/${task.id}?success=unblocked`);
+        }
+
+        // Flagging as Blocked
+        const finalReason = reason || 'Blocked / Waiting on dependency or approval';
+        await db.prepare('UPDATE tasks SET is_blocked=1, blocker_reason=?, blocked_by=?, blocked_at=NOW(), updated_by=? WHERE id=?')
+            .run(finalReason, u.id, u.id, task.id);
+
+        await db.prepare('INSERT INTO comments(task_id,user_id,message) VALUES(?,?,?)')
+            .run(task.id, u.id, `🚧 **I am Blocked**: ${finalReason}`);
+        try { await activity.log(u.id, 'Task Blocked', `${task.title} — ${finalReason}`); } catch (e) {}
+
+        const supervisorTargets = [...new Set([Number(task.created_by), ...projManagers, ...orgAdmins, ...assigneeIds])]
+            .filter(uid => uid && uid !== Number(u.id));
+        if (supervisorTargets.length > 0) {
+            await notifications.notify(
+                supervisorTargets.join(','),
+                `🚧 Blocker Alert: ${u.name} marked '${task.title}' as BLOCKED — "${finalReason}"`,
+                `/tasks/${task.id}`,
+                u.id
+            );
+        }
+
+        if (req.xhr || (req.headers.accept && req.headers.accept.includes('application/json'))) {
+            return res.json({ success: true, is_blocked: 1, blocker_reason: finalReason });
+        }
+        res.redirect(`/tasks/${task.id}?success=blocked`);
+    } catch (err) {
+        console.error('toggleBlock error:', err);
+        if (req.xhr || (req.headers.accept && req.headers.accept.includes('application/json'))) {
+            return res.status(500).json({ success: false, error: err.message });
+        }
+        res.status(500).render('error', { message: 'Failed to update blocker status: ' + err.message });
+    }
+};
+
+exports.scanRadar = async (req, res) => {
+    try {
+        const u = req.session.user;
+        if (!u || !['admin', 'manager'].includes(u.role)) {
+            return res.status(403).json({ success: false, error: 'Only Admin or Manager can trigger a manual Radar scan.' });
+        }
+        const orgId = u.organization_id || 1;
+        const simulateHoursLeft = req.body.simulate_hours_left !== undefined && req.body.simulate_hours_left !== ''
+            ? Number(req.body.simulate_hours_left)
+            : null;
+        const taskId = req.body.task_id ? Number(req.body.task_id) : null;
+        const ignoreIdleWindow = Boolean(req.body.ignore_idle_window);
+
+        const result = await escalationService.checkSmartEscalations({
+            force: true,
+            orgId,
+            taskId,
+            simulateHoursLeft,
+            ignoreIdleWindow
+        });
+        return res.json({ success: true, ...result });
+    } catch (err) {
+        console.error('scanRadar error:', err);
+        return res.status(500).json({ success: false, error: err.message });
     }
 };

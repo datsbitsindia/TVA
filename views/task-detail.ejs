@@ -50,7 +50,7 @@
 <% if(success){ %>
     <div class="success-toast">
         <i class="fa-solid fa-circle-check"></i>
-        <span><b>Update successful</b><small><%= success==='reminder_saved' ? 'Task reminder has been scheduled successfully!' : (success==='reminder_deleted' ? 'Task reminder has been removed.' : (success==='forwarded' ? 'Task has been forwarded successfully!' : (success==='status'?'Task status has been updated.':'Your update has been posted.'))) %></small></span>
+        <span><b>Update successful</b><small><%= success==='blocked' ? 'Blocker flagged and Manager has been notified!' : (success==='unblocked' ? 'Blocker resolved! Work can resume.' : (success==='reminder_saved' ? 'Task reminder has been scheduled successfully!' : (success==='reminder_deleted' ? 'Task reminder has been removed.' : (success==='forwarded' ? 'Task has been forwarded successfully!' : (success==='status'?'Task status has been updated.':'Your update has been posted.'))))) %></small></span>
     </div>
     <script>sessionStorage.setItem('tasks_need_refresh', '1');</script>
 <% } %>
@@ -111,7 +111,35 @@
                 const isProjManager = projManagerIds.includes(Number(user.id));
                 const isManagerReviewer = (user.role === 'manager' || isProjManager) && !isAssignedToMe;
                 const canVerify = isAdmin || isCreator || isManagerReviewer;
+                const canResolveBlocker = isAssignedToMe || isCreator || isProjManager || isAdmin;
             %>
+
+            <% if (isTaskIncomplete) { %>
+                <% if (task.is_blocked) { %>
+                    <span class="task-action-pill" style="background:#fef2f2; color:#b91c1c; border-color:#fecaca; font-weight:700; cursor:default;" title="<%= task.blocker_reason || 'Blocked' %>">
+                        <i class="fa-solid fa-ban"></i> Blocked
+                    </span>
+                    <% if (canResolveBlocker) { %>
+                        <form action="/tasks/<%= task.id %>/block" method="post" style="margin:0; display:inline-flex;">
+                            <input type="hidden" name="action" value="unblock">
+                            <button type="submit" class="task-action-pill" style="background:#dcfce7; color:#15803d; border-color:#86efac; font-weight:700; cursor:pointer;" title="Mark blocker as resolved">
+                                <i class="fa-solid fa-check-double"></i> Resolve Blocker
+                            </button>
+                        </form>
+                    <% } %>
+                <% } else { %>
+                    <% if (task.escalation_4h_sent) { %>
+                        <span class="task-action-pill" style="background:#fff7ed; color:#c2410c; border-color:#fed7aa; font-weight:700; cursor:default;" title="Under 4 hours remaining with no recent update">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Risk of Delay
+                        </span>
+                    <% } %>
+                    <% if (isAssignedToMe) { %>
+                        <button type="button" class="task-action-pill" data-open="blocker-modal" style="background:#fef3c7; color:#b45309; border-color:#fcd34d; font-weight:700; cursor:pointer;" title="Flag a blocker if you are waiting on approval, client, or dependency">
+                            <i class="fa-solid fa-hand"></i> I am Blocked
+                        </button>
+                    <% } %>
+                <% } %>
+            <% } %>
 
             <% if (task.status === 'Completed' || task.status === '2') { %>
                 <% if (task.is_verified) { %>
@@ -168,6 +196,38 @@
 
         </div>
     </div>
+
+    <% if (task.is_blocked && isTaskIncomplete) { %>
+        <div class="blocker-detail-banner" style="margin:12px 0 16px; padding:14px 16px; border-radius:12px; background:linear-gradient(135deg,#fef2f2,#fff7ed); border:1.5px solid #fca5a5; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:flex-start; gap:12px; flex:1; min-width:220px;">
+                <div style="width:36px; height:36px; border-radius:10px; background:#fee2e2; color:#dc2626; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">
+                    <i class="fa-solid fa-ban"></i>
+                </div>
+                <div>
+                    <div style="font-size:13px; font-weight:800; color:#991b1b;">
+                        Task Marked as Blocked
+                        <% if (task.blocked_by_name) { %>
+                            by <%= task.blocked_by_name %>
+                        <% } %>
+                        <% if (task.blocked_at) { %>
+                            <span style="font-weight:500; font-size:11px; color:#b91c1c; margin-left:6px;"><%= formatDateTime(task.blocked_at) %></span>
+                        <% } %>
+                    </div>
+                    <div style="font-size:13px; color:#7f1d1d; margin-top:3px; font-weight:600;">
+                        Reason: "<%= task.blocker_reason || 'Blocked on external dependency' %>"
+                    </div>
+                </div>
+            </div>
+            <% if (canResolveBlocker) { %>
+                <form action="/tasks/<%= task.id %>/block" method="post" style="margin:0;">
+                    <input type="hidden" name="action" value="unblock">
+                    <button type="submit" class="btn btn-sm" style="background:#16a34a; color:#fff; border:none; padding:7px 14px; border-radius:8px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                        <i class="fa-solid fa-check-double"></i> Unblock / Resume
+                    </button>
+                </form>
+            <% } %>
+        </div>
+    <% } %>
 
     <% if(task.description){ %>
         <div class="task-desc-box" style="position:relative; overflow:hidden;">
@@ -538,6 +598,61 @@
         </form>
     </div>
 </div>
+
+<!-- Blocker Modal ("I am Blocked") -->
+<div class="modal" id="blocker-modal">
+    <div class="modal-card" style="max-width:480px;">
+        <button class="modal-close" data-close>&times;</button>
+        <h2 style="display:flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-hand" style="color:#d97706;"></i> Flag Task Blocker
+        </h2>
+        <p style="font-size:12.5px; color:#64748b; margin-top:2px; margin-bottom:14px;">
+            Let your Manager and Admin know immediately why this task is blocked so bottlenecks are cleared fast.
+        </p>
+        <form method="post" action="/tasks/<%= task.id %>/block" class="form-grid" id="blocker-form">
+            <input type="hidden" name="action" value="block">
+
+            <div class="full">
+                <label style="font-weight:700; font-size:12px; margin-bottom:6px; display:block;">Quick Select Reason:</label>
+                <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
+                    <% [
+                        "Waiting for manager/teammate approval",
+                        "Waiting for client reply / assets",
+                        "Need requirement clarification",
+                        "Blocked on API / technical dependency"
+                    ].forEach(preset => { %>
+                        <button type="button" class="blocker-preset-chip" onclick="selectBlockerPreset(this.getAttribute('data-val'))" data-val="<%= preset %>" style="border:1px solid #cbd5e1; background:#f8fafc; color:#334155; padding:5px 10px; border-radius:99px; font-size:11px; font-weight:600; cursor:pointer;">
+                            <%= preset %>
+                        </button>
+                    <% }) %>
+                </div>
+            </div>
+
+            <div class="full">
+                <label style="font-weight:700; font-size:12px;">Blocker Reason *
+                    <textarea id="blocker-reason-input" name="blocker_reason" rows="3" required maxlength="450" placeholder="e.g. Waiting for Priya's approval on the design..." style="margin-top:4px;"></textarea>
+                </label>
+            </div>
+
+            <div class="full actions" style="display:flex; justify-content:flex-end; gap:8px; margin-top:6px;">
+                <button type="button" class="btn" data-close>Cancel</button>
+                <button type="submit" class="btn primary" style="background:#d97706; border-color:#d97706;">
+                    <i class="fa-solid fa-paper-plane"></i> Notify Manager &amp; Flag Blocked
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function selectBlockerPreset(val) {
+    const inp = document.getElementById('blocker-reason-input');
+    if (inp) {
+        inp.value = val;
+        inp.focus();
+    }
+}
+</script>
 
 <script>
 function updateReminderTypeUI(type) {

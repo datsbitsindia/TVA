@@ -1532,6 +1532,15 @@ html.gray-glass-theme .entity-title small {
     font-weight: 500 !important;
 }
 
+html.gray-glass-theme .employee-card .entity-title small {
+    color: #475569 !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    font-weight: 400 !important;
+}
+
 /* ── Topbar Header ───────────────────────── */
 html.gray-glass-theme .topbar {
     background: rgba(255, 255, 255, 0.25) !important;
